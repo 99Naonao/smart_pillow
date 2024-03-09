@@ -19,6 +19,17 @@
 </template>
 
 <script>
+	export default {
+		onShow() {
+			let curPages = getCurrentPages()[0]
+			if (typeof curPages.getTabBar === 'function' && curPages.getTabBar()) {
+				curPages.getTabBar().setData({
+					selected: 0,
+					onshow: true
+				});
+			}
+		}
+	}
 </script>
 
 <style>
