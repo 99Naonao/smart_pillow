@@ -1,0 +1,48 @@
+
+.main {
+		width: 100%;
+		height: 100%;
+}
+.logo {
+		width: 256rpx;
+		height: 101rpx;
+		margin: 0 auto;
+		margin-top: -450rpx;
+}
+.logo image {
+		width: 100%;
+		height: 100%;
+}
+.logoTip {
+		width: 649rpx;
+		height: 200rpx;
+		margin: 0 auto;
+		margin-top: -200rpx;
+}
+.logoTip image {
+		width: 100%;
+		height: 100%;
+}
+.connectBtn {
+		width: 727rpx;
+		height: 188rpx;
+		margin: 0 auto;
+		margin-top: -0rpx;
+}
+.connectBtn image {
+		width: 100%;
+		height: 100%;
+}
+.rotateimgblock {
+		margin-top: -50rpx;
+		width: 750rpx;
+		height: 494rpx;
+}
+.rotateimg {
+		width: 100%;
+		height: 100%;
+}
+.backimg {
+		width: 100%;
+		display: block;
+}
