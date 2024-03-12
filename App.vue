@@ -1,5 +1,12 @@
 <script>
 	export default {
+		data() {
+			return {
+				globalData: {
+					tabIndex: 0
+				},
+			}
+		},
 		onLaunch: function() {
 			console.log('App Launch')
 		},

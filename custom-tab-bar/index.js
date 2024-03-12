@@ -1,4 +1,12 @@
+const app = getApp()
 Component({
+	lifetimes: {
+		attached() {
+			this.setData({
+				selected: app.globalData.tabIndex
+			})
+		}
+	},
 	data: {
 		selected: 0,
 		color: "#7A7E83",
@@ -34,15 +42,13 @@ Component({
 		switchTab(e) {
 			const data = e.currentTarget.dataset
 			const url = data.path
-			this.setData({
-				selected: data.index
-			})
-			wx.switchTab({
-				url
-			})
 			// this.setData({
 			// 	selected: data.index
 			// })
+			app.globalData.tabIndex = data.index
+			wx.switchTab({
+				url
+			})
 		}
 	}
 })
