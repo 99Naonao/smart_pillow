@@ -1,0 +1,35 @@
+{
+	"name": "sleeping",
+	"version": "1.0.0",
+	"description": "",
+	"main": "main.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"uni-app": {
+		"scripts": {
+			"publish-h5": {
+				"title": "发布",
+				"browser": "",
+				"env": {
+					"UNI_PLATFORM": "h5",
+					"MY_TEST": ""
+				},
+				"define": {
+					"CUSTOM-CONST": true
+				}
+			}
+		}
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@vant/weapp": "^1.10.20",
+		"animate.css": "^4.1.1",
+		"axios": "^1.4.0",
+		"threejs-miniprogram": "0.0.8",
+		"vant": "^4.6.2",
+		"weixin-js-sdk": "^1.6.0"
+	}
+}
