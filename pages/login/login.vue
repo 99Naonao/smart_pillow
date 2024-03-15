@@ -15,7 +15,7 @@
 		<view class="connectBtn" @click="connectHandler">
 			<image src="../../static/index/SY_00_button01a.png" mode="aspectFit"></image>
 		</view>
-		<!-- 
+
 		<view style="display: flex; justify-content: center;margin: 12px;">
 			<view>原图：</view>
 			<image :src="bodyImgUrl" style="width: 100px; height: 100px;" mode="aspectFit" />
@@ -23,10 +23,11 @@
 		<canvas type="webgl" id="webgl" style="width: {{width}}px; height: {{height}}px">
 		</canvas>
 		<view class="btn-cnt" style="padding-bottom: 200rpx;">
+			<button type="primary" @click="startCamera">开始拍照1</button>
 			<button type="primary" @click="chooseMedia">选择图片</button>
 			<button type="primary" :disabled="bodyImgUrl==''" style="margin-top: 20px;"
 				@click="detectbody">开始检测</button>
-		</view> -->
+		</view>
 
 
 		<!-- 		<view wx:if="{{anchor2DList}}">
@@ -41,8 +42,8 @@
 </template>
 
 <script>
-	import getBehavior from '../../utils/behavior'
-	import yuvBehavior from '../../utils/yuvBehavior'
+	// import getBehavior from '../../utils/behavior'
+	// import yuvBehavior from '../../utils/yuvBehavior'
 
 	// 引入文件夹
 	import {
@@ -50,7 +51,7 @@
 	} from 'threejs-miniprogram'
 
 	export default {
-		behaviors: [getBehavior(), yuvBehavior],
+		// behaviors: [getBehavior(), yuvBehavior],
 		onShow() {
 			let curPages = getCurrentPages()[0]
 			if (typeof curPages.getTabBar === 'function' && curPages.getTabBar()) {
@@ -78,6 +79,12 @@
 			}
 		},
 		methods: {
+			// 开始拍照
+			startCamera() {
+				uni.navigateTo({
+					url: '/pages/camera/camera'
+				})
+			},
 			base64({
 				url
 			}) {
@@ -223,12 +230,24 @@
 								mode: 1
 							} // mode: 1 - 使用摄像头；2 - 手动传入图像
 						},
+						version: 'v2',
 					})
 
 
 					// 静态图片检测模式下，每调一次 detectBody 接口就会触发一次 updateAnchors 事件
 					this.session.on('updateAnchors', anchors => {
-						console.log('anchors:', anchors)
+						// console.log('anchors:', anchors)
+						anchors.forEach(anchor => {
+
+							console.log('anchor.points', anchor.points)
+
+							console.log('anchor.origin', anchor.origin)
+
+							console.log('anchor.size', anchor.size)
+
+							console.log('anchor.angle', anchor.angle)
+
+						})
 						// this.anchor2DList = anchors.map(anchor => {
 						// 	points: anchor.points, // 关键点坐标
 						// 	origin: anchor.origin, // 识别框起始点坐标

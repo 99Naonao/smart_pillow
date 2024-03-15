@@ -25,6 +25,12 @@
 			}
 		},
 		{
+			"path": "pages/camera/camera",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/index/index",
 			"style": {
 				"navigationStyle": "custom"
