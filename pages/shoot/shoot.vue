@@ -26,17 +26,20 @@
 	</view>
 	<view>
 		<view>侧面图片</view>
-		<image class="frontPic"></image>
+		<view class="frontPic" :style="sideImageStyle">
+			<image :src="sideBodyImgUrl" mode="widthFix"></image>
+		</view>
 		<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
 				<view class="title">侧面信息:</view>
 				<view>
-					<view><label class="title">肩宽:</label>{{shoulderPart}}m</view>
-					<view><label class="title">耳朵与眼睛之间:</label>{{leftPart}}m</view>
+					<view><label class="title">耳朵与眼睛之间:</label>{{sideEarEye}}m</view>
 					<view><label class="title">耳朵与鼻子之间:</label>{{rightPart}}m</view>
 					<view><label class="title">嘴巴与耳朵之间:</label>{{rightPart}}m</view>
 					<view><label class="title">脖子到右肩:</label>{{rightPart}}m</view>
 					<view><label class="title">脖子到左肩:</label>{{rightPart}}m</view>
+					<view><label class="title">左侧最凸点:</label>{{rightPart}}m</view>
+					<view><label class="title">右侧最凸点:</label>{{rightPart}}m</view>
 				</view>
 			</view>
 		</view>
@@ -54,7 +57,12 @@
 					'--imgWidth': '100rpx',
 					'--imgHeight': '100rpx',
 				},
+				sideImageStyle: {
+					'--imgWidth': '100rpx',
+					'--imgHeight': '100rpx',
+				},
 				bodyImgUrl: '',
+				sideBodyImgUrl: '',
 				bodyImgWidth: 0,
 				bodyImgHeight: 0,
 				bodyImgOriginWidth: 0.1,
@@ -67,6 +75,11 @@
 				frontNeck: 0.1,
 				frontLeftNeckShoulder: 0.1,
 				frontRightNeckShoulder: 0.1,
+				sideEye: 0.1,
+				sideNeck: 0.1,
+				sideEar: 0.1,
+				sideNose: 0.1,
+				sideMouth: 0.1,
 			}
 		},
 		computed: {
@@ -90,6 +103,12 @@
 			},
 			frontRightNeckPart() {
 				let space = Math.abs(this.frontNeck - this.frontRightShoulder);
+				space = space / this.bodyImgOriginWidth
+				space = space.toFixed(2)
+				return space
+			},
+			sideEarEye() {
+				let space = Math.abs(this.sideEar - this.sideEye);
 				space = space / this.bodyImgOriginWidth
 				space = space.toFixed(2)
 				return space
@@ -143,7 +162,7 @@
 
 								this.bodyImgOriginWidth = width;
 								this.bodyImgOriginHeight = height;
-								this.detecting(tempFilePaths)
+								this.detecting(tempFilePaths, false)
 							},
 							fail: res => {
 								console.error(res)
@@ -153,9 +172,42 @@
 				})
 			},
 			startSideCamera() {
+				uni.chooseImage({
+					success: async (chooseImageRes) => {
+						const tempFilePaths = chooseImageRes.tempFilePaths;
+						console.log('tempFiles:', chooseImageRes.tempFiles);
 
+						wx.getImageInfo({
+							src: tempFilePaths[0],
+							success: res => {
+								const fixWidth = 300
+								const {
+									width,
+									height
+								} = res
+								console.log('getImageInfo res', res)
+								this.sideBodyImgUrl = tempFilePaths[0];
+								console.log('bodyImgUrl', this.bodyImgUrl);
+
+								var bodyImgWidth = fixWidth;
+								var bodyImgHeight = (fixWidth / width) * height;
+								this.$set(this.sideImageStyle, '--imgWidth', bodyImgWidth +
+									'px');
+								this.$set(this.sideImageStyle, '--imgHeight', bodyImgHeight +
+									'px');
+
+								this.bodyImgOriginWidth = width;
+								this.bodyImgOriginHeight = height;
+								this.detecting(tempFilePaths, true)
+							},
+							fail: res => {
+								console.error(res)
+							}
+						})
+					}
+				})
 			},
-			async detecting(tempFilePaths) {
+			async detecting(tempFilePaths, isSide) {
 				let base64 = await this.base64({
 					url: tempFilePaths[0]
 				});
@@ -170,7 +222,11 @@
 					success: (uploadFileRes) => {
 						let obj = JSON.parse(uploadFileRes.data)
 						console.log('success', obj)
-						this.handleFrontData(obj)
+						if (isSide) {
+							this.handleSideData(obj)
+						} else {
+							this.handleFrontData(obj)
+						}
 
 						// uni.showToast({
 						// 	title: '肩宽约:' + space + 'm',
@@ -183,6 +239,17 @@
 						console.log('fail')
 					}
 				})
+			},
+			handleSideData(obj) {
+				let person = obj.person_info[0]
+				let body_parts = person.body_parts
+				this.sideEar = body_parts.left_ear.x > 0 ? body_parts.left_ear.x : body_parts.right_ear.x
+				this.sideNeck = body_parts.neck.x
+				this.sideEye = body_parts.left_eye.x > 0 ? body_parts.left_eye.x : body_parts.right_eye.x
+				this.sideNose = body_parts.nose.x;
+				this.sideMouth = body_parts.left_mouth_corner.x > 0 ? body_parts.left_mouth_corner.x : body_parts
+					.left_mouth_corner.x
+				// this.frontRightEarX = body_parts.right_ear.x
 			},
 			handleFrontData(obj) {
 				let person = obj.person_info[0]
@@ -201,7 +268,7 @@
 				space = space / this.bodyImgOriginWidth
 				space = space.toFixed(2)
 				this.shoulderSpace = space
-			}
+			},
 		}
 	}
 </script>
