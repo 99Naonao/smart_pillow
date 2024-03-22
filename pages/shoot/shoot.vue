@@ -1,21 +1,21 @@
 <template>
 	<view class="">
-		<image class="backimg" src="../../static/index/SY_00_000.jpg" mode="widthFix"></image>
+		<image class="backimg" src="../../static/index/20240321200323.png" mode="widthFix"></image>
 	</view>
 	<view>
-		<view>正面图片</view>
+		<view style="text-align: center;padding: 20rpx;font-weight: 600;"><label class="title">正面图片</label></view>
 		<view class="frontPic" :style="frontImageStyle">
 			<image :src="bodyImgUrl" mode="widthFix"></image>
 		</view>
 		<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
-				<view class="title">正面信息:</view>
+				<view class="title">正面信息（照片以0.5米宽度为参照物计算结果）:</view>
 				<view>
-					<view><label class="title">肩宽:</label>{{shoulderSpace}}m</view>
-					<view><label class="title">左耳朵到左肩:</label>{{frontLeftPart}}m</view>
-					<view><label class="title">右耳朵到右肩:</label>{{frontRightPart}}m</view>
-					<view><label class="title">脖子到左肩:</label>{{frontLeftNeckPart}}m</view>
-					<view><label class="title">脖子到右肩:</label>{{frontRightNeckPart}}m</view>
+					<view><label class="title">肩宽:</label>{{shoulderSpace}}{{unitDesc}}</view>
+					<view><label class="title">左耳朵到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view>
+					<view><label class="title">右耳朵到右肩:</label>{{frontRightPart}}{{unitDesc}}</view>
+					<!-- 					<view><label class="title">脖子中心到左肩:</label>{{frontLeftNeckPart}}{{unitDesc}}</view>
+					<view><label class="title">脖子中心到右肩:</label>{{frontRightNeckPart}}{{unitDesc}}</view> -->
 				</view>
 			</view>
 		</view>
@@ -25,32 +25,36 @@
 		</view>
 	</view>
 	<view>
-		<view>侧面图片</view>
+		<view style="text-align: center;padding: 20rpx;font-weight: 600;"><label class="title">侧面图片</label></view>
 		<view class="frontPic" :style="sideImageStyle">
 			<image :src="sideBodyImgUrl" mode="widthFix"></image>
 		</view>
 		<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
-				<view class="title">侧面信息:</view>
+				<view class="title">侧面信息（照片以0.5米宽度为参照物计算结果）:</view>
 				<view>
-					<view><label class="title">耳朵与眼睛之间:</label>{{sideEarEye}}m</view>
-					<view><label class="title">耳朵与鼻子之间:</label>{{rightPart}}m</view>
-					<view><label class="title">嘴巴与耳朵之间:</label>{{rightPart}}m</view>
-					<view><label class="title">脖子到右肩:</label>{{rightPart}}m</view>
-					<view><label class="title">脖子到左肩:</label>{{rightPart}}m</view>
-					<view><label class="title">左侧最凸点:</label>{{rightPart}}m</view>
-					<view><label class="title">右侧最凸点:</label>{{rightPart}}m</view>
+					<view><label class="title">后背最凸点与脖子中点之间:</label>{{sideNeckBack}}{{unitDesc}}</view>
+					<view><label class="title">后背最凸点与耳朵之间:</label>{{sideEarBack}}{{unitDesc}}</view>
+					<view><label class="title">后背最凸点与脖子最凹点之间:</label>{{sideLittleNeckBack}}{{unitDesc}}</view>
+					<view><label class="title">后背最凸点与后脑勺之间:</label>{{sideLittleBlockBack}}{{unitDesc}}</view>
 				</view>
 			</view>
 		</view>
 		<view class="btn-cnt" style="padding-bottom: 200rpx;">
 			<button type="primary" @click="startSideCamera">开始拍摄侧面照</button>
 		</view>
+		<view class="desc">
+			<image mode="widthFix" src="../../static/index/20240322180953.jpg"></image>
+		</view>
 	</view>
 </template>
 
 <script>
 	export default {
+		onShareAppMessage() {
+
+
+		},
 		data() {
 			return {
 				frontImageStyle: {
@@ -61,6 +65,10 @@
 					'--imgWidth': '100rpx',
 					'--imgHeight': '100rpx',
 				},
+				factor: 1,
+				unit: 100, // 100是cm
+				unitDesc: 'cm', // cm
+				toFixed: 2, // 精度
 				bodyImgUrl: '',
 				sideBodyImgUrl: '',
 				bodyImgWidth: 0,
@@ -80,37 +88,76 @@
 				sideEar: 0.1,
 				sideNose: 0.1,
 				sideMouth: 0.1,
+				sideBack: 0.1,
+				sideLower: 0.1, //最凹点
+				sideBlock: 0.1, // 后脑勺点位
 			}
 		},
 		computed: {
 			frontLeftPart() {
 				let space = Math.abs(this.frontLeftEarX - this.frontLeftShoulder);
-				space = space / this.bodyImgOriginWidth
-				space = space.toFixed(2)
+				space = space * this.unit / this.factor
+				space = space.toFixed(this.toFixed)
 				return space
 			},
 			frontRightPart() {
 				let space = Math.abs(this.frontRightEarX - this.frontRightShoulder);
-				space = space / this.bodyImgOriginWidth
-				space = space.toFixed(2)
+				space = space * this.unit / this.factor
+				space = space.toFixed(this.toFixed)
 				return space
 			},
 			frontLeftNeckPart() {
 				let space = Math.abs(this.frontNeck - this.frontRightShoulder);
-				space = space / this.bodyImgOriginWidth
-				space = space.toFixed(2)
+				space = space * this.unit / this.factor
+				space = space.toFixed(this.toFixed)
 				return space
 			},
 			frontRightNeckPart() {
 				let space = Math.abs(this.frontNeck - this.frontRightShoulder);
-				space = space / this.bodyImgOriginWidth
-				space = space.toFixed(2)
+				space = space * this.unit / this.factor
+				space = space.toFixed(this.toFixed)
 				return space
 			},
 			sideEarEye() {
 				let space = Math.abs(this.sideEar - this.sideEye);
-				space = space / this.bodyImgOriginWidth
-				space = space.toFixed(2)
+				space = space * this.unit / this.factor
+				space = space.toFixed(this.toFixed)
+				return space
+			},
+			sideEarNose() {
+				let space = Math.abs(this.sideEar - this.sideNose);
+				space = space * this.unit / this.factor
+				space = space.toFixed(this.toFixed)
+				return space
+			},
+			sideEarMouth() {
+				let space = Math.abs(this.sideEar - this.sideMouth);
+				space = space * this.unit / this.factor
+				space = space.toFixed(this.toFixed)
+				return space
+			},
+			sideEarBack() {
+				let space = Math.abs(this.sideEar - this.sideBack);
+				space = space * this.unit / this.factor
+				space = space.toFixed(this.toFixed)
+				return space
+			},
+			sideNeckBack() {
+				let space = Math.abs(this.sideNeck - this.sideBack);
+				space = space * this.unit / this.factor
+				space = space.toFixed(this.toFixed)
+				return space
+			},
+			sideLittleNeckBack() {
+				let space = Math.abs(this.sideLower - this.sideBack);
+				space = space * this.unit / this.factor
+				space = space.toFixed(this.toFixed)
+				return space
+			},
+			sideLittleBlockBack() {
+				let space = Math.abs(this.sideBack - this.sideBlock);
+				space = space * this.unit / this.factor
+				space = space.toFixed(this.toFixed)
 				return space
 			},
 			shoulderPart() {
@@ -140,6 +187,9 @@
 						const tempFilePaths = chooseImageRes.tempFilePaths;
 						console.log('tempFiles:', chooseImageRes.tempFiles);
 
+						uni.showLoading({
+							title: '检测中'
+						})
 						wx.getImageInfo({
 							src: tempFilePaths[0],
 							success: res => {
@@ -160,6 +210,7 @@
 										.bodyImgHeight) +
 									'px')
 
+								this.factor = width * 2 // 0.5米参参照物
 								this.bodyImgOriginWidth = width;
 								this.bodyImgOriginHeight = height;
 								this.detecting(tempFilePaths, false)
@@ -177,18 +228,25 @@
 						const tempFilePaths = chooseImageRes.tempFilePaths;
 						console.log('tempFiles:', chooseImageRes.tempFiles);
 
+						uni.showLoading({
+							title: '检测中'
+						})
 						wx.getImageInfo({
 							src: tempFilePaths[0],
 							success: res => {
 								const fixWidth = 300
-								const {
+								let {
 									width,
-									height
+									height,
+									orientation
 								} = res
 								console.log('getImageInfo res', res)
 								this.sideBodyImgUrl = tempFilePaths[0];
 								console.log('bodyImgUrl', this.bodyImgUrl);
-
+								if (orientation == 'right' || orientation == 'left') {
+									height = res.width
+									width = res.height
+								}
 								var bodyImgWidth = fixWidth;
 								var bodyImgHeight = (fixWidth / width) * height;
 								this.$set(this.sideImageStyle, '--imgWidth', bodyImgWidth +
@@ -196,6 +254,7 @@
 								this.$set(this.sideImageStyle, '--imgHeight', bodyImgHeight +
 									'px');
 
+								this.factor = width * 2 // 0.5米参参照物
 								this.bodyImgOriginWidth = width;
 								this.bodyImgOriginHeight = height;
 								this.detecting(tempFilePaths, true)
@@ -220,10 +279,11 @@
 						'user': 'test',
 					},
 					success: (uploadFileRes) => {
+						uni.hideLoading()
 						let obj = JSON.parse(uploadFileRes.data)
 						console.log('success', obj)
 						if (isSide) {
-							this.handleSideData(obj)
+							this.handleSideData(obj, base64, tempFilePaths)
 						} else {
 							this.handleFrontData(obj)
 						}
@@ -240,16 +300,156 @@
 					}
 				})
 			},
-			handleSideData(obj) {
+			handleSideData(obj, base64, tempFilePaths) {
 				let person = obj.person_info[0]
 				let body_parts = person.body_parts
-				this.sideEar = body_parts.left_ear.x > 0 ? body_parts.left_ear.x : body_parts.right_ear.x
+
+				this.sideEar = body_parts.left_ear.score > 0.5 ? body_parts.left_ear.x : body_parts.right_ear.x
 				this.sideNeck = body_parts.neck.x
-				this.sideEye = body_parts.left_eye.x > 0 ? body_parts.left_eye.x : body_parts.right_eye.x
+				this.sideEye = body_parts.left_eye.score > 0.5 ? body_parts.left_eye.x : body_parts.right_eye.x
 				this.sideNose = body_parts.nose.x;
-				this.sideMouth = body_parts.left_mouth_corner.x > 0 ? body_parts.left_mouth_corner.x : body_parts
+				this.sideMouth = body_parts.left_mouth_corner.x > 0.5 ? body_parts.left_mouth_corner.x : body_parts
 					.left_mouth_corner.x
-				// this.frontRightEarX = body_parts.right_ear.x
+				// 识别人物朝向，根据两个眼睛位置
+
+				let forward = 'left'
+				if (this.sideEar - this.sideEye > 0) {
+					forward = 'left'
+				} else {
+					forward = 'right'
+				}
+				// //如果检测到左眼
+				// if (body_parts.left_eye.score > 0.5) {
+				// 	// 如果检测到右眼
+				// 	if (body_parts.right_eye.score > 0.5) {
+				// 		if ((body_parts.left_eye.x - body_parts.right_eye.x) > 0) {
+				// 			forward = 'left'
+				// 		} else {
+				// 			forward = 'right'
+				// 		}
+				// 	} else {
+				// 		forward = 'left'
+				// 	}
+				// } else {
+				// 	if (body_parts.right_eye.score > 0.5) {
+				// 		forward = 'right'
+				// 	} else {
+				// 		forward = 'error 两只眼睛都没有检测到'
+				// 	}
+				// }
+				let top = body_parts.top_head.y;
+				let bottom = body_parts.neck.y;
+				let left = 0
+				let right = 0
+				if (forward == 'left') {
+					this.sideEar = body_parts.left_ear.x
+					this.sideEye = body_parts.left_eye.x
+					this.sideBack = person.location.left + person.location.width;
+					left = this.sideNeck
+					right = this.sideBack
+				} else if (forward == 'right') {
+					this.sideEar = body_parts.right_ear.x
+					this.sideEye = body_parts.right_eye.x
+					this.sideBack = person.location.left;
+					right = this.sideNeck
+					left = this.sideBack
+				}
+
+				// this.findSideInfo('d:/pyt/65fefb65-c5c0-49dd-88e0-522fd0bb6bb8.jpg', left, top, right, bottom, forward)
+				// return
+				// 上传图片
+				const uploadTask = uni.uploadFile({
+					url: 'http://192.168.2.99:7379/new_battle/zhPyImgUpload',
+					filePath: tempFilePaths[0],
+					name: 'file',
+					formData: {
+						'fileName': base64,
+						'rect': [left, top, right, bottom],
+						'face': forward
+					},
+					success: (uploadFileRes) => {
+						uni.hideLoading()
+						let obj = JSON.parse(uploadFileRes.data)
+						console.log('success', obj)
+						this.findSideInfo(obj.data, left, top, right, bottom, forward)
+						// if (isSide) {
+						// 	this.handleSideData(obj, base64)
+						// } else {
+						// 	this.handleFrontData(obj)
+						// }
+
+						// uni.showToast({
+						// 	title: '肩宽约:' + space + 'm',
+						// 	icon: 'none', //如果要纯文本，不要icon，将值设为'none'
+						// 	duration: 5000 //持续时间为 2秒
+						// })
+
+					},
+					fail: () => {
+						console.log('fail')
+					}
+				})
+			},
+			findSideInfo(imageurl, left, top, right, bottom, forward) {
+				uni.request({
+					url: 'http://192.168.2.99:7379/new_battle/zhPyExec',
+					header: {
+						'content-type': 'application/x-www-form-urlencoded'
+					},
+					data: {
+						'url': imageurl,
+						'rect': [left, top, right, bottom].join(','),
+						'face': forward
+					},
+					method: 'POST',
+					dataType: 'json',
+					success: (res) => {
+						console.log('success:', res)
+						let result = res.data
+						let point = result.data;
+						let points = point.split(',')
+						// 后脑勺为止
+						// let lower = [points[0], point[1]]
+						this.sideBlock = points[0]
+						// 最低点为止
+						this.sideLower = points[2]
+						// let block = [points[2], point[3]]
+						console.log('points:', points)
+					},
+					fail: (res) => {
+						console.log('fail:', res)
+					}
+				})
+				return
+				const uploadTask = uni.uploadFile({
+					url: 'http://192.168.2.99:7379/new_battle/zhPyExec',
+					filePath: '',
+					name: 'file',
+					formData: {
+						'rect': [left, top, right, bottom],
+						'face': forward
+					},
+					success: (uploadFileRes) => {
+						uni.hideLoading()
+						let obj = JSON.parse(uploadFileRes.data)
+						console.log('success', obj)
+						// if (isSide) {
+						// 	this.handleSideData(obj, base64)
+						// } else {
+						// 	this.handleFrontData(obj)
+						// }
+
+						// uni.showToast({
+						// 	title: '肩宽约:' + space + 'm',
+						// 	icon: 'none', //如果要纯文本，不要icon，将值设为'none'
+						// 	duration: 5000 //持续时间为 2秒
+						// })
+
+					},
+					fail: () => {
+						console.log('fail')
+					}
+				})
 			},
 			handleFrontData(obj) {
 				let person = obj.person_info[0]
@@ -265,8 +465,8 @@
 				this.frontNeck = body_parts.neck.x
 
 				let space = Math.abs(rightShoulder - leftShoulder);
-				space = space / this.bodyImgOriginWidth
-				space = space.toFixed(2)
+				space = space * this.unit / this.factor
+				space = space.toFixed(3)
 				this.shoulderSpace = space
 			},
 		}
@@ -286,6 +486,16 @@
 	}
 
 	.frontPic image {
+		width: 100%;
+		height: 100%;
+	}
+
+	.desc {
+		width: 100%;
+
+	}
+
+	.desc image {
 		width: 100%;
 		height: 100%;
 	}
