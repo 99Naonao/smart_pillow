@@ -1,6 +1,6 @@
 <template>
 	<view class="">
-		<image class="backimg" src="../../static/index/20240321200323.png" mode="widthFix"></image>
+		<image class="backimg" src="../../static/index/20240322180953.jpg" mode="widthFix"></image>
 	</view>
 	<view>
 		<view style="text-align: center;padding: 20rpx;font-weight: 600;"><label class="title">正面图片</label></view>
@@ -9,7 +9,7 @@
 		</view>
 		<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
-				<view class="title">正面信息（照片以0.5米宽度为参照物计算结果）:</view>
+				<view class="title">正面信息（照片以0.6米宽度为参照物计算结果）:</view>
 				<view>
 					<view><label class="title">肩宽:</label>{{shoulderSpace}}{{unitDesc}}</view>
 					<view><label class="title">左耳朵到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view>
@@ -31,7 +31,7 @@
 		</view>
 		<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
-				<view class="title">侧面信息（照片以0.5米宽度为参照物计算结果）:</view>
+				<view class="title">侧面信息（照片以0.6米宽度为参照物计算结果）:</view>
 				<view>
 					<view><label class="title">后背最凸点与脖子中点之间:</label>{{sideNeckBack}}{{unitDesc}}</view>
 					<view><label class="title">后背最凸点与耳朵之间:</label>{{sideEarBack}}{{unitDesc}}</view>
@@ -43,9 +43,9 @@
 		<view class="btn-cnt" style="padding-bottom: 200rpx;">
 			<button type="primary" @click="startSideCamera">开始拍摄侧面照</button>
 		</view>
-		<view class="desc">
+		<!-- 		<view class="desc">
 			<image mode="widthFix" src="../../static/index/20240322180953.jpg"></image>
-		</view>
+		</view> -->
 	</view>
 </template>
 
@@ -210,7 +210,7 @@
 										.bodyImgHeight) +
 									'px')
 
-								this.factor = width * 2 // 0.5米参参照物
+								this.factor = width * (1 / 0.6) // 1米参参照物
 								this.bodyImgOriginWidth = width;
 								this.bodyImgOriginHeight = height;
 								this.detecting(tempFilePaths, false)
@@ -254,7 +254,7 @@
 								this.$set(this.sideImageStyle, '--imgHeight', bodyImgHeight +
 									'px');
 
-								this.factor = width * 2 // 0.5米参参照物
+								this.factor = width * (1 / 0.6) // 0.6米参参照物
 								this.bodyImgOriginWidth = width;
 								this.bodyImgOriginHeight = height;
 								this.detecting(tempFilePaths, true)
@@ -282,6 +282,7 @@
 						uni.hideLoading()
 						let obj = JSON.parse(uploadFileRes.data)
 						console.log('success', obj)
+						// 如果是侧面图
 						if (isSide) {
 							this.handleSideData(obj, base64, tempFilePaths)
 						} else {
@@ -296,11 +297,16 @@
 
 					},
 					fail: () => {
+						uni.hideLoading()
 						console.log('fail')
 					}
 				})
 			},
+			// 处理侧面信息
 			handleSideData(obj, base64, tempFilePaths) {
+				uni.showLoading({
+					title: '处理中'
+				})
 				let person = obj.person_info[0]
 				let body_parts = person.body_parts
 
@@ -359,7 +365,7 @@
 				// return
 				// 上传图片
 				const uploadTask = uni.uploadFile({
-					url: 'http://192.168.2.99:7379/new_battle/zhPyImgUpload',
+					url: 'https://dev.ic1101.top/new_battle/zhPyImgUpload',
 					filePath: tempFilePaths[0],
 					name: 'file',
 					formData: {
@@ -371,6 +377,98 @@
 						uni.hideLoading()
 						let obj = JSON.parse(uploadFileRes.data)
 						console.log('success', obj)
+						this.findSideGrayImage(obj.data, left, top, right, bottom, forward)
+						// this.findSideInfo(obj.data, left, top, right, bottom, forward)
+						// if (isSide) {
+						// 	this.handleSideData(obj, base64)
+						// } else {
+						// 	this.handleFrontData(obj)
+						// }
+
+						// uni.showToast({
+						// 	title: '肩宽约:' + space + 'm',
+						// 	icon: 'none', //如果要纯文本，不要icon，将值设为'none'
+						// 	duration: 5000 //持续时间为 2秒
+						// })
+
+					},
+					fail: () => {
+						uni.hideLoading()
+						console.log('fail')
+					}
+				})
+			},
+			// 查找2值图
+			findSideGrayImage(imageurl, left, top, right, bottom, forward) {
+				uni.showLoading({
+					title: '计算中'
+				})
+				uni.request({
+					url: 'https://dev.ic1101.top/new_battle/zhBaiduBodySeg',
+					header: {
+						'content-type': 'application/x-www-form-urlencoded'
+					},
+					data: {
+						'url': imageurl,
+					},
+					method: 'POST',
+					dataType: 'json',
+					success: (res) => {
+						uni.hideLoading()
+						console.log('zhBaiduBodySeg success:', res)
+						let gray_url = res.data.data
+						this.findSideInfo(gray_url, left, top, right, bottom, forward)
+						// this.uploadGray2Python(grayBase64, left, top, right, bottom, forward)
+					},
+					fail: (res) => {
+						uni.hideLoading()
+						console.log('fail:', res)
+					}
+				})
+			},
+			// 上传2值base64到python服务器
+			uploadGray2Python(grayBase64, left, top, right, bottom, forward) {
+				// uni.request({
+				// 	url: 'https://dev.ic1101.top/new_battle/zhPyImgUpload',
+				// 	header: {
+				// 		'content-type': 'multipart/form-data'
+				// 	},
+				// 	data: {
+				// 		'fileName': grayBase64,
+				// 		'rect': [left, top, right, bottom],
+				// 		'face': forward
+				// 	},
+				// 	method: 'POST',
+				// 	success: (res) => {
+				// 		console.log('uploadGray2Python success:', res)
+				// 		let obj = JSON.parse(res.data)
+				// 		// this.findSideGrayImage(obj.data)
+				// 		this.findSideInfo(obj.data, left, top, right, bottom, forward)
+				// 		// let grayBase64 = res.data.data
+				// 		// this.uploadGray2Python(grayBase64, left, top, right, bottom, forward)
+				// 	},
+				// 	fail: (res) => {
+				// 		console.log('fail:', res)
+				// 	}
+				// })
+				// return
+				const uploadTask = uni.uploadFile({
+					url: 'https://dev.ic1101.top/new_battle/zhPyImgUpload',
+					files: [{
+						file: grayBase64,
+						name: 'test',
+						uri: '123.jpg'
+					}],
+					name: 'file',
+					formData: {
+						'rect': [left, top, right, bottom],
+						'face': forward
+					},
+					success: (uploadFileRes) => {
+						uni.hideLoading()
+						let obj = JSON.parse(uploadFileRes.data)
+						console.log('uploadGray2Python success', obj)
+						// this.findSideGrayImage(obj.data)
 						this.findSideInfo(obj.data, left, top, right, bottom, forward)
 						// if (isSide) {
 						// 	this.handleSideData(obj, base64)
@@ -390,9 +488,13 @@
 					}
 				})
 			},
+			// 去python查找侧面图片的轮廓信息
 			findSideInfo(imageurl, left, top, right, bottom, forward) {
+				uni.showLoading({
+					title: '加载中'
+				})
 				uni.request({
-					url: 'http://192.168.2.99:7379/new_battle/zhPyExec',
+					url: 'https://dev.ic1101.top/new_battle/zhPyExec',
 					header: {
 						'content-type': 'application/x-www-form-urlencoded'
 					},
@@ -404,6 +506,7 @@
 					method: 'POST',
 					dataType: 'json',
 					success: (res) => {
+						uni.hideLoading()
 						console.log('success:', res)
 						let result = res.data
 						let point = result.data;
@@ -417,12 +520,13 @@
 						console.log('points:', points)
 					},
 					fail: (res) => {
+						uni.hideLoading()
 						console.log('fail:', res)
 					}
 				})
 				return
 				const uploadTask = uni.uploadFile({
-					url: 'http://192.168.2.99:7379/new_battle/zhPyExec',
+					url: 'https://dev.ic1101.top/new_battle/zhPyExec',
 					filePath: '',
 					name: 'file',
 					formData: {
@@ -451,6 +555,7 @@
 					}
 				})
 			},
+			// 处理正面数据信息
 			handleFrontData(obj) {
 				let person = obj.person_info[0]
 				let body_parts = person.body_parts
