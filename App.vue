@@ -20,6 +20,9 @@
 </script>
 
 <style>
+	@import './common/uni.css';
+
+
 	/*每个页面公共css */
 	.uni-tabbar .uni-tabbar__icon {
 		width: 40px !important;

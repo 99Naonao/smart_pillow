@@ -6,23 +6,27 @@
 		<view style="text-align: center;padding: 20rpx;font-weight: 600;"><label class="title">正面图片</label></view>
 		<view class="frontPic" :style="frontImageStyle">
 			<image :src="bodyImgUrl" mode="widthFix"></image>
-			<view class="info-part" :style="frontImageStyle">
+			<view class="info-part" :style="frontImageStyle" style="display: none;">
 				<view class="wrap shoulderWrap" :style="shoulderTipsStyle">
 					<view>{{shoulderSpace}}{{unitDesc}}</view>
 				</view>
-				<view class="marker" v-for="(item,key) in markList">
-					{{key}}: {{item.tips}}
+				<view class="wrap shoulderEarWrap" :style="shoulderEarTipsStyle">
+					<view>{{frontRightPart}}{{unitDesc}}</view>
 				</view>
 				<!-- <view wx:for="{{markList}}" class="marker">123</view> -->
 			</view>
 		</view>
 		<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
-				<view class="title">正面信息（照片以0.6米宽度为参照物计算结果）:</view>
+				<view class="title" style="text-align: left;padding: 20rpx;font-weight: 600;">
+					<p>正面信息（照片以0.6米宽度为参照物计算结果）:</p>
+				</view>
+				<block></block>
 				<view>
+					<view class="impress"><label class="title">右耳朵到右肩:</label><label
+							class="sizeImpress">{{frontRightPart}}{{unitDesc}}</label></view>
 					<view><label class="title">肩宽:</label>{{shoulderSpace}}{{unitDesc}}</view>
 					<view><label class="title">左耳朵到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view>
-					<view><label class="title">右耳朵到右肩:</label>{{frontRightPart}}{{unitDesc}}</view>
 					<!-- 					<view><label class="title">脖子中心到左肩:</label>{{frontLeftNeckPart}}{{unitDesc}}</view>
 					<view><label class="title">脖子中心到右肩:</label>{{frontRightNeckPart}}{{unitDesc}}</view> -->
 				</view>
@@ -40,12 +44,17 @@
 		</view>
 		<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
-				<view class="title">侧面信息（照片以0.6米宽度为参照物计算结果）:</view>
+				<view class="title" style="text-align: left;padding: 20rpx;font-weight: 600;">侧面信息（照片以0.6米宽度为参照物计算结果）:
+				</view>
 				<view>
+					<view class="impress"><label class="title">后背最凸点与脖子最凹点之间:</label><label
+							class="sizeImpress">{{sideLittleNeckBack}}{{unitDesc}}</label>
+					</view>
+					<view class="impress"><label class="title">后背最凸点与后脑勺之间:</label><label
+							class="sizeImpress">{{sideLittleBlockBack}}{{unitDesc}}</label>
+					</view>
 					<view><label class="title">后背最凸点与脖子中点之间:</label>{{sideNeckBack}}{{unitDesc}}</view>
 					<view><label class="title">后背最凸点与耳朵之间:</label>{{sideEarBack}}{{unitDesc}}</view>
-					<view><label class="title">后背最凸点与脖子最凹点之间:</label>{{sideLittleNeckBack}}{{unitDesc}}</view>
-					<view><label class="title">后背最凸点与后脑勺之间:</label>{{sideLittleBlockBack}}{{unitDesc}}</view>
 				</view>
 			</view>
 		</view>
@@ -71,6 +80,12 @@
 					'--imgHeight': '100rpx',
 				},
 				shoulderTipsStyle: {
+					'--left': '10rpx',
+					'--bottom': '10rpx',
+					'--imgWidth': '100rpx',
+					'--marginleft': '-50rpx'
+				},
+				shoulderEarTipsStyle: {
 					'--left': '10rpx',
 					'--bottom': '10rpx',
 					'--imgWidth': '100rpx',
@@ -629,6 +644,18 @@
 		display: block;
 	}
 
+	.title {
+		line-height: 45rpx;
+	}
+
+	.impress {
+		color: #ff0000;
+	}
+
+	.sizeImpress {
+		font-weight: bold;
+	}
+
 	.frontPic {
 		width: var(--imgWidth);
 		height: var(--imgHeight);
@@ -637,6 +664,13 @@
 	}
 
 	.shoulderWrap {
+		left: var(--left);
+		width: var(--imgWidth);
+		bottom: var(--bottom);
+		position: absolute;
+	}
+
+	.shoulderEarWrap {
 		left: var(--left);
 		width: var(--imgWidth);
 		bottom: var(--bottom);
