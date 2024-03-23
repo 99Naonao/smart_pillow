@@ -6,6 +6,15 @@
 		<view style="text-align: center;padding: 20rpx;font-weight: 600;"><label class="title">正面图片</label></view>
 		<view class="frontPic" :style="frontImageStyle">
 			<image :src="bodyImgUrl" mode="widthFix"></image>
+			<view class="info-part" :style="frontImageStyle">
+				<view class="wrap shoulderWrap" :style="shoulderTipsStyle">
+					<view>{{shoulderSpace}}{{unitDesc}}</view>
+				</view>
+				<view class="marker" v-for="(item,key) in markList">
+					{{key}}: {{item.tips}}
+				</view>
+				<!-- <view wx:for="{{markList}}" class="marker">123</view> -->
+			</view>
 		</view>
 		<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
@@ -61,6 +70,12 @@
 					'--imgWidth': '100rpx',
 					'--imgHeight': '100rpx',
 				},
+				shoulderTipsStyle: {
+					'--left': '10rpx',
+					'--bottom': '10rpx',
+					'--imgWidth': '100rpx',
+					'--marginleft': '-50rpx'
+				},
 				sideImageStyle: {
 					'--imgWidth': '100rpx',
 					'--imgHeight': '100rpx',
@@ -91,6 +106,7 @@
 				sideBack: 0.1,
 				sideLower: 0.1, //最凹点
 				sideBlock: 0.1, // 后脑勺点位
+				markList: [], // 标注点
 			}
 		},
 		computed: {
@@ -164,7 +180,26 @@
 				return 3
 			}
 		},
+		onShow() {
+			this.createMaker()
+		},
 		methods: {
+			createMaker() {
+				//
+				var x = 100
+				var y = 200
+				// this.markList.push({
+				// 	x: 100,
+				// 	y: 200,
+				// 	tips: '12cm'
+				// })
+				// this.markList.push({
+				// 	x: 200,
+				// 	y: 200,
+				// 	tips: '12cm'
+				// })
+				console.log(this.markList)
+			},
 			base64({
 				url
 			}) {
@@ -209,6 +244,7 @@
 								this.$set(this.frontImageStyle, '--imgHeight', (this
 										.bodyImgHeight) +
 									'px')
+
 
 								this.factor = width * (1 / 0.6) // 1米参参照物
 								this.bodyImgOriginWidth = width;
@@ -569,10 +605,19 @@
 				this.frontRightEarX = body_parts.right_ear.x
 				this.frontNeck = body_parts.neck.x
 
+
 				let space = Math.abs(rightShoulder - leftShoulder);
 				space = space * this.unit / this.factor
 				space = space.toFixed(3)
 				this.shoulderSpace = space
+				this.$set(this.shoulderTipsStyle, '--left', (300 * rightShoulder / this.bodyImgOriginWidth) +
+					'px')
+				this.$set(this.shoulderTipsStyle, '--imgWidth', (300 * Math.abs(rightShoulder - leftShoulder) / this
+						.bodyImgOriginWidth) +
+					'px')
+				this.$set(this.shoulderTipsStyle, '--bottom', (300 * Math.abs(right_shoulder.y - this
+						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
+					'px')
 			},
 		}
 	}
@@ -588,6 +633,14 @@
 		width: var(--imgWidth);
 		height: var(--imgHeight);
 		margin: 0 auto;
+		position: relative;
+	}
+
+	.shoulderWrap {
+		left: var(--left);
+		width: var(--imgWidth);
+		bottom: var(--bottom);
+		position: absolute;
 	}
 
 	.frontPic image {
@@ -603,5 +656,96 @@
 	.desc image {
 		width: 100%;
 		height: 100%;
+	}
+
+	.info-part {
+		position: relative;
+		width: 100%;
+	}
+
+	.info-part .marker {
+		position: absolute;
+		width: 20px;
+		height: 20px;
+		background: #f00;
+	}
+
+
+	/* 垂线样式 */
+	.wrap-h {
+		display: flex;
+		position: absolute;
+		justify-content: center;
+		align-items: center;
+		top: 12px;
+		left: 23px;
+		height: 154px;
+		border-top: 1px solid #fff;
+		border-bottom: 1px solid #fff;
+		text-align: center;
+		color: #fff;
+	}
+
+	.wrap-h view {
+		margin: 0 auto;
+		width: 14px;
+		font-size: 14px;
+		line-height: 14px;
+		word-break: break-word;
+	}
+
+	.wrap-h view::before,
+	.wrap-h view::after {
+		position: absolute;
+		left: 6px;
+		width: 1px;
+		height: 18%;
+		content: "";
+		background: #ddd;
+	}
+
+	/*调整背景垂线的上下距离*/
+	.wrap-h view::before {
+		top: 0px;
+	}
+
+	.wrap-h view::after {
+		bottom: 0px;
+	}
+
+	/* 横线样式 */
+	.wrap {
+		position: absolute;
+		// bottom: 6px;
+		text-align: center;
+	}
+
+	.wrap view {
+		height: 34px;
+		border-left: 1px solid #ff0000;
+		border-right: 1px solid #ff0000;
+		font-size: 14px;
+		line-height: 34px;
+		color: #ff0000;
+	}
+
+	/*CSS伪元素用法*/
+	.wrap view::after,
+	.wrap view::before {
+		position: absolute;
+		top: 50%;
+		height: 1px;
+		width: 35%;
+		content: "";
+		background: #ff0000;
+	}
+
+	/*调整背景横线的左右距离*/
+	.wrap view::before {
+		left: 0;
+	}
+
+	.wrap view::after {
+		right: 0;
 	}
 </style>
