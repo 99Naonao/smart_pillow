@@ -6,12 +6,26 @@
 		<view style="text-align: center;padding: 20rpx;font-weight: 600;"><label class="title">正面图片</label></view>
 		<view class="frontPic" :style="frontImageStyle">
 			<image :src="bodyImgUrl" mode="widthFix"></image>
-			<view class="info-part" :style="frontImageStyle" style="display: none;">
-				<view class="wrap shoulderWrap" :style="shoulderTipsStyle">
-					<view>{{shoulderSpace}}{{unitDesc}}</view>
+			<view class="info-part" :style="frontImageStyle" v-if="bodyImgUrl!=''">
+				<view class="wrap shoulderLeftWrap" :style="shoulderLeftWrapStyle">
+					<view class="circle"></view>
+					<view class="tips">右肩</view>
+					<!-- <view>{{shoulderSpace}}{{unitDesc}}</view> -->
 				</view>
-				<view class="wrap shoulderEarWrap" :style="shoulderEarTipsStyle">
-					<view>{{frontRightPart}}{{unitDesc}}</view>
+				<view class="wrap shoulderRightWrap" :style="shoulderRightWrapStyle">
+					<view class="circle"></view>
+					<view class="tips">左肩</view>
+					<!-- <view>{{shoulderSpace}}{{unitDesc}}</view> -->
+				</view>
+				<view class="wrap shoulderLeftEarWrap" :style="shoulderLeftEarWrapStyle">
+					<view class="circle"></view>
+					<view class="tips">左耳</view>
+					<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+				</view>
+				<view class="wrap shoulderRightEarWrap" :style="shoulderRightEarWrapStyle">
+					<view class="circle"></view>
+					<view class="tips tips-left">右耳</view>
+					<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
 				</view>
 				<!-- <view wx:for="{{markList}}" class="marker">123</view> -->
 			</view>
@@ -41,20 +55,34 @@
 		<view style="text-align: center;padding: 20rpx;font-weight: 600;"><label class="title">侧面图片</label></view>
 		<view class="frontPic" :style="sideImageStyle">
 			<image :src="sideBodyImgUrl" mode="widthFix"></image>
+			<view class="wrap headPointWrap" :style="headPointWrapStyle" v-if="sideBodyImgUrl!=''">
+				<view class="circle"></view>
+				<view class="tips" :class="sideForward=='left'? 'tips-head-right':'tips-head-left'">后脑勺</view>
+				<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+			</view>
+			<view class="wrap neckPointWrap" :style="neckPointWrapStyle" v-if="sideBodyImgUrl!=''">
+				<view class="circle"></view>
+				<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">颈部凹点</view>
+				<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+			</view>
+			<view class="wrap backPointWrap" :style="backPointWrapStyle" v-if="sideBodyImgUrl!=''">
+				<view class="circle"></view>
+				<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">后背凸点</view>
+			</view>
 		</view>
 		<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
 				<view class="title" style="text-align: left;padding: 20rpx;font-weight: 600;">侧面信息（照片以0.6米宽度为参照物计算结果）:
 				</view>
 				<view>
-					<view class="impress"><label class="title">后背最凸点与脖子最凹点之间:</label><label
+					<view class="impress"><label class="title">后背凸点与颈部凹点之间:</label><label
 							class="sizeImpress">{{sideLittleNeckBack}}{{unitDesc}}</label>
 					</view>
-					<view class="impress"><label class="title">后背最凸点与后脑勺之间:</label><label
+					<view class="impress"><label class="title">后背凸点与后脑勺之间:</label><label
 							class="sizeImpress">{{sideLittleBlockBack}}{{unitDesc}}</label>
 					</view>
-					<view><label class="title">后背最凸点与脖子中点之间:</label>{{sideNeckBack}}{{unitDesc}}</view>
-					<view><label class="title">后背最凸点与耳朵之间:</label>{{sideEarBack}}{{unitDesc}}</view>
+					<view><label class="title">后背凸点与脖子中点之间:</label>{{sideNeckBack}}{{unitDesc}}</view>
+					<view><label class="title">后背凸点与耳朵之间:</label>{{sideEarBack}}{{unitDesc}}</view>
 				</view>
 			</view>
 		</view>
@@ -78,6 +106,34 @@
 				frontImageStyle: {
 					'--imgWidth': '100rpx',
 					'--imgHeight': '100rpx',
+				},
+				shoulderLeftWrapStyle: {
+					'--left': '10rpx',
+					'--bottom': '10rpx',
+				},
+				shoulderRightWrapStyle: {
+					'--left': '10rpx',
+					'--bottom': '10rpx',
+				},
+				shoulderLeftEarWrapStyle: {
+					'--left': '10rpx',
+					'--bottom': '10rpx',
+				},
+				shoulderRightEarWrapStyle: {
+					'--left': '10rpx',
+					'--bottom': '10rpx',
+				},
+				headPointWrapStyle: {
+					'--left': '10rpx',
+					'--bottom': '10rpx',
+				},
+				neckPointWrapStyle: {
+					'--left': '10rpx',
+					'--bottom': '10rpx',
+				},
+				backPointWrapStyle: {
+					'--left': '10rpx',
+					'--bottom': '10rpx',
 				},
 				shoulderTipsStyle: {
 					'--left': '10rpx',
@@ -121,6 +177,7 @@
 				sideBack: 0.1,
 				sideLower: 0.1, //最凹点
 				sideBlock: 0.1, // 后脑勺点位
+				sideForward: 'left', // 上传的侧面图朝向
 				markList: [], // 标注点
 			}
 		},
@@ -412,6 +469,8 @@
 					left = this.sideBack
 				}
 
+				this.sideForward = forward
+
 				// this.findSideInfo('d:/pyt/65fefb65-c5c0-49dd-88e0-522fd0bb6bb8.jpg', left, top, right, bottom, forward)
 				// return
 				// 上传图片
@@ -567,6 +626,34 @@
 						this.sideBlock = points[0]
 						// 最低点为止
 						this.sideLower = points[2]
+
+
+						// 后脑勺
+						this.$set(this.headPointWrapStyle, '--left', (300 * points[0] / this
+								.bodyImgOriginWidth) +
+							'px')
+						this.$set(this.headPointWrapStyle, '--bottom', (300 * Math.abs(points[1] -
+								this
+								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
+							'px')
+						// 脖颈最低
+						this.$set(this.neckPointWrapStyle, '--left', (300 * points[2] / this
+								.bodyImgOriginWidth) +
+							'px')
+						this.$set(this.neckPointWrapStyle, '--bottom', (300 * Math.abs(points[3] -
+								this
+								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
+							'px')
+
+						// 后背坐标
+						this.$set(this.backPointWrapStyle, '--left', (300 * points[4] / this
+								.bodyImgOriginWidth) +
+							'px')
+						this.$set(this.backPointWrapStyle, '--bottom', (300 * Math.abs(points[5] -
+								this
+								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
+							'px')
+
 						// let block = [points[2], point[3]]
 						console.log('points:', points)
 					},
@@ -623,16 +710,43 @@
 
 				let space = Math.abs(rightShoulder - leftShoulder);
 				space = space * this.unit / this.factor
+				space = space + 1
 				space = space.toFixed(3)
-				this.shoulderSpace = space
-				this.$set(this.shoulderTipsStyle, '--left', (300 * rightShoulder / this.bodyImgOriginWidth) +
+				this.shoulderSpace = space + 1
+				// console.log('this.shoulderSpace:', this.shoulderSpace, space, 1, space + 1)
+				// 左肩
+				this.$set(this.shoulderLeftWrapStyle, '--left', (300 * rightShoulder / this.bodyImgOriginWidth) +
 					'px')
-				this.$set(this.shoulderTipsStyle, '--imgWidth', (300 * Math.abs(rightShoulder - leftShoulder) / this
-						.bodyImgOriginWidth) +
-					'px')
-				this.$set(this.shoulderTipsStyle, '--bottom', (300 * Math.abs(right_shoulder.y - this
+				this.$set(this.shoulderLeftWrapStyle, '--bottom', (300 * Math.abs(right_shoulder.y - this
 						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 					'px')
+				// 右肩
+				this.$set(this.shoulderRightWrapStyle, '--left', (300 * leftShoulder / this.bodyImgOriginWidth) +
+					'px')
+				this.$set(this.shoulderRightWrapStyle, '--bottom', (300 * Math.abs(left_shoulder.y - this
+						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
+					'px')
+				// 左耳
+				this.$set(this.shoulderLeftEarWrapStyle, '--left', (300 * this.frontLeftEarX / this.bodyImgOriginWidth) +
+					'px')
+				this.$set(this.shoulderLeftEarWrapStyle, '--bottom', (300 * Math.abs(body_parts.left_ear.y - this
+						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
+					'px')
+				// 右耳
+				this.$set(this.shoulderRightEarWrapStyle, '--left', (300 * this.frontRightEarX / this.bodyImgOriginWidth) +
+					'px')
+				this.$set(this.shoulderRightEarWrapStyle, '--bottom', (300 * Math.abs(body_parts.right_ear.y - this
+						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
+					'px')
+
+				// this.$set(this.shoulderTipsStyle, '--left', (300 * rightShoulder / this.bodyImgOriginWidth) +
+				// 	'px')
+				// this.$set(this.shoulderTipsStyle, '--imgWidth', (300 * Math.abs(rightShoulder - leftShoulder) / this
+				// 		.bodyImgOriginWidth) +
+				// 	'px')
+				// this.$set(this.shoulderTipsStyle, '--bottom', (300 * Math.abs(right_shoulder.y - this
+				// 		.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
+				// 	'px')
 			},
 		}
 	}
@@ -670,9 +784,51 @@
 		position: absolute;
 	}
 
+	.shoulderLeftWrap {
+		left: var(--left);
+		bottom: var(--bottom);
+		position: absolute;
+	}
+
+	.shoulderRightWrap {
+		left: var(--left);
+		bottom: var(--bottom);
+		position: absolute;
+	}
+
+	.shoulderLeftEarWrap {
+		left: var(--left);
+		bottom: var(--bottom);
+		position: absolute;
+	}
+
+	.shoulderRightEarWrap {
+		left: var(--left);
+		bottom: var(--bottom);
+		position: absolute;
+	}
+
 	.shoulderEarWrap {
 		left: var(--left);
 		width: var(--imgWidth);
+		bottom: var(--bottom);
+		position: absolute;
+	}
+
+	.headPointWrap {
+		left: var(--left);
+		bottom: var(--bottom);
+		position: absolute;
+	}
+
+	.neckPointWrap {
+		left: var(--left);
+		bottom: var(--bottom);
+		position: absolute;
+	}
+
+	.backPointWrap {
+		left: var(--left);
 		bottom: var(--bottom);
 		position: absolute;
 	}
@@ -754,32 +910,43 @@
 		text-align: center;
 	}
 
-	.wrap view {
-		height: 34px;
-		border-left: 1px solid #ff0000;
-		border-right: 1px solid #ff0000;
-		font-size: 14px;
-		line-height: 34px;
-		color: #ff0000;
+
+	.circle {
+		width: 16rpx;
+		height: 16rpx;
+		color: red;
+		margin-left: -8rpx;
+		margin-top: -8rpx;
+		background-color: red;
+		border-radius: 50%;
 	}
 
-	/*CSS伪元素用法*/
-	.wrap view::after,
-	.wrap view::before {
+	.tips {
+		text-align: left;
+		width: 80px;
+		margin-left: 10px;
+		margin-top: -15px;
 		position: absolute;
-		top: 50%;
-		height: 1px;
-		width: 35%;
-		content: "";
-		background: #ff0000;
 	}
 
-	/*调整背景横线的左右距离*/
-	.wrap view::before {
-		left: 0;
+	.tips-left {
+		margin-left: -50px;
+		margin-top: -15px;
 	}
 
-	.wrap view::after {
-		right: 0;
+	.tips-neck-left {
+		margin-left: -70px;
+	}
+
+	.tips-neck-right {
+		margin-left: 15px;
+	}
+
+	.tips-head-left {
+		margin-left: -55px;
+	}
+
+	.tips-head-right {
+		margin-left: 15px;
 	}
 </style>
