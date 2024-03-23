@@ -1,9 +1,11 @@
 {
   "pages": [
+    "pages/shoot/shoot",
     "pages/login/login",
     "pages/help/help",
     "pages/product/product",
     "pages/mine/mine",
+    "pages/camera/camera",
     "pages/index/index"
   ],
   "window": {
