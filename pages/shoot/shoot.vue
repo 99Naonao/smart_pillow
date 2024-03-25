@@ -33,7 +33,7 @@
 		<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
 				<view class="title" style="text-align: left;padding: 20rpx;font-weight: 600;">
-					<p>正面信息（照片以0.6米宽度为参照物计算结果）:</p>
+					<p>正面信息（照片以0.8米宽度为参照物计算结果）:</p>
 				</view>
 				<block></block>
 				<view>
@@ -72,7 +72,7 @@
 		</view>
 		<view class="uni-common-mt">
 			<view class="uni-form-item uni-column">
-				<view class="title" style="text-align: left;padding: 20rpx;font-weight: 600;">侧面信息（照片以0.6米宽度为参照物计算结果）:
+				<view class="title" style="text-align: left;padding: 20rpx;font-weight: 600;">侧面信息（照片以0.8米宽度为参照物计算结果）:
 				</view>
 				<view>
 					<view class="impress"><label class="title">后背凸点与颈部凹点之间:</label><label
@@ -318,7 +318,7 @@
 									'px')
 
 
-								this.factor = width * (1 / 0.6) // 1米参参照物
+								this.factor = width * (1 / 0.8) // 1米参参照物
 								this.bodyImgOriginWidth = width;
 								this.bodyImgOriginHeight = height;
 								this.detecting(tempFilePaths, false)
@@ -362,7 +362,7 @@
 								this.$set(this.sideImageStyle, '--imgHeight', bodyImgHeight +
 									'px');
 
-								this.factor = width * (1 / 0.6) // 0.6米参参照物
+								this.factor = width * (1 / 0.8) // 参参照物宽度
 								this.bodyImgOriginWidth = width;
 								this.bodyImgOriginHeight = height;
 								this.detecting(tempFilePaths, true)
