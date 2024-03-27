@@ -15,7 +15,7 @@
 		<view class="">
 			<view v-for="(item,index) in deviceIdList" :key="index">
 				{{item.name}}
-				<button @click="connectSleepHandler(item)">连接</button>
+				<button @click="connectSleepHandler(item)">{{item.deviceId == connectDeviceId ?'已连接':'连接'}}</button>
 			</view>
 		</view>
 		<view class="connectBtn" @click="connectHandler">
@@ -59,8 +59,31 @@
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
 			uni.onBLECharacteristicValueChange((res) => {
 				console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
-				console.log('接收到数据', this.ab2hex(res.value))
-				this.write2tooth(this.deviceId, this.serviceId, this.characteristicId)
+				let arrayBuffer = new Uint8Array(res.value);
+				console.log('接收到数据', this.ab2hex(res.value), arrayBuffer.length)
+				// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
+				if (arrayBuffer.length == 4) {
+					let receive16 = this.ab2hex(res.value);
+					let last = '0x' + receive16
+					let total = 0
+					Array.prototype.map.call(
+						arrayBuffer,
+						function(bit) {
+							total += Number(bit.toString(10))
+							return ('00' + bit.toString(16)).slice(-2)
+						}
+					)
+					let shake1 = this.hand1Shake(Number(
+						total), arrayBuffer)
+					console.log("total:", total)
+					this.write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
+					console.log('第一次握手', this.ab2hex(shake1))
+				} else if (arrayBuffer.length == 2) {
+					let receive16 = this.ab2hex(res.value);
+					if (receive16 == '0x55') {
+						console.log('接收到数据', this.ab2hex(res.value))
+					}
+				}
 			})
 		},
 		onHide: () => {
@@ -150,6 +173,7 @@
 				bodyImgOriginWidth: 0,
 				bodyImgOriginHeight: 0,
 				deviceId: '', // 设备蓝牙id
+				connectDeviceId: '', // 链接上的蓝牙设备id
 				serviceId: '', // 通知uuid
 				writeServicweId: '', //写uuid
 				readServicweId: '', //通知uuid
@@ -348,15 +372,8 @@
 
 
 			},
-			write2tooth(deviceId, serviceId, characteristicId) {
+			write2tooth(deviceId, serviceId, characteristicId, buffer) {
 				// 向蓝牙设备发送一个0x00的16进制数据
-				const buffer = new ArrayBuffer(8)
-				const dataView = new DataView(buffer)
-				dataView.setUint8(0, 0)
-				dataView.setUint8(1, 255)
-				dataView.setUint8(2, 255)
-				dataView.setUint8(5, 0)
-				dataView.setUint8(6, 0)
 				uni.writeBLECharacteristicValue({
 					// 这里的 deviceId 需要在 getBluetoothDevices 或 onBluetoothDeviceFound 接口中获取
 					deviceId,
@@ -371,7 +388,22 @@
 					}
 				})
 			},
+			// 生成第一步握手数据
+			hand1Shake(checkNum, arrayUnit8Buffer_) {
+				// 向蓝牙设备发送一个0x00的2进制数据
 
+				const buffer = new ArrayBuffer(8)
+				const dataView = new DataView(buffer)
+				dataView.setUint8(0, 0)
+				dataView.setUint8(1, checkNum)
+				dataView.setUint8(2, arrayUnit8Buffer_[0])
+				dataView.setUint8(3, arrayUnit8Buffer_[1])
+				dataView.setUint8(4, arrayUnit8Buffer_[2])
+				dataView.setUint8(5, arrayUnit8Buffer_[3])
+				dataView.setUint8(6, 0)
+				dataView.setUint8(7, 0)
+				return buffer
+			},
 			connectHandler() {
 				let that = this;
 				// 监听设备变化
@@ -618,6 +650,7 @@
 	.main {
 		width: 100%;
 		height: 100%;
+		margin-bottom: 100rpx;
 	}
 
 	.logo {
