@@ -75,13 +75,39 @@
 					)
 					let shake1 = this.hand1Shake(Number(
 						total), arrayBuffer)
+
+
+					// let dataView = new DataView(shake1)
+					// let u1 = dataView.getUint8(0)
+					// let u2 = dataView.getUint8(1)
+					// let u3 = dataView.getUint8(2)
+					// let u4 = dataView.getUint8(3)
+					// let u5 = dataView.getUint8(4)
+					// let u6 = dataView.getUint8(5)
+					// let u7 = dataView.getUint8(6)
+					// let u8 = dataView.getUint8(7)
+					// let flow = u1.toString(2) + u2.toString(2) + u3.toString(2) + u4.toString(2) + u5.toString(2) +
+					// 	u6.toString(2) + u7.toString(2) + u8.toString(2)
+
+					// console.log('flowflowflow1:', u1.toString(2))
+					// console.log('flowflowflow2:', u2.toString(2))
+					// console.log('flowflowflow3:', u3.toString(2))
+					// console.log('flowflowflow4:', u4.toString(2))
+					// console.log('flowflowflow5:', u5.toString(2))
+					// console.log('flowflowflow6:', u6.toString(2))
+					// console.log('flowflowflow7:', u7.toString(2))
+					// console.log('flowflowflow8:', u8.toString(2))
 					console.log("total:", total)
 					this.write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
 					console.log('第一次握手', this.ab2hex(shake1))
 				} else if (arrayBuffer.length == 2) {
 					let receive16 = this.ab2hex(res.value);
-					if (receive16 == '0x55') {
-						console.log('接收到数据', this.ab2hex(res.value))
+					let mark = receive16.slice(2, 4)
+					let len = receive16.slice(0, 2)
+					console.log('接收到回复数据123', mark, len)
+					if (mark == '55') {
+						console.log('接收到回复数据', this.ab2hex(res.value))
+						console.log('校验长度', parseInt('0x' + len))
 					}
 				}
 			})
@@ -181,7 +207,7 @@
 				receiveInfo: '',
 				deviceIdList: [], //
 				searching: false, // 搜索中
-				characteristicId: '6E400002-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
+				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 			}
 		},
 		methods: {
@@ -383,8 +409,9 @@
 					characteristicId,
 					// 这里的value是ArrayBuffer类型
 					value: buffer,
+					writeType: 'write',
 					success(res) {
-						console.log('writeBLECharacteristicValue success', res.errMsg)
+						console.log('writeBLECharacteristicValue success', res)
 					}
 				})
 			},
@@ -392,6 +419,7 @@
 			hand1Shake(checkNum, arrayUnit8Buffer_) {
 				// 向蓝牙设备发送一个0x00的2进制数据
 
+				let littleEdition = true
 				const buffer = new ArrayBuffer(8)
 				const dataView = new DataView(buffer)
 				dataView.setUint8(0, 0)
@@ -402,6 +430,15 @@
 				dataView.setUint8(5, arrayUnit8Buffer_[3])
 				dataView.setUint8(6, 0)
 				dataView.setUint8(7, 0)
+
+				// dataView.setUint8(7, 0)
+				// dataView.setUint8(6, checkNum)
+				// dataView.setUint8(5, arrayUnit8Buffer_[3])
+				// dataView.setUint8(4, arrayUnit8Buffer_[2])
+				// dataView.setUint8(3, arrayUnit8Buffer_[1])
+				// dataView.setUint8(2, arrayUnit8Buffer_[0])
+				// dataView.setUint8(1, 0)
+				// dataView.setUint8(0, 0)
 				return buffer
 			},
 			connectHandler() {
