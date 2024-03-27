@@ -12,6 +12,12 @@
 		<view class="logo">
 			<image src="../../static/index/SY_00_logo.png" mode="aspectFit"></image>
 		</view>
+		<view class="">
+			<view v-for="(item,index) in deviceIdList" :key="index">
+				{{item.name}}
+				<button @click="connectSleepHandler(item)">连接</button>
+			</view>
+		</view>
 		<view class="connectBtn" @click="connectHandler">
 			<image src="../../static/index/SY_00_button01a.png" mode="aspectFit"></image>
 		</view>
@@ -49,6 +55,86 @@
 			}
 
 			console.log('createScopedThreejs:', createScopedThreejs)
+
+			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
+			uni.onBLECharacteristicValueChange((res) => {
+				console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
+				console.log('接收到数据', this.ab2hex(res.value))
+				this.write2tooth(this.deviceId, this.serviceId, this.characteristicId)
+			})
+		},
+		onHide: () => {
+			let that = this
+			that.deviceIdList = [];
+			if (this.searching) {
+				uni.stopBluetoothDevicesDiscovery({
+					success: function(res) {
+						that.searching = false
+					}
+				})
+			}
+		},
+		onLoad() {
+			// 监听设备发现
+			let that = this
+			uni.onBluetoothDeviceFound((result) => {
+				//剔除重复设备，兼容不同设备API的不同返回值
+				var isnotexist = true
+				let devices = result.devices
+				// 1
+				if (result.deviceId) {
+
+				} else if (result.devices) {
+					if (result.devices[0].advertisData) {
+						result.devices[0].advertisData = that.ab2hex(result.devices[0].advertisData)
+					} else {
+						result.devices[0].advertisData = ''
+					}
+					console.log('devices.devices:', result.devices[0])
+					for (var i = 0; i < that.deviceIdList.length; i++) {
+						if (result.devices[0].deviceId == that.deviceIdList[i].deviceId) {
+							isnotexist = false
+						}
+					}
+					if (isnotexist && result.devices[0].name != '') {
+						that.deviceIdList.push(result.devices[0])
+					}
+				} else if (result[0]) {
+					if (result[0].advertisData) {
+						result[0].advertisData = that.ab2hex(result[0].advertisData)
+					} else {
+						result[0].advertisData = ''
+					}
+
+					for (var i = 0; i < that.deviceIdList.length; i++) {
+						if (result[0].deviceId == that.deviceIdList[i].deviceId) {
+							isnotexist = false
+						}
+					}
+					if (isnotexist && result[0].name != '') {
+						that.deviceIdList.push(result[0])
+					}
+				}
+
+				let first_device = devices[0]
+				for (var i = 0; i < that.deviceIdList.length; i++) {
+					if (devices.deviceId == that.deviceIdList[i].deviceId) {
+						isnotexist = false
+					}
+				}
+				console.log('new device list has founded', devices.length, devices)
+				// console.log(this.ab2hex(devices[0].advertisData))
+				// this.stopBlueTooth()
+				// if (devices.length > 0 && first_device.connectable) {
+				// 	console.log("connectable :", first_device, first_device.connectable)
+				// 	that.deviceId = first_device.deviceId
+				// 	if (this.deviceId.indexOf('F61EAC') > -1) {
+				// 		that.connectBluetooth(that.deviceId)
+				// 	}
+				// } else {
+				// 	console.log("disconnectable :", first_device.deviceId)
+				// }
+			})
 		},
 		onShareAppMessage() {
 
@@ -64,6 +150,14 @@
 				bodyImgOriginWidth: 0,
 				bodyImgOriginHeight: 0,
 				deviceId: '', // 设备蓝牙id
+				serviceId: '', // 通知uuid
+				writeServicweId: '', //写uuid
+				readServicweId: '', //通知uuid
+				msg: '',
+				receiveInfo: '',
+				deviceIdList: [], //
+				searching: false, // 搜索中
+				characteristicId: '6E400002-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 			}
 		},
 		methods: {
@@ -125,42 +219,136 @@
 				)
 				return hexArr.join('')
 			},
+			// 停止蓝牙
 			stopBlueTooth() {
 				uni.stopBluetoothDevicesDiscovery({
 					success: (res) => {
 						console.log("stopBlueTooth success!")
+						this.searching = false
 					},
 					fail: (res) => {
 						console.log("stopBlueTooth fail!")
 					}
 				})
+				// uni.closeBluetoothAdapter({
+				// 	success() {
+				// 		console.log('closeBluetoothAdapter success!')
+				// 	}
+				// })
 			},
-			connectBluetooth(deviceId) {
-				console.log('start connectBluetooth:', deviceId)
+			// 主动点击连接枕头
+			connectSleepHandler(item) {
+				uni.showLoading({
+					title: '连接蓝牙设备中...',
+				})
+				let deviceId = item.deviceId;
 				uni.createBLEConnection({
 					// 这里的 deviceId 需要已经通过 createBLEConnection 与对应设备建立链接
 					deviceId: deviceId,
 					success: (res) => {
-						console.log('connectBluetooth:', deviceId, res)
+						wx.showToast({
+							title: '连接成功',
+							icon: 'success',
+							duration: 1000
+						})
+						this.stopBlueTooth()
+
+						console.log('connectBluetooth success!:', deviceId, res)
 						uni.getBLEDeviceServices({
 							deviceId,
 							success: (res) => {
-								console.log('getBLEDeviceServices:', res)
+								console.log('getBLEDeviceServices success:', res)
 								for (let i = 0; i < res.services.length; i++) {
 									if (res.services[i].isPrimary) {
-										this.notifyBluetooth(deviceId, res.services[i].uuid, 1)
+										this.getBLEDeviceCharacteristics(deviceId, res.services[i]
+											.uuid)
 										// 可根据具体业务需要，选择一个主服务进行通信
 									}
 								}
+							},
+							fail: (res) => {
+								console.log('getBLEDeviceServices fail:', res)
 							}
 						})
 					},
 					fail: (res) => {
 						console.log("connectBluetooth fail: ", res)
+					},
+					complete: () => {
+						uni.hideLoading()
 					}
 				})
 			},
-			write2tooth(deviceId, serviceId, characteristicId, ) {
+			// 获取蓝牙设备某个服务中所有特征值(characteristic)。
+			getBLEDeviceCharacteristics(deviceId, serviceId) {
+				let that = this
+				console.log('getBLEDeviceCharacteristics:', deviceId, serviceId)
+				uni.getBLEDeviceCharacteristics({
+					deviceId: deviceId,
+					serviceId: serviceId,
+					success: (res) => {
+						console.log("%c getBLEDeviceCharacteristics success", "color:red;", res
+							.characteristics);
+						// for (var i = 0; i < res.characteristics.length; i++) {
+						// 	// console.log('特征值：' + res.characteristics[i].uuid)
+						// 	if (res.characteristics[i].properties.notify) {
+						// 		console.log("notifyServicweId：", serviceId);
+						// 		console.log("notifyCharacteristicsId：", res.characteristics[i].uuid);
+						// 		this.notifyServicweId = serviceId
+						// 	}
+						// 	if (res.characteristics[i].properties.write) {
+						// 		console.log("writeServicweId：", serviceId);
+						// 		console.log("writeCharacteristicsId：", res.characteristics[i].uuid);
+						// 		this.writeBLECharacteristicValue = serviceId;
+						// 	}
+						// }
+
+						uni.notifyBLECharacteristicValueChange({
+							state: true,
+							deviceId: deviceId,
+							serviceId: serviceId,
+							characteristicId: res.characteristics[0].uuid,
+							success: (res) => {
+
+								that.deviceId = deviceId
+								that.serviceId = serviceId
+								// this.characteristicId = res.characteristics[0].uuid
+								console.log('启用notify成功')
+							}
+						})
+						// console.log('device getBLEDeviceCharacteristics:', res.characteristics);
+						// this.msg = JSON.stringify(res.characteristics)
+						// var notifyServicweId = this.notifyServicweId; //具有写、通知属性的服务uuid
+						// var notifyCharacteristicsId = this.characteristicId;
+						// this.notifyBluetooth(this.deviceId, notifyServicweId, notifyCharacteristicsId)
+					},
+					fail: (res) => {
+						console.log("%c getBLEDeviceCharacteristics fail", "color:red;", res);
+					}
+				})
+			},
+			// 开始监听
+			notifyBluetooth(deviceId, serviceId, characteristicId) {
+				// 启用低功耗蓝牙设备特征值变化时的 notify 功能，订阅特征值。注意：必须设备的特征值支持 notify 或者 indicate 才可以成功调用。 另外，必须先启用 notifyBLECharacteristicValueChange 才能监听到设备 characteristicValueChange 事件
+				console.log("%c notifyBluetooth start", "color:red;", deviceId, serviceId);
+				uni.notifyBLECharacteristicValueChange({
+					deviceId: deviceId,
+					state: true,
+					serviceId: serviceId,
+					characteristicId: characteristicId,
+					success: (res) => {
+						var msg = '启动notify:' + res.errMsg
+						this.receiveInfo = msg;
+						console.log('notifyBLECharacteristicValueChange success', res)
+					},
+					fail: (res) => {
+						console.log('notifyBLECharacteristicValueChange fail', res)
+					}
+				})
+
+
+			},
+			write2tooth(deviceId, serviceId, characteristicId) {
 				// 向蓝牙设备发送一个0x00的16进制数据
 				const buffer = new ArrayBuffer(8)
 				const dataView = new DataView(buffer)
@@ -184,61 +372,69 @@
 				})
 			},
 
-			notifyBluetooth(deviceId, serviceId, characteristicId) {
-				// 启用低功耗蓝牙设备特征值变化时的 notify 功能，订阅特征值。注意：必须设备的特征值支持 notify 或者 indicate 才可以成功调用。 另外，必须先启用 notifyBLECharacteristicValueChange 才能监听到设备 characteristicValueChange 事件
-				uni.notifyBLECharacteristicValueChange({
-					deviceId: deviceId,
-					state: true,
-					serviceId: serviceId,
-					characteristicId: characteristicId,
-					success(res) {
-						console.log('notifyBLECharacteristicValueChange success')
-					}
-				})
-
-				// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
-				uni.onBLECharacteristicValueChange(function(res) {
-					console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
-					console.log(this.ab2hex(res.value))
-				})
-			},
 			connectHandler() {
 				let that = this;
+				// 监听设备变化
+				uni.onBLEConnectionStateChange((res) => {
+					// 该方法回调中可以用于处理连接意外断开等异常情况
+					uni.showToast({
+						title: ` ${res.deviceId} state has changed`
+					})
+					console.log(
+						`onBLEConnectionStateChange device ${res.deviceId} state has changed, connected: ${res.connected}`
+					)
+				})
+				// 如果正在搜索中
+				if (this.searching) {
+					uni.closeBluetoothAdapter({
+						complete: () => {
+
+						}
+					})
+				}
+
+				// uni.closeBLEConnection({
+				// 	deviceId: this.deviceId
+				// })
 				uni.openBluetoothAdapter({
 					success: (res) => {
 						console.log('startBluetoothDevicesDiscovery')
+						// 开始搜索蓝牙设备
 						uni.startBluetoothDevicesDiscovery({
 							services: [],
 							success(res) {
-								console.log(res)
+								console.log('startBluetoothDevicesDiscovery success:', res)
+								this.searching = true
 							}
 						})
-						//  50s扫描结束
-						setTimeout(function() {
-							that.stopBlueTooth()
-						}, 500000);
-						uni.onBluetoothDeviceFound((result) => {
-							let devices = result.devices
-							let first_device = devices[0]
-							console.log('new device list has founded', devices.length)
-							console.log('devices:', devices)
-							// console.log(this.ab2hex(devices[0].advertisData))
-							// this.stopBlueTooth()
-							if (devices.length > 0 && first_device.advertisData) {
-								console.log("connectable :", first_device, first_device.connectable)
-								that.deviceId = first_device.deviceId
-								that.connectBluetooth(that.deviceId)
-								that.stopBlueTooth()
+
+						uni.getBluetoothAdapterState({
+							success: (res) => {
+								console.log('getBluetoothAdapterState success!', res)
 							}
 						})
+						// //  50s扫描结束
+						// setTimeout(function() {
+						// 	that.stopBlueTooth()
+						// }, 500000);
+
 					},
 					fail(res) {
-						if (res.errCode == 10001) {
-							uni.showToast({
-								duration: 3000,
-								title: '请打开蓝牙'
-							})
-						}
+						// if (res.errCode == 10001) {
+						// 	uni.showToast({
+						// 		duration: 3000,
+						// 		title: '请打开蓝牙'
+						// 	})
+						// }
+
+						uni.showModal({
+							title: '提示',
+							content: '请检查手机蓝牙是否打开',
+							showCancel: false,
+							success: (res) => {
+								this.searching = false
+							}
+						})
 					}
 				})
 

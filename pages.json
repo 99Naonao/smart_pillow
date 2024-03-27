@@ -1,17 +1,18 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
-			"path": "pages/shoot/shoot",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},
-		{
 			"path": "pages/login/login",
 			"style": {
 				"navigationStyle": "custom"
 			}
 		},
+		{
+			"path": "pages/shoot/shoot",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+
 		{
 			"path": "pages/help/help",
 			"style": {
@@ -35,14 +36,17 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
-		},
-		{
-			"path": "pages/index/index",
+		}
+	],
+	"subPackages": [{
+		"root": "page_subject",
+		"pages": [{
+			"path": "work/work",
 			"style": {
 				"navigationStyle": "custom"
 			}
-		}
-	],
+		}]
+	}],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",
