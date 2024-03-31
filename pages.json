@@ -26,6 +26,12 @@
 			}
 		},
 		{
+			"path": "pages/initWifi/initWifi",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/mine/mine",
 			"style": {
 				"navigationStyle": "custom"
