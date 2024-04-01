@@ -47,11 +47,18 @@
 	"subPackages": [{
 		"root": "page_subject",
 		"pages": [{
-			"path": "work/work",
-			"style": {
-				"navigationStyle": "custom"
+				"path": "work/work",
+				"style": {
+					"navigationStyle": "custom"
+				}
+			},
+			{
+				"path": "adjust/adjust",
+				"style": {
+					"navigationStyle": "custom"
+				}
 			}
-		}]
+		]
 	}],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
