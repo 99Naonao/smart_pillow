@@ -49,12 +49,14 @@
 </template>
 
 <script>
-	import Nav from '@/comp/Nav'
+	import Nav from '@/comp/Nav';
 	export default {
-		onLoad() {},
 		components: {
 			Nav
 		},
+		onLoad() {
+
+		}
 	}
 </script>
 

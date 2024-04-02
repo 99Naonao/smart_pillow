@@ -31,6 +31,7 @@
 		    </view>
 		</view> -->
 		<!-- </view> -->
+		<!-- <page-meta :page-style="'overflow:'+(show?'hidden':'visible')"></page-meta> -->
 	</view>
 </template>
 
@@ -42,6 +43,7 @@
 	import {
 		createScopedThreejs
 	} from 'threejs-miniprogram'
+
 
 	export default {
 		// behaviors: [getBehavior(), yuvBehavior],
@@ -191,6 +193,7 @@
 		},
 		data() {
 			return {
+				show: false,
 				imgData: '',
 				session: '',
 				bodyImgUrl: '',
@@ -211,6 +214,9 @@
 			}
 		},
 		methods: {
+			change(e) {
+
+			},
 			// 开始拍照
 			startCamera() {
 				uni.navigateTo({
@@ -442,6 +448,22 @@
 				return buffer
 			},
 			connectHandler() {
+				// this.$nextTick(() => {
+				// 	// console.log(uni.createSelectorQuery().select('.popup').boundingClientRect().exec())
+				// 	this.show = true
+				// 	// uni.createSelectorQuery().select('.popup').open('bottom')
+				// 	console.log('this,', this.$refs.ppp)
+
+				// })
+				// return
+				uni.navigateTo({
+					url: '/page_subject/work/work'
+				})
+				return
+				uni.navigateTo({
+					url: '/page_subject/adjust/adjust'
+				})
+				return;
 				let that = this;
 				// 监听设备变化
 				uni.onBLEConnectionStateChange((res) => {
@@ -683,7 +705,7 @@
 	}
 </script>
 
-<style>
+<style lang="scss">
 	.main {
 		width: 100%;
 		height: 100%;

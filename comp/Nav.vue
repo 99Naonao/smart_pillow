@@ -2,21 +2,7 @@
 	<view class="nav wrapStyle" :style="wrapStyle">
 		<view class="arrow-left" @click="backHandler">
 		</view>
-		<!-- 胶囊区域 -->
-		<view class="capsule-box"
-			style="height:{{menuHeight}}px; min-height:{{menuHeight}}px; line-height:{{menuHeight}}px; bottom:{{menuBottom}}px;">
-			<view class="nav-handle">
-				<view class="back">
-					<!-- 返回按钮 -->
-					<image src=""></image>
-				</view>
-				<view class="home">
-					<!-- 首页按钮 -->
-					<image src=""></image>
-				</view>
-			</view>
-			<view class="nav-title">{{propPillowName}}</view>
-		</view>
+		<view class="nav-title">{{propPillowName}}</view>
 	</view>
 </template>
 
@@ -40,7 +26,7 @@
 				wifiList: [],
 				wrapStyle: {
 					'--navTop': '100rpx',
-					'--navBarHeight': '1rpx',
+					'--navBarHeight': '100rpx',
 				}
 			}
 		},
@@ -50,7 +36,11 @@
 				default: '333'
 			},
 		},
-		methods: {}
+		methods: {
+			backHandler() {
+				uni.navigateBack()
+			}
+		}
 	}
 </script>
 
@@ -58,7 +48,14 @@
 	// style
 	// 导航栏
 	.nav {
-		position: relative;
+		display: flex;
+		align-items: center;
+		width: 100%;
+		height: 80rpx;
+		padding: 1rpx 3rpx 0 3rpx;
+		position: fixed;
+		background-color: rgba(255, 255, 255, 0);
+
 	}
 
 	// 胶囊栏
@@ -70,10 +67,11 @@
 
 	// 标题文字
 	.nav-title {
-		height: 100%;
+		line-height: 80rpx;
 		width: 50%;
 		margin: 0 auto;
 		overflow: hidden;
+		text-align: center;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}

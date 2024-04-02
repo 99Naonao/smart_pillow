@@ -1,6 +1,6 @@
 <template>
+	<Nav :wrap-style="navWrapStyle" :propPillowName="'23232332'"></Nav>
 	<view class="main">
-		<Nav :wrap-style="navWrapStyle" :propPillowName="'23232332'"></Nav>
 		<view class="pillow-top border-item">
 			<view class="pillow-name">
 				{{propPillowName}}

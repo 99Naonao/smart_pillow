@@ -66,8 +66,85 @@ var dateUtils = {
 	}
 };
 
+// 数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0
+var handPillowState = function(type = 1, arrayUnit8Buffer_) {
+	// 向蓝牙设备发送一个0x00的2进制数据
+	let littleEdition = true
+	const buffer = new ArrayBuffer(8)
+	const dataView = new DataView(buffer)
+	// 指令码；1：2,3,4
+	dataView.setUint8(0, type)
+	dataView.setUint8(1, 0)
+	// （1——正卧设置，数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0）
+	dataView.setUint8(2, 10)
+	dataView.setUint8(3, 0)
+	dataView.setUint8(4, 10)
+	dataView.setUint8(5, 0)
+	dataView.setUint8(6, 0)
+	dataView.setUint8(7, 0)
+	return buffer
+};
+// 数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0
+// 正卧数据
+var handPillowFrontState = function(head, neck) {
+	// 向蓝牙设备发送一个0x00的2进制数据
+	let littleEdition = true
+	const buffer = new ArrayBuffer(8)
+	const dataView = new DataView(buffer)
+	// 指令码；1：2,3,4
+	dataView.setUint8(0, 1)
+	dataView.setUint8(1, 0)
+	// （1——正卧设置，数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0）
+	dataView.setUint8(2, head)
+	dataView.setUint8(3, 0)
+	dataView.setUint8(4, neck)
+	dataView.setUint8(5, 0)
+	dataView.setUint8(6, 0)
+	dataView.setUint8(7, 0)
+	return buffer
+};
+// 侧卧数据
+var handPillowSideState = function(head, neck) {
+	// 向蓝牙设备发送一个0x00的2进制数据
+	let littleEdition = true
+	const buffer = new ArrayBuffer(8)
+	const dataView = new DataView(buffer)
+	// 指令码；1：2,3,4
+	dataView.setUint8(0, 1)
+	dataView.setUint8(1, 0)
+	// （1——正卧设置，数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0）
+	dataView.setUint8(2, head)
+	dataView.setUint8(3, 0)
+	dataView.setUint8(4, neck)
+	dataView.setUint8(5, 0)
+	dataView.setUint8(6, 0)
+	dataView.setUint8(7, 0)
+	return buffer
+};
+// （4——延时设置，数据1-小时，数据2-分钟，数据3-秒钟）。
+var handlePillowDelayState = function() {
+	// 向蓝牙设备发送一个0x00的2进制数据
+	let littleEdition = true
+	const buffer = new ArrayBuffer(8)
+	const dataView = new DataView(buffer)
+	// 指令码；1：2,3,4
+	dataView.setUint8(0, 4)
+	dataView.setUint8(1, 0)
+	// 数据1-小时
+	dataView.setUint8(2, head)
+	dataView.setUint8(3, 0)
+	dataView.setUint8(4, neck)
+	dataView.setUint8(5, 0)
+	dataView.setUint8(6, 0)
+	dataView.setUint8(7, 0)
+	return buffer
+}
+
+
 export {
 	formatTime,
 	formatLocation,
+	handPillowState,
+	handPillowFrontState,
 	dateUtils
 }

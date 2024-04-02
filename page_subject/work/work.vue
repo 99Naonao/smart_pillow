@@ -1,4 +1,6 @@
 <template>
+
+	<page-meta :page-style="'overflow:'+(show?'hidden':'visible')"></page-meta>
 	<view class="">
 		<image class="topKV" mode="widthFix" :src="'../static/SY_01_000.png'"></image>
 		<view class="tips" for="">监测到以下设备</view>
@@ -19,19 +21,50 @@
 				</image>
 			</view>
 		</view>
+
+
+		<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" class="popup" :mask-click="false"
+			@change="change">
+			<view class="container">
+				<image class="close-btn" @click="closePopUpHandle"
+					src="@/page_subject/static/adjust/SY_05_buttonCOLa.png" mode="widthFix">
+				</image>
+				<image class="tip" src="@/page_subject/static/adjust/SY_05_B001.png" mode="widthFix"></image>
+				<view class="touch">
+					<view class="item">
+						<!-- <image class="item-btn" src="@/page_subject/static/adjust/SY_02_button01a.png"></image> -->
+						<image class="icon1" src="@/page_subject/static/adjust/SY_02_Icon01.png" mode=""></image>
+						<label>AI识别全自动设置</label>
+					</view>
+					<view class="item">
+						<!-- <image class="item-btn" src="@/page_subject/static/adjust/SY_02_button01a.png"></image> -->
+						<image class="icon2" src="@/page_subject/static/adjust/SY_02_Icon02.png" mode=""></image>
+						<label>手动调整</label>
+					</view>
+					<view class="item">
+						<!-- <image class="item-btn" src="@/page_subject/static/adjust/SY_02_button01a.png"></image> -->
+						<image class="icon3" src="@/page_subject/static/adjust/SY_02_Icon03.png" mode=""></image>
+						<label>选择已有数据</label>
+					</view>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 
 <script>
 	export default {
+		components: {
+
+		},
 		onShow() {
-			let curPages = getCurrentPages()[0]
-			if (typeof curPages.getTabBar === 'function' && curPages.getTabBar()) {
-				curPages.getTabBar().setData({
-					selected: 0,
-					onshow: true
-				});
-			}
+			// let curPages = getCurrentPages()[0]
+			// if (typeof curPages.getTabBar === 'function' && curPages.getTabBar()) {
+			// 	curPages.getTabBar().setData({
+			// 		selected: 0,
+			// 		onshow: true
+			// 	});
+			// }
 
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
 			uni.onBLECharacteristicValueChange((res) => {
@@ -132,6 +165,7 @@
 		},
 		data() {
 			return {
+				show: false,
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 				searching: false, // 搜索中
 				deviceIdList: [{
@@ -143,6 +177,9 @@
 			}
 		},
 		methods: {
+			closePopUpHandle() {
+				this.$refs.ppp.close()
+			},
 			// 检测是否
 			checkConnectList(item) {
 				if (this.connectList.indexOf(item.deviceId) > -1) {
@@ -152,6 +189,18 @@
 			},
 			checkWifiConnectList(item) {
 				return ('../static/SY_01WIEI_IconWF.png');
+			},
+			connectSleepHandler(item) {
+				console.log('this', this.$refs)
+				this.$refs.ppp.open('bottom')
+				this.show = true
+				return
+				uni.navigateTo({
+					url: '/pages/initWifi/initWifi'
+				})
+			},
+			change(e) {
+				this.show = e.show
 			}
 		}
 	}
@@ -230,6 +279,90 @@
 				width: 42rpx;
 				height: 29rpx;
 			}
+		}
+	}
+
+
+
+	.container {
+		background-color: white;
+		border-radius: 50rpx 50rpx 0 0;
+		position: relative;
+
+		::after {
+			content: '';
+			display: block;
+			clear: both;
+		}
+
+		.tip {
+			width: 322rpx;
+			height: 161rpx;
+			position: absolute;
+			left: 50%;
+			top: -60rpx;
+			margin-left: -161rpx;
+		}
+
+		.close-btn {
+			width: 26rpx;
+			height: 27rpx;
+			right: 30rpx;
+			top: 20rpx;
+			position: absolute;
+		}
+
+		.touch {
+			text-align: center;
+			padding-top: 100rpx;
+
+
+			.item {
+				text-align: center;
+				color: white;
+				background-color: #5B7897;
+				border-radius: 30rpx;
+				margin-top: 10rpx;
+				margin-bottom: 10rpx;
+				margin-left: 35rpx;
+				margin-right: 35rpx;
+				line-height: 100rpx;
+				position: relative;
+
+				.item-btn {
+					width: 713rpx;
+					height: 100rpx;
+					margin: 0 auto;
+				}
+
+				.icon1 {
+					width: 81rpx;
+					height: 81rpx;
+					left: 20rpx;
+					top: 10rpx;
+					position: absolute;
+
+				}
+
+				.icon2 {
+					left: 20rpx;
+					top: 10rpx;
+					width: 81rpx;
+					height: 81rpx;
+					position: absolute;
+				}
+
+				.icon3 {
+					left: 20rpx;
+					top: 10rpx;
+					width: 81rpx;
+					height: 81rpx;
+					position: absolute;
+				}
+
+			}
+
+
 		}
 	}
 </style>
