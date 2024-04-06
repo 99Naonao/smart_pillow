@@ -11,10 +11,12 @@
 					{{item.name}}
 				</view>
 				<view class="blue-tooth">
-					<image mode="widthFix" :src="checkConnectList(item)"></image>
+					<image mode="widthFix" :src="checkConnectList(item)" @click="connectBlueToothSleepHandler(item)">
+					</image>
 				</view>
 				<view class="wifi">
-					<image mode="widthFix" :src="(checkWifiConnectList(item))"></image>
+					<image mode="widthFix" :src="(checkWifiConnectList(item))" @click="connectWifiSleepHandler(item)">
+					</image>
 				</view>
 				<image :src="'../static/SY_01WIEI_buttonTJa.png'" class="connect-btn"
 					@click="connectSleepHandler(item)">
@@ -53,6 +55,12 @@
 </template>
 
 <script>
+	import {
+		hexStringToArrayBuffer,
+		ab2hex,
+		hand1Shake,
+		write2tooth
+	} from '@/common/util.js'
 	export default {
 		components: {
 
@@ -66,14 +74,24 @@
 			// 	});
 			// }
 
+			// 如果正在搜索中
+			if (this.searching) {
+				uni.closeBluetoothAdapter({
+					complete: () => {
+						this.searching = false
+
+					}
+				})
+			}
+
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
 			uni.onBLECharacteristicValueChange((res) => {
 				console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
 				let arrayBuffer = new Uint8Array(res.value);
-				console.log('接收到数据', this.ab2hex(res.value), arrayBuffer.length)
+				console.log('接收到数据', ab2hex(res.value), arrayBuffer.length)
 				// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
 				if (arrayBuffer.length == 4) {
-					let receive16 = this.ab2hex(res.value);
+					let receive16 = ab2hex(res.value);
 					let last = '0x' + receive16
 					let total = 0
 					Array.prototype.map.call(
@@ -83,19 +101,29 @@
 							return ('00' + bit.toString(16)).slice(-2)
 						}
 					)
-					let shake1 = this.hand1Shake(Number(
+					let shake1 = hand1Shake(Number(
 						total), arrayBuffer)
 					console.log("total:", total)
-					this.write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
-					console.log('第一次握手', this.ab2hex(shake1))
+					write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
+					console.log('第一次握手', ab2hex(shake1))
 				} else if (arrayBuffer.length == 2) {
-					let receive16 = this.ab2hex(res.value);
+					let receive16 = ab2hex(res.value);
 					let mark = receive16.slice(2, 4)
 					let len = receive16.slice(0, 2)
 					console.log('接收到回复数据123', mark, len)
 					if (mark == '55') {
-						console.log('接收到回复数据', this.ab2hex(res.value))
+						console.log('接收到回复数据', ab2hex(res.value))
 						console.log('校验长度', parseInt('0x' + len))
+						console.log('握手成功可以发送ssid了')
+						write2tooth(this.deviceId, this.serviceId, this.characteristicStringId,
+							hexStringToArrayBuffer('jimlee'))
+					} else if (mark == '66') {
+						console.log('握手成功可以发送ssid密码了')
+						// 发送wifi密码
+						write2tooth(this.deviceId, this.serviceId, this.characteristicStringId,
+							hexStringToArrayBuffer('lijiming'))
+					} else if (mark == 'aa') {
+						console.log('发送成功了ssid了')
 					}
 				}
 			})
@@ -103,13 +131,18 @@
 		onHide: () => {
 			let that = this
 			that.deviceIdList = [];
-			if (this.searching) {
-				uni.stopBluetoothDevicesDiscovery({
-					success: function(res) {
-						that.searching = false
-					}
-				})
-			}
+			// if (this.searching) {
+			// uni.stopBluetoothDevicesDiscovery({
+			// 	success: function(res) {
+			// 		that.searching = false
+			// 	}
+			// })
+			// uni.closeBluetoothAdapter({
+			// 	complete: () => {
+			// 		that.searching = false
+			// 	}
+			// })
+			// }
 		},
 		onLoad() {
 			// 监听设备发现
@@ -123,7 +156,7 @@
 
 				} else if (result.devices) {
 					if (result.devices[0].advertisData) {
-						result.devices[0].advertisData = that.ab2hex(result.devices[0].advertisData)
+						result.devices[0].advertisData = ab2hex(result.devices[0].advertisData)
 					} else {
 						result.devices[0].advertisData = ''
 					}
@@ -139,7 +172,7 @@
 					}
 				} else if (result[0]) {
 					if (result[0].advertisData) {
-						result[0].advertisData = that.ab2hex(result[0].advertisData)
+						result[0].advertisData = ab2hex(result[0].advertisData)
 					} else {
 						result[0].advertisData = ''
 					}
@@ -162,23 +195,211 @@
 				}
 				console.log('new device list has founded', devices.length, devices)
 			})
+
+			uni.openBluetoothAdapter({
+				success: (res) => {
+					console.log('startBluetoothDevicesDiscovery')
+					// 开始搜索蓝牙设备
+					uni.startBluetoothDevicesDiscovery({
+						services: [],
+						success(res) {
+							console.log('startBluetoothDevicesDiscovery success:', res)
+							this.searching = true
+						}
+					})
+
+					uni.getBluetoothAdapterState({
+						success: (res) => {
+							console.log('getBluetoothAdapterState success!', res)
+						}
+					})
+					// //  50s扫描结束
+					// setTimeout(function() {
+					// 	that.stopBlueTooth()
+					// }, 500000);
+				},
+				fail(res) {
+					// if (res.errCode == 10001) {
+					// 	uni.showToast({
+					// 		duration: 3000,
+					// 		title: '请打开蓝牙'
+					// 	})
+					// }
+					uni.showModal({
+						title: '提示',
+						content: '请检查手机蓝牙是否打开',
+						showCancel: false,
+						success: (res) => {
+							this.searching = false
+						}
+					})
+				}
+			})
 		},
 		data() {
 			return {
 				show: false,
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
+				characteristicStringId: '6E400002-B5A3-F393-E0A9-E50E24DCCA9E', //write，string，rx；
 				searching: false, // 搜索中
+				deviceId: '', // 连接的蓝牙id
+				serviceId: '', // 连接的服务id
 				deviceIdList: [{
-					name: 'test',
-					deviceId: '123'
+					name: 'margin1'
 				}], // 检测列表
 				connectList: [], // 连接列表
-
 			}
 		},
 		methods: {
 			closePopUpHandle() {
 				this.$refs.ppp.close()
+			},
+			// 停止蓝牙
+			stopBlueTooth() {
+				uni.stopBluetoothDevicesDiscovery({
+					success: (res) => {
+						console.log("stopBlueTooth success!")
+						this.searching = false
+					},
+					fail: (res) => {
+						console.log("stopBlueTooth fail!")
+					}
+				})
+				// uni.closeBluetoothAdapter({
+				// 	success() {
+				// 		console.log('closeBluetoothAdapter success!')
+				// 	}
+				// })
+			},
+
+			reconnect() {
+				uni.openBluetoothAdapter({
+					success: (res) => {
+						console.log('startBluetoothDevicesDiscovery')
+						// 开始搜索蓝牙设备
+						uni.startBluetoothDevicesDiscovery({
+							services: [],
+							success(res) {
+								console.log('startBluetoothDevicesDiscovery success:', res)
+								this.searching = true
+							}
+						})
+
+						uni.getBluetoothAdapterState({
+							success: (res) => {
+								console.log('getBluetoothAdapterState success!', res)
+							}
+						})
+						// //  50s扫描结束
+						// setTimeout(function() {
+						// 	that.stopBlueTooth()
+						// }, 500000);
+					},
+					fail(res) {
+						// if (res.errCode == 10001) {
+						// 	uni.showToast({
+						// 		duration: 3000,
+						// 		title: '请打开蓝牙'
+						// 	})
+						// }
+						uni.showModal({
+							title: '提示',
+							content: '请检查手机蓝牙是否打开',
+							showCancel: false,
+							success: (res) => {
+								this.searching = false
+							}
+						})
+					}
+				})
+			},
+			// 连接蓝牙
+			connectBlueToothSleepHandler(item) {
+				uni.showLoading({
+					title: '连接蓝牙设备中...',
+				})
+
+
+
+				let deviceId = item.deviceId;
+				uni.createBLEConnection({
+					// 这里的 deviceId 需要已经通过 createBLEConnection 与对应设备建立链接
+					deviceId: deviceId,
+					success: (res) => {
+						wx.showToast({
+							title: '连接成功',
+							icon: 'success',
+							duration: 1000
+						})
+						this.stopBlueTooth()
+
+						console.log('connectBluetooth success!:', deviceId, res)
+						uni.getBLEDeviceServices({
+							deviceId,
+							success: (res) => {
+								console.log('getBLEDeviceServices success:', res)
+								for (let i = 0; i < res.services.length; i++) {
+									if (res.services[i].isPrimary) {
+										this.getBLEDeviceCharacteristics(deviceId, res.services[i]
+											.uuid)
+										// 可根据具体业务需要，选择一个主服务进行通信
+									}
+								}
+							},
+							fail: (res) => {
+								console.log('getBLEDeviceServices fail:', res)
+							}
+						})
+					},
+					fail: (res) => {
+						console.log("connectBluetooth fail: ", res)
+					},
+					complete: () => {
+						uni.hideLoading()
+					}
+				})
+			},
+			// 获取蓝牙设备某个服务中所有特征值(characteristic)。
+			getBLEDeviceCharacteristics(deviceId, serviceId) {
+				let that = this
+				console.log('getBLEDeviceCharacteristics:', deviceId, serviceId)
+				uni.getBLEDeviceCharacteristics({
+					deviceId: deviceId,
+					serviceId: serviceId,
+					success: (res) => {
+						console.log("%c getBLEDeviceCharacteristics success", "color:red;", res
+							.characteristics);
+
+						uni.notifyBLECharacteristicValueChange({
+							state: true,
+							deviceId: deviceId,
+							serviceId: serviceId,
+							characteristicId: res.characteristics[0].uuid,
+							success: (res) => {
+
+								that.deviceId = deviceId
+								that.serviceId = serviceId
+								// this.characteristicId = res.characteristics[0].uuid
+								console.log('启用notify成功')
+							}
+						})
+						// console.log('device getBLEDeviceCharacteristics:', res.characteristics);
+						// this.msg = JSON.stringify(res.characteristics)
+						// var notifyServicweId = this.notifyServicweId; //具有写、通知属性的服务uuid
+						// var notifyCharacteristicsId = this.characteristicId;
+						// this.notifyBluetooth(this.deviceId, notifyServicweId, notifyCharacteristicsId)
+					},
+					fail: (res) => {
+						console.log("%c getBLEDeviceCharacteristics fail", "color:red;", res);
+					}
+				})
+			},
+			// wifi界面
+			connectWifiSleepHandler(item) {
+				let url = '/pages/initWifi/initWifi' + '?pillowName=' + item.name
+				uni.navigateTo({
+					url: url
+				})
 			},
 			// 检测是否
 			checkConnectList(item) {
@@ -190,6 +411,7 @@
 			checkWifiConnectList(item) {
 				return ('../static/SY_01WIEI_IconWF.png');
 			},
+			// 连接枕头
 			connectSleepHandler(item) {
 				console.log('this', this.$refs)
 				this.$refs.ppp.open('bottom')

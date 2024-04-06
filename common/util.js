@@ -140,8 +140,85 @@ var handlePillowDelayState = function() {
 	return buffer
 }
 
+// 生成第一步握手数据
+var hand1Shake = function(checkNum, arrayUnit8Buffer_) {
+	// 向蓝牙设备发送一个0x00的2进制数据
+
+	let littleEdition = true
+	const buffer = new ArrayBuffer(8)
+	const dataView = new DataView(buffer)
+	dataView.setUint8(0, 0)
+	dataView.setUint8(1, checkNum)
+	dataView.setUint8(2, arrayUnit8Buffer_[0])
+	dataView.setUint8(3, arrayUnit8Buffer_[1])
+	dataView.setUint8(4, arrayUnit8Buffer_[2])
+	dataView.setUint8(5, arrayUnit8Buffer_[3])
+	dataView.setUint8(6, 0)
+	dataView.setUint8(7, 0)
+
+	// dataView.setUint8(7, 0)
+	// dataView.setUint8(6, checkNum)
+	// dataView.setUint8(5, arrayUnit8Buffer_[3])
+	// dataView.setUint8(4, arrayUnit8Buffer_[2])
+	// dataView.setUint8(3, arrayUnit8Buffer_[1])
+	// dataView.setUint8(2, arrayUnit8Buffer_[0])
+	// dataView.setUint8(1, 0)
+	// dataView.setUint8(0, 0)
+	return buffer
+}
+
+var write2tooth = function(deviceId, serviceId, characteristicId, buffer) {
+	// 向蓝牙设备发送一个0x00的16进制数据
+	uni.writeBLECharacteristicValue({
+		// 这里的 deviceId 需要在 getBluetoothDevices 或 onBluetoothDeviceFound 接口中获取
+		deviceId,
+		// 这里的 serviceId 需要在 getBLEDeviceServices 接口中获取
+		serviceId,
+		// 这里的 characteristicId 需要在 getBLEDeviceCharacteristics 接口中获取
+		characteristicId,
+		// 这里的value是ArrayBuffer类型
+		value: buffer,
+		writeType: 'write',
+		success(res) {
+			console.log('writeBLECharacteristicValue success', res)
+		}
+	})
+}
+
+var hexStringToArrayBuffer = function(str) {
+	if (!str) {
+		return new ArrayBuffer(0);
+	}
+	var buffer = new ArrayBuffer(str.length / 2.0);
+	let dataView = new DataView(buffer)
+	let ind = 0;
+	for (let i = 0; i < str.length; i += 2) {
+		let code = parseInt(str.substr(i, 2), 16)
+		dataView.setUint8(ind, code)
+		ind++
+	}
+	return buffer;
+}
+
+
+
+// ArrayBuffer转16进度字符串示例
+var ab2hex = function(buffer) {
+	const hexArr = Array.prototype.map.call(
+		new Uint8Array(buffer),
+		function(bit) {
+			return ('00' + bit.toString(16)).slice(-2)
+		}
+	)
+	return hexArr.join('')
+}
+
 
 export {
+	hexStringToArrayBuffer,
+	hand1Shake,
+	write2tooth,
+	ab2hex,
 	formatTime,
 	formatLocation,
 	handPillowState,

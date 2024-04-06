@@ -460,10 +460,10 @@
 					url: '/page_subject/work/work'
 				})
 				return
-				uni.navigateTo({
-					url: '/page_subject/adjust/adjust'
-				})
-				return;
+				// uni.navigateTo({
+				// 	url: '/page_subject/adjust/adjust'
+				// })
+				// return;
 				let that = this;
 				// 监听设备变化
 				uni.onBLEConnectionStateChange((res) => {

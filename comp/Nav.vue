@@ -80,6 +80,7 @@
 		flex: none;
 		width: 30rpx;
 		height: 30rpx;
+		margin-left: 30rpx;
 		border-top: 2px solid #333333;
 		border-right: 2px solid #333333;
 		transform: rotate(-135deg);
