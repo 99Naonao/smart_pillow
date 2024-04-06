@@ -122,7 +122,7 @@ var handPillowSideState = function(head, neck) {
 	return buffer
 };
 // （4——延时设置，数据1-小时，数据2-分钟，数据3-秒钟）。
-var handlePillowDelayState = function() {
+var handlePillowDelayState = function(head, neck) {
 	// 向蓝牙设备发送一个0x00的2进制数据
 	let littleEdition = true
 	const buffer = new ArrayBuffer(8)
@@ -184,7 +184,7 @@ var write2tooth = function(deviceId, serviceId, characteristicId, buffer) {
 		}
 	})
 }
-
+// 将字符串转为arraybuffer
 var hexStringToArrayBuffer = function(str) {
 	if (!str) {
 		return new ArrayBuffer(0);
@@ -199,7 +199,38 @@ var hexStringToArrayBuffer = function(str) {
 	}
 	return buffer;
 }
-
+// 将字节流转为字符串
+var hexCharCodeToStr = function(hexCharCodeStr) {
+	let str = hexCharCodeStr.toString(16);
+	if (str.length === 1) {
+		str = '0' + str;
+	}
+	return str;
+}
+// 解析枕头状态
+var parsePillowState = function(arraybuffer) {
+	// （0~1：卧姿标志0x2318正卧－0x2319侧卧；2：头部气囊值；3：颈部气囊值；4~5：延时值；6~7：电压值）
+	// const buffer = new ArrayBuffer(8)
+	const dataView = new DataView(arraybuffer)
+	// dataView.setUint8(0, 0)
+	// dataView.setUint8(1, checkNum)
+	// dataView.setUint8(2, arrayUnit8Buffer_[0])
+	// dataView.setUint8(3, arrayUnit8Buffer_[1])
+	// dataView.setUint8(4, arrayUnit8Buffer_[2])
+	// dataView.setUint8(5, arrayUnit8Buffer_[3])
+	// dataView.setUint8(6, 0)
+	// dataView.setUint8(7, 0)
+	let one = dataView.getUint16(0)
+	let head = dataView.getUint8(2)
+	let neck = dataView.getUint8(3)
+	let time = dataView.getUint16(4)
+	return {
+		'one': one,
+		'head': head,
+		'neck': neck,
+		'time': time
+	}
+}
 
 
 // ArrayBuffer转16进度字符串示例
@@ -215,6 +246,9 @@ var ab2hex = function(buffer) {
 
 
 export {
+	parsePillowState,
+	hexCharCodeToStr,
+	handlePillowDelayState,
 	hexStringToArrayBuffer,
 	hand1Shake,
 	write2tooth,

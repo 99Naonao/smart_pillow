@@ -23,6 +23,14 @@
 				</image>
 			</view>
 		</view>
+		<view class="device-item">
+			<image mode="widthFix" :src="'../static/SY_01WIEI_buttonTJa.png'" class="connect-btn"
+				@click="adjustLowSleepHandler(item)">
+			</image>
+			<image mode="widthFix" :src="'../static/SY_01WIEI_buttonTJa.png'" class="connect-btn"
+				@click="adjustHighSleepHandler(item)">
+			</image>
+		</view>
 
 
 		<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" class="popup" :mask-click="false"
@@ -56,10 +64,12 @@
 
 <script>
 	import {
+		handlePillowDelayState,
 		hexStringToArrayBuffer,
 		ab2hex,
 		hand1Shake,
-		write2tooth
+		write2tooth,
+		parsePillowState
 	} from '@/common/util.js'
 	export default {
 		components: {
@@ -110,7 +120,7 @@
 					let receive16 = ab2hex(res.value);
 					let mark = receive16.slice(2, 4)
 					let len = receive16.slice(0, 2)
-					console.log('接收到回复数据123', mark, len)
+					console.log('接收到回复数据:', mark, len)
 					if (mark == '55') {
 						console.log('接收到回复数据', ab2hex(res.value))
 						console.log('校验长度', parseInt('0x' + len))
@@ -124,6 +134,22 @@
 							hexStringToArrayBuffer('lijiming'))
 					} else if (mark == 'aa') {
 						console.log('发送成功了ssid了')
+					} else if (mark == '33') {
+						console.log('收到成功调整枕头')
+						console.log('8个字节指令的校验和', parseInt('0x' + len))
+					}
+				} else if (arrayBuffer.length == 8) {
+					let receive16 = ab2hex(res.value);
+					let head = receive16.slice(0, 4)
+					if (head == '2318') {
+						//正卧
+						let result = parsePillowState(res.value)
+						console.log('result1:', result)
+
+					} else if (head == '2319') {
+						//侧卧
+						let result = parsePillowState(res.value)
+						console.log('result2:', result)
 					}
 				}
 			})
@@ -238,6 +264,8 @@
 		},
 		data() {
 			return {
+				head: 0,
+				neck: 0,
 				show: false,
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 				characteristicStringId: '6E400002-B5A3-F393-E0A9-E50E24DCCA9E', //write，string，rx；
@@ -251,6 +279,27 @@
 			}
 		},
 		methods: {
+			// 调低枕头
+			adjustLowSleepHandler() {
+				this.head -= 1
+				if (this.head <= 0) {
+					this.head = 0
+				}
+				console.log('调低:', this.head, this.neck)
+				write2tooth(this.deviceId, this.serviceId, this.characteristicId, handlePillowDelayState(this.head, this
+					.neck))
+
+			},
+			// 调高枕头
+			adjustHighSleepHandler() {
+				this.head += 1
+				if (this.head >= 0) {
+					this.head = 100
+				}
+				console.log('调高:', this.head, this.neck)
+				write2tooth(this.deviceId, this.serviceId, this.characteristicId, handlePillowDelayState(this.head, this
+					.neck))
+			},
 			closePopUpHandle() {
 				this.$refs.ppp.close()
 			},
