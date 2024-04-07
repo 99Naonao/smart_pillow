@@ -23,18 +23,18 @@
 				</image>
 			</view>
 		</view>
-		<view class="device-item">
+		<!-- 		<view class="device-item">
 			<image mode="widthFix" :src="'../static/SY_01WIEI_buttonTJa.png'" class="connect-btn"
 				@click="adjustLowSleepHandler(item)">
 			</image>
 			<image mode="widthFix" :src="'../static/SY_01WIEI_buttonTJa.png'" class="connect-btn"
 				@click="adjustHighSleepHandler(item)">
 			</image>
-		</view>
+		</view> -->
 
 
-		<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" class="popup" :mask-click="false"
-			@change="change">
+		<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" border-radius="40rpx 40rpx 0rpx 0rpx"
+			background-color='white' safe-area="false" class="popup" :mask-click="false" @change="change">
 			<view class="container">
 				<image class="close-btn" @click="closePopUpHandle"
 					src="@/page_subject/static/adjust/SY_05_buttonCOLa.png" mode="widthFix">
@@ -46,7 +46,7 @@
 						<image class="icon1" src="@/page_subject/static/adjust/SY_02_Icon01.png" mode=""></image>
 						<label>AI识别全自动设置</label>
 					</view>
-					<view class="item">
+					<view class="item" @click="showAdjustHandler">
 						<!-- <image class="item-btn" src="@/page_subject/static/adjust/SY_02_button01a.png"></image> -->
 						<image class="icon2" src="@/page_subject/static/adjust/SY_02_Icon02.png" mode=""></image>
 						<label>手动调整</label>
@@ -64,6 +64,7 @@
 
 <script>
 	import {
+		handPillowFrontState,
 		handlePillowDelayState,
 		hexStringToArrayBuffer,
 		ab2hex,
@@ -145,6 +146,8 @@
 						//正卧
 						let result = parsePillowState(res.value)
 						console.log('result1:', result)
+						this.head = result.head
+						this.neck = result.neck
 
 					} else if (head == '2319') {
 						//侧卧
@@ -264,8 +267,7 @@
 		},
 		data() {
 			return {
-				head: 0,
-				neck: 0,
+				currentItem: {},
 				show: false,
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 				characteristicStringId: '6E400002-B5A3-F393-E0A9-E50E24DCCA9E', //write，string，rx；
@@ -279,6 +281,13 @@
 			}
 		},
 		methods: {
+			// 跳转手动调整
+			showAdjustHandler() {
+				this.closePopUpHandle()
+				uni.navigateTo({
+					url: '/page_subject/adjust/adjust?pillowName=' + this.currentItem.name
+				})
+			},
 			// 调低枕头
 			adjustLowSleepHandler() {
 				this.head -= 1
@@ -286,19 +295,23 @@
 					this.head = 0
 				}
 				console.log('调低:', this.head, this.neck)
-				write2tooth(this.deviceId, this.serviceId, this.characteristicId, handlePillowDelayState(this.head, this
-					.neck))
+				let arraybuffer = handPillowFrontState(this.head, this
+					.neck)
+				console.log('调低:', ab2hex(arraybuffer))
+				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer)
 
 			},
 			// 调高枕头
 			adjustHighSleepHandler() {
 				this.head += 1
-				if (this.head >= 0) {
+				if (this.head >= 100) {
 					this.head = 100
 				}
 				console.log('调高:', this.head, this.neck)
-				write2tooth(this.deviceId, this.serviceId, this.characteristicId, handlePillowDelayState(this.head, this
-					.neck))
+				let arraybuffer = handPillowFrontState(this.head, this
+					.neck)
+				console.log('调高:', ab2hex(arraybuffer))
+				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer)
 			},
 			closePopUpHandle() {
 				this.$refs.ppp.close()
@@ -465,6 +478,7 @@
 				console.log('this', this.$refs)
 				this.$refs.ppp.open('bottom')
 				this.show = true
+				this.currentItem = item;
 				return
 				uni.navigateTo({
 					url: '/pages/initWifi/initWifi'
@@ -557,7 +571,7 @@
 
 	.container {
 		background-color: white;
-		border-radius: 50rpx 50rpx 0 0;
+		border-radius: 50rpx 50rpx 0rpx 0rpx;
 		position: relative;
 
 		::after {

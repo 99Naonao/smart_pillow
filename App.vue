@@ -24,13 +24,15 @@
 								// 安卓通过api获取
 								menuButtonInfo = uni.getMenuButtonBoundingClientRect()
 							}
-							console.log('获取胶囊信息：', menuButtonInfo);
+							console.log('获取胶囊信息：', menuButtonInfo, res);
 							// 导航栏高度 = 状态栏到胶囊的间距（胶囊距上未知-状态栏高度）* 2 + 胶囊高度 + 状态栏高度
 							this.globalData.navHeight = (menuButtonInfo.top - res.statusBarHeight) *
 								2 + menuButtonInfo.height + res.statusBarHeight;
 							console.log('navHeight:', this.globalData.navHeight);
 							// 按钮上下边距高度
 							this.globalData.menuBottom = menuButtonInfo.top - res.statusBarHeight;
+							this.globalData.top = menuButtonInfo.top;
+							this.globalData.navHeight = res.statusBarHeight;
 							// 导航栏右边到屏幕边缘的距离
 							this.globalData.menuRight = res.screenWidth - menuButtonInfo.right;
 							// 导航栏高度
@@ -47,6 +49,7 @@
 			navBarHeight: 0, // 导航栏高度
 			menuBottom: 0, // 胶囊距底部间距（顶部间距也是这个）
 			menuHeight: 0, // 胶囊高度
+			top: 0
 		},
 		onLaunch: function() {
 			console.log('App Launch')
@@ -64,6 +67,9 @@
 <style>
 	@import './common/uni.css';
 
+	page {
+		height: 100%;
+	}
 
 	/*每个页面公共css */
 	.uni-tabbar .uni-tabbar__icon {

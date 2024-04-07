@@ -1,12 +1,16 @@
 <template>
-	<Nav :wrap-style="navWrapStyle" :propPillowName="'23232332'"></Nav>
+	<!-- <Nav :wrap-style="navWrapStyle" :propPillowName="pillowName"></Nav> -->
+	<!-- 	<nav-bar title-text="自定义导航栏" back-icon="/images/back.png" home-icon="/images/home_icon.png" background="#f2f2f2"
+		bindback="back" /> -->
+	<!-- 	<NavBar title-text="自定义导航栏" back-icon="/static/index/SY_04_buttonRETa.png" home-icon="/images/home_icon.png"
+		background="#f2f2f2" bindback="back"></NavBar> -->
 	<view class="main">
 		<view class="select-part">
-			<view class="select-btn">
+			<view :class="this.selectIndex==1?'select-btn':'select-btn unselect-btn'" @click="selectHandler(1)">
 				<image mode="widthFix" class="icon1" :src="'../static/adjust/SY_11_IconYWb.png'"></image>
 				<label>仰卧调节</label>
 			</view>
-			<view class="select-btn">
+			<view :class="this.selectIndex==2?'select-btn':'select-btn unselect-btn'" @click="selectHandler(2)">
 				<image mode="widthFix" class="icon2" :src="'../static/adjust/SY_11_IconCWb.png'"></image>
 				<label>侧卧调节</label>
 			</view>
@@ -14,29 +18,33 @@
 		<view class="info-part">
 			<view class="info-second-part">
 				<label class='desc1'>脖颈部</label>
-				<label class='desc1size'>12cm</label>
+				<label class='desc1size'>{{this.selectIndex==1?this.neck:this.sideNeck}}%</label>
 				<label class='desc2'>头枕部</label>
-				<label class='desc2size'>12cm</label>
+				<label class='desc2size'>{{this.selectIndex==1?this.head:this.sideHead}}%</label>
 				<image class="main-icon" :src="'../static/adjust/SY_11_DITU.png'"></image>
 				<image class="down-icon" :src="'../static/adjust/SY_11_DOW.png'"></image>
 				<image class="up-icon" :src="'../static/adjust/SY_11_UP.png'"></image>
 				<image class="bzb-icon" :src="'../static/adjust/SY_11_buttonBZb.png'"></image>
 				<image class="tzb-icon" :src="'../static/adjust/SY_11_buttonTZb.png'"></image>
-				<view class="bo bo-left">
+				<view :class="this.selectHead?'bo bo-left':'bo bo-left select'" @click="selectHeadHandler(false)">
 					脖枕
 				</view>
-				<view class="bo bo-right select">
+				<view :class="this.selectHead?'bo bo-right select':'bo bo-right'" @click="selectHeadHandler(true)">
 					头枕
 				</view>
 			</view>
 			<view class="opt-part">
-				<view class="opt-btn">
-					<image mode="widthFix" class="icon" :src="'../static/adjust/SY_11_butUP.png'"></image>
+				<!-- 				<button class="opt-btn" hover-class="is-hover">
+					<image mode="widthFix" class="icon" style="transform: rotate(-180deg);"
+						:src="'../static/adjust/SY_11_butUP.png'"></image>升高
+				</button> -->
+				<view class="opt-btn" @click="adjustHighSleepHandler">
+					<image mode="widthFix" class="icon" style="transform: rotate(-180deg);"
+						:src="'../static/adjust/SY_11_butUP.png'"></image>
 					<label>升高</label>
 				</view>
-				<view class="opt-btn">
-					<image mode="widthFix" class="icon" style="transform: rotate(-180deg);"
-						:src="'../static/adjust/SY_11_butUP.png'">
+				<view class="opt-btn" @click="adjustLowSleepHandler">
+					<image mode="widthFix" class="icon" :src="'../static/adjust/SY_11_butUP.png'">
 					</image>
 					<label>降低</label>
 				</view>
@@ -46,21 +54,143 @@
 			</view>
 		</view>
 	</view>
+
 </template>
 
 <script>
 	import Nav from '@/comp/Nav';
+	import NavBar from '@/comp/NavBar'
+	import {
+		handPillowSideState,
+		handPillowFrontState,
+		handlePillowDelayState,
+		hexStringToArrayBuffer,
+		ab2hex,
+		hand1Shake,
+		write2tooth,
+		parsePillowState
+	} from '@/common/util.js'
 	export default {
 		components: {
-			Nav
+			Nav,
+			NavBar
 		},
-		onLoad() {
+		data() {
+			return {
+				pillowName: '',
+				selectIndex: 1,
+				selectHead: true, // 是否选中调整头枕，否则是脖枕
+				head: 0,
+				sideHead: 0,
+				neck: 0,
+				sideNeck: 0
+			}
+		},
+		onLoad(options) {
+			this.pillowName = options.pillowName || ''
+			uni.setNavigationBarTitle({
+				title: this.pillowName
+			})
+		},
+		methods: {
+			selectHeadHandler(bool) {
+				this.selectHead = bool
+			},
+			selectHandler(index) {
+				this.selectIndex = index
+			},
+			// 调低枕头
+			adjustLowSleepHandler() {
+				console.log('调低:', this.head, this.neck)
+				let arraybuffer
+				// 如果选择的仰卧
+				if (this.selectIndex == 1) {
+					// 如果选择的是调整头枕
+					if (this.selectHead) {
+						this.head -= 1
+						if (this.head <= 0) {
+							this.head = 0
+						}
+					} else {
+						this.neck -= 1
+						if (this.neck <= 0) {
+							this.neck = 0
+						}
+					}
+					arraybuffer = handPillowFrontState(this.head, this
+						.neck)
+				} else {
+					// 如果选择的侧卧
+					if (this.selectHead) {
+						this.sideHead -= 1
+						if (this.sideHead <= 0) {
+							this.sideHead = 0
+						}
+					} else {
+						this.sideNeck -= 1
+						if (this.sideNeck <= 0) {
+							this.sideNeck = 0
+						}
+					}
 
+					arraybuffer = handPillowSideState(this.sideHead, this
+						.sideNeck)
+				}
+				console.log('调低:', ab2hex(arraybuffer))
+				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer)
+			},
+			// 调高枕头
+			adjustHighSleepHandler() {
+				console.log('调高:', this.head, this.neck)
+				let arraybuffer
+
+				// 如果选择的仰卧
+				if (this.selectIndex == 1) {
+					if (this.selectHead) {
+						this.head += 1
+						if (this.head >= 100) {
+							this.head = 100
+						}
+					} else {
+						this.neck += 1
+						if (this.neck >= 100) {
+							this.neck = 100
+						}
+					}
+					arraybuffer = handPillowFrontState(this.head, this
+						.neck)
+				} else {
+					if (this.selectHead) {
+						this.sideHead += 1
+						if (this.sideHead >= 100) {
+							this.sideHead = 100
+						}
+					} else {
+						this.sideNeck += 1
+						if (this.sideNeck >= 100) {
+							this.sideNeck = 100
+						}
+					}
+					// 如果选择的侧卧
+					arraybuffer = handPillowSideState(this.sideHead, this
+						.sideNeck)
+				}
+				console.log('调高:', ab2hex(arraybuffer))
+				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer)
+			},
 		}
 	}
 </script>
 
 <style lang="scss">
+	.selected {
+		background-color: #5B7897;
+	}
+
+	.unselect-btn {
+		background-color: #5B7897 !important;
+	}
+
 	.select-btn {
 		background-color: rgb(238, 126, 39);
 		width: 284rpx;
@@ -107,9 +237,9 @@
 		background-color: rgb(216, 226, 246);
 		width: 100%;
 		height: 100%;
-		padding-top: 120rpx;
 
 		.select-part {
+			padding-top: 60rpx;
 			display: flex;
 			justify-content: space-around;
 		}
@@ -174,10 +304,10 @@
 			}
 
 			.desc1size {
-				font-size: 30rpx;
+				font-size: 36rpx;
 				position: absolute;
 				right: 388rpx;
-				top: -35rpx;
+				top: -38rpx;
 			}
 
 			.desc2 {
@@ -189,10 +319,10 @@
 			}
 
 			.desc2size {
-				font-size: 30rpx;
+				font-size: 36rpx;
 				position: absolute;
 				right: 43rpx;
-				top: -35rpx;
+				top: -38rpx;
 			}
 
 			.main-icon {

@@ -113,10 +113,10 @@ var handPillowSideState = function(head, neck) {
 	dataView.setUint8(0, 1)
 	dataView.setUint8(1, 0)
 	// （1——正卧设置，数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0）
-	dataView.setUint8(2, head)
-	dataView.setUint8(3, 0)
-	dataView.setUint8(4, neck)
-	dataView.setUint8(5, 0)
+	dataView.setUint8(2, 0)
+	dataView.setUint8(3, head)
+	dataView.setUint8(4, 0)
+	dataView.setUint8(5, neck)
 	dataView.setUint8(6, 0)
 	dataView.setUint8(7, 0)
 	return buffer
@@ -167,7 +167,7 @@ var hand1Shake = function(checkNum, arrayUnit8Buffer_) {
 	return buffer
 }
 
-var write2tooth = function(deviceId, serviceId, characteristicId, buffer) {
+var write2tooth = async function(deviceId, serviceId, characteristicId, buffer) {
 	// 向蓝牙设备发送一个0x00的16进制数据
 	uni.writeBLECharacteristicValue({
 		// 这里的 deviceId 需要在 getBluetoothDevices 或 onBluetoothDeviceFound 接口中获取
@@ -246,6 +246,7 @@ var ab2hex = function(buffer) {
 
 
 export {
+	handPillowSideState,
 	parsePillowState,
 	hexCharCodeToStr,
 	handlePillowDelayState,
