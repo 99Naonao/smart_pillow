@@ -95,10 +95,10 @@ var handPillowFrontState = function(head, neck) {
 	dataView.setUint8(0, 1)
 	dataView.setUint8(1, 0)
 	// （1——正卧设置，数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0）
-	dataView.setUint8(2, head)
-	dataView.setUint8(3, 0)
-	dataView.setUint8(4, neck)
-	dataView.setUint8(5, 0)
+	dataView.setUint8(2, 0)
+	dataView.setUint8(3, head)
+	dataView.setUint8(4, 0)
+	dataView.setUint8(5, neck)
 	dataView.setUint8(6, 0)
 	dataView.setUint8(7, 0)
 	return buffer
