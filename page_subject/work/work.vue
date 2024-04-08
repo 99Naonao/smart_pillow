@@ -1,6 +1,6 @@
 <template>
-
-	<page-meta :page-style="'overflow:'+(show?'hidden':'visible')"></page-meta>
+	<Nav :propPillowName="'连接设备'"></Nav>
+	<!-- <page-meta :page-style="'overflow:'+(show?'hidden':'visible')"></page-meta> -->
 	<view class="">
 		<image class="topKV" mode="widthFix" :src="'../static/SY_01_000.png'"></image>
 		<view class="tips" for="">监测到以下设备</view>
@@ -41,7 +41,7 @@
 				</image>
 				<image class="tip" src="@/page_subject/static/adjust/SY_05_B001.png" mode="widthFix"></image>
 				<view class="touch">
-					<view class="item">
+					<view class="item" @click="autoHandler">
 						<!-- <image class="item-btn" src="@/page_subject/static/adjust/SY_02_button01a.png"></image> -->
 						<image class="icon1" src="@/page_subject/static/adjust/SY_02_Icon01.png" mode=""></image>
 						<label>AI识别全自动设置</label>
@@ -73,9 +73,10 @@
 		write2tooth,
 		parsePillowState
 	} from '@/common/util.js'
+	import Nav from '@/comp/Nav'
 	export default {
 		components: {
-
+			Nav
 		},
 		onShow() {
 			// let curPages = getCurrentPages()[0]
@@ -283,6 +284,19 @@
 			}
 		},
 		methods: {
+			// ai识别
+			autoHandler() {
+				this.closePopUpHandle()
+				var url_ = '/page_subject/measure/measure' + object2Query({
+					pillowName: '',
+					deviceId: this.deviceId,
+					serviceId: this.serviceId
+				})
+				console.log('url:', url_)
+				uni.navigateTo({
+					url: url_
+				})
+			},
 			// 我的模式
 			showModeHandler() {
 				this.closePopUpHandle()
