@@ -76,4 +76,12 @@
 		width: 40px !important;
 		height: 40px !important;
 	}
+
+	.flex {
+		display: flex;
+	}
+
+	.flex1 {
+		flex: 1;
+	}
 </style>

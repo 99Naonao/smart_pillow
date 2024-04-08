@@ -1,6 +1,7 @@
 <template>
 	<view class="nav wrapStyle navStyle" :style="wrapStyle">
 		<view class="arrow-left" @click="backHandler">
+			<image class="arrow-image" src="../static/index/SY_04_buttonRETa.png" mode="widthFix"></image>
 		</view>
 		<view class="nav-title">{{propPillowName}}</view>
 	</view>
@@ -79,12 +80,12 @@
 
 	.arrow-left {
 		flex: none;
-		width: 30rpx;
-		height: 30rpx;
+		// width: 30rpx;
+		// height: 30rpx;
 		margin-left: 30rpx;
-		border-top: 2px solid #333333;
-		border-right: 2px solid #333333;
-		transform: rotate(-135deg);
+		// border-top: 2px solid #333333;
+		// border-right: 2px solid #333333;
+		// transform: rotate(-135deg);
 		position: absolute;
 		top: 50%;
 		margin-top: -15rpx;
@@ -92,6 +93,11 @@
 
 	.wrapStyle {
 		height: var(--navBarHeight);
+	}
+
+	.arrow-image {
+		width: 21rpx;
+		height: 37rpx;
 	}
 
 	.navStyle {
