@@ -1,5 +1,5 @@
 <template>
-	<view class="nav wrapStyle" :style="wrapStyle">
+	<view class="nav wrapStyle navStyle" :style="wrapStyle">
 		<view class="arrow-left" @click="backHandler">
 		</view>
 		<view class="nav-title">{{propPillowName}}</view>
@@ -14,9 +14,10 @@
 			this.navBarHeight = getApp().globalData.navHeight
 			this.$data.menuBottom = getApp().globalData.menuBottom
 			this.$data.menuHeight = getApp().globalData.menuHeight
-			// this.$set(wrapStyle, '--navBarHeight', getApp().globalData.navHeight)
-			console.log('fuck2fuck442', this.$data, this.$data.navHeight, getApp().globalData.menuBottom, this.$data
-				.menuBottom, this.$data.menuHeight)
+			this.$set(this.wrapStyle, '--navTop', getApp().globalData.top + 'px')
+			this.$set(this.wrapStyle, '--navBarHeight', getApp().globalData.navHeight + 'px')
+			// console.log('fuck2fuck442', this.$data, this.$data.navHeight, getApp().globalData.menuBottom, this.$data
+			// 	.menuBottom, this.$data.menuHeight)
 		},
 		data() {
 			return {
@@ -33,7 +34,7 @@
 		props: {
 			propPillowName: {
 				type: String,
-				default: '333'
+				default: ''
 			},
 		},
 		methods: {
@@ -48,7 +49,7 @@
 	// style
 	// 导航栏
 	.nav {
-		display: flex;
+		// display: flex;
 		align-items: center;
 		width: 100%;
 		height: 80rpx;
@@ -84,6 +85,9 @@
 		border-top: 2px solid #333333;
 		border-right: 2px solid #333333;
 		transform: rotate(-135deg);
+		position: absolute;
+		top: 50%;
+		margin-top: -15rpx;
 	}
 
 	.wrapStyle {
