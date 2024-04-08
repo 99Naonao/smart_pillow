@@ -64,6 +64,7 @@
 
 <script>
 	import {
+		object2Query,
 		handPillowFrontState,
 		handlePillowDelayState,
 		hexStringToArrayBuffer,
@@ -272,11 +273,12 @@
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 				characteristicStringId: '6E400002-B5A3-F393-E0A9-E50E24DCCA9E', //write，string，rx；
 				searching: false, // 搜索中
-				deviceId: '', // 连接的蓝牙id
-				serviceId: '', // 连接的服务id
-				deviceIdList: [{
-					name: 'margin1'
-				}], // 检测列表
+				deviceId: '123', // 连接的蓝牙id
+				serviceId: '123', // 连接的服务id
+				// deviceIdList: [{
+				// 	name: 'margin1'
+				// }], // 检测列表
+				deviceIdList: [],
 				connectList: [], // 连接列表
 			}
 		},
@@ -284,8 +286,14 @@
 			// 跳转手动调整
 			showAdjustHandler() {
 				this.closePopUpHandle()
+				var url_ = '/page_subject/adjust/adjust' + object2Query({
+					pillowName: this.currentItem.name,
+					deviceId: this.deviceId,
+					serviceId: this.serviceId
+				})
+				console.log('url:', url_)
 				uni.navigateTo({
-					url: '/page_subject/adjust/adjust?pillowName=' + this.currentItem.name
+					url: url_
 				})
 			},
 			// 调低枕头

@@ -50,7 +50,7 @@
 				</view>
 			</view>
 			<view class="bottom-part">
-				<view class="save">保存</view>
+				<view class="save" @click="saveHandler">保存</view>
 			</view>
 		</view>
 	</view>
@@ -59,8 +59,8 @@
 
 <script>
 	import Nav from '@/comp/Nav';
-	import NavBar from '@/comp/NavBar'
 	import {
+		object2Query,
 		handPillowSideState,
 		handPillowFrontState,
 		handlePillowDelayState,
@@ -72,11 +72,14 @@
 	} from '@/common/util.js'
 	export default {
 		components: {
-			Nav,
-			NavBar
+			Nav
 		},
 		data() {
 			return {
+				deviceId: '', // 连接的蓝牙id
+				serviceId: '', // 连接的服务id
+				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
+				characteristicStringId: '6E400002-B5A3-F393-E0A9-E50E24DCCA9E', //write，string，rx；
 				pillowName: '',
 				selectIndex: 1,
 				selectHead: true, // 是否选中调整头枕，否则是脖枕
@@ -87,12 +90,87 @@
 			}
 		},
 		onLoad(options) {
+			console.log('options:', options)
 			this.pillowName = options.pillowName || ''
+			this.deviceId = options.deviceId || ''
+			this.serviceId = options.serviceId || ''
 			uni.setNavigationBarTitle({
 				title: this.pillowName
 			})
 		},
+		onShow() {
+			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
+			uni.onBLECharacteristicValueChange(this.handleMessage)
+		},
+		onHide() {
+			uni.offBLECharacteristicValueChange(this.handleMessage)
+		},
 		methods: {
+			saveHandler() {
+				uni.navigateBack()
+			},
+			handleMessage(res) {
+				console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
+				let arrayBuffer = new Uint8Array(res.value);
+				console.log('handleMessage 接收到数据', ab2hex(res.value), arrayBuffer.length)
+				// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
+				if (arrayBuffer.length == 4) {
+					let receive16 = ab2hex(res.value);
+					let last = '0x' + receive16
+					let total = 0
+					Array.prototype.map.call(
+						arrayBuffer,
+						function(bit) {
+							total += Number(bit.toString(10))
+							return ('00' + bit.toString(16)).slice(-2)
+						}
+					)
+					let shake1 = hand1Shake(Number(
+						total), arrayBuffer)
+					console.log("total:", total)
+					write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
+					console.log('第一次握手', ab2hex(shake1))
+				} else if (arrayBuffer.length == 2) {
+					let receive16 = ab2hex(res.value);
+					let mark = receive16.slice(2, 4)
+					let len = receive16.slice(0, 2)
+					console.log('接收到回复数据:', mark, len)
+					if (mark == '55') {
+						console.log('接收到回复数据', ab2hex(res.value))
+						console.log('校验长度', parseInt('0x' + len))
+						console.log('握手成功可以发送ssid了')
+						write2tooth(this.deviceId, this.serviceId, this.characteristicStringId,
+							hexStringToArrayBuffer('jimlee'))
+					} else if (mark == '66') {
+						console.log('握手成功可以发送ssid密码了')
+						// 发送wifi密码
+						write2tooth(this.deviceId, this.serviceId, this.characteristicStringId,
+							hexStringToArrayBuffer('lijiming'))
+					} else if (mark == 'aa') {
+						console.log('发送成功了ssid了')
+					} else if (mark == '33') {
+						console.log('收到成功调整枕头')
+						console.log('8个字节指令的校验和', parseInt('0x' + len))
+					}
+				} else if (arrayBuffer.length == 8) {
+					let receive16 = ab2hex(res.value);
+					let head = receive16.slice(0, 4)
+					if (head == '2318') {
+						//正卧
+						let result = parsePillowState(res.value)
+						console.log('resultadjust仰卧数据:', result)
+						this.head = result.head
+						this.neck = result.neck
+
+					} else if (head == '2319') {
+						//侧卧
+						let result = parsePillowState(res.value)
+						this.sideHead = result.head
+						this.sideNeck = result.neck
+						console.log('resultadjust侧卧数据:', result)
+					}
+				}
+			},
 			selectHeadHandler(bool) {
 				this.selectHead = bool
 			},
@@ -101,7 +179,9 @@
 			},
 			// 调低枕头
 			adjustLowSleepHandler() {
-				console.log('调低:', this.head, this.neck)
+				uni.showLoading({
+					title: '调整中'
+				})
 				let arraybuffer
 				// 如果选择的仰卧
 				if (this.selectIndex == 1) {
@@ -119,6 +199,7 @@
 					}
 					arraybuffer = handPillowFrontState(this.head, this
 						.neck)
+					console.log('调低仰卧:', this.head, this.neck, ab2hex(arraybuffer))
 				} else {
 					// 如果选择的侧卧
 					if (this.selectHead) {
@@ -132,16 +213,20 @@
 							this.sideNeck = 0
 						}
 					}
-
 					arraybuffer = handPillowSideState(this.sideHead, this
 						.sideNeck)
+					console.log('调低侧卧:', this.sideHead, this.sideNeck, ab2hex(arraybuffer))
 				}
-				console.log('调低:', ab2hex(arraybuffer))
-				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer)
+				// console.log('调低:', ab2hex(arraybuffer))
+				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
+					uni.hideLoading()
+				})
 			},
 			// 调高枕头
 			adjustHighSleepHandler() {
-				console.log('调高:', this.head, this.neck)
+				uni.showLoading({
+					title: '调整中'
+				})
 				let arraybuffer
 
 				// 如果选择的仰卧
@@ -158,7 +243,8 @@
 						}
 					}
 					arraybuffer = handPillowFrontState(this.head, this
-						.neck)
+						.neck, ab2hex(arraybuffer))
+					console.log('调高仰卧:', this.head, this.neck, ab2hex(arraybuffer))
 				} else {
 					if (this.selectHead) {
 						this.sideHead += 1
@@ -174,9 +260,12 @@
 					// 如果选择的侧卧
 					arraybuffer = handPillowSideState(this.sideHead, this
 						.sideNeck)
+					console.log('调高侧卧:', this.head, this.neck, ab2hex(arraybuffer))
 				}
-				console.log('调高:', ab2hex(arraybuffer))
-				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer)
+				// console.log('调高:', ab2hex(arraybuffer))
+				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
+					uni.hideLoading()
+				})
 			},
 		}
 	}

@@ -110,7 +110,7 @@ var handPillowSideState = function(head, neck) {
 	const buffer = new ArrayBuffer(8)
 	const dataView = new DataView(buffer)
 	// 指令码；1：2,3,4
-	dataView.setUint8(0, 1)
+	dataView.setUint8(0, 2)
 	dataView.setUint8(1, 0)
 	// （1——正卧设置，数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0）
 	dataView.setUint8(2, 0)
@@ -168,21 +168,26 @@ var hand1Shake = function(checkNum, arrayUnit8Buffer_) {
 }
 
 var write2tooth = async function(deviceId, serviceId, characteristicId, buffer) {
-	// 向蓝牙设备发送一个0x00的16进制数据
-	uni.writeBLECharacteristicValue({
-		// 这里的 deviceId 需要在 getBluetoothDevices 或 onBluetoothDeviceFound 接口中获取
-		deviceId,
-		// 这里的 serviceId 需要在 getBLEDeviceServices 接口中获取
-		serviceId,
-		// 这里的 characteristicId 需要在 getBLEDeviceCharacteristics 接口中获取
-		characteristicId,
-		// 这里的value是ArrayBuffer类型
-		value: buffer,
-		writeType: 'write',
-		success(res) {
-			console.log('writeBLECharacteristicValue success', res)
-		}
-	})
+	return new Promise((resolve, reject) => {
+		console.log('write2tooth,deviceId:,', deviceId, ',serviceId:,' + serviceId,
+			',characteristicId:,' + characteristicId)
+		// 向蓝牙设备发送一个0x00的16进制数据
+		uni.writeBLECharacteristicValue({
+			// 这里的 deviceId 需要在 getBluetoothDevices 或 onBluetoothDeviceFound 接口中获取
+			deviceId,
+			// 这里的 serviceId 需要在 getBLEDeviceServices 接口中获取
+			serviceId,
+			// 这里的 characteristicId 需要在 getBLEDeviceCharacteristics 接口中获取
+			characteristicId,
+			// 这里的value是ArrayBuffer类型
+			value: buffer,
+			writeType: 'write',
+			success(res) {
+				resolve(res)
+				console.log('writeBLECharacteristicValue success', res)
+			}
+		})
+	});
 }
 // 将字符串转为arraybuffer
 var hexStringToArrayBuffer = function(str) {
@@ -244,8 +249,22 @@ var ab2hex = function(buffer) {
 	return hexArr.join('')
 }
 
+/**
+ * uni跳转参数转化
+ * @param {Object} obj
+ */
+var object2Query = function(obj) {
+	let result = '?';
+	Object.keys(obj).forEach(key => {
+		let value = obj[key] || obj[key] === 0 || obj[key] === '0' ? obj[key] : ''
+		result = result + key + '=' + encodeURIComponent(value) + '&';
+	});
+	console.log('object2Query:', obj, result)
+	return result;
+}
 
 export {
+	object2Query,
 	handPillowSideState,
 	parsePillowState,
 	hexCharCodeToStr,
