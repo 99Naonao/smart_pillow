@@ -55,7 +55,13 @@
 			{
 				"path": "adjust/adjust",
 				"style": {
-					"navigationStyle": "custom"
+					"navigationStyle": "default"
+				}
+			},
+			{
+				"path": "mode/mode",
+				"style": {
+					"navigationStyle": "default"
 				}
 			}
 		]

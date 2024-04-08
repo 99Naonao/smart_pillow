@@ -91,7 +91,7 @@
 		},
 		onLoad(options) {
 			console.log('options:', options)
-			this.pillowName = options.pillowName || ''
+			this.pillowName = decodeURIComponent(options.pillowName || '')
 			this.deviceId = options.deviceId || ''
 			this.serviceId = options.serviceId || ''
 			uni.setNavigationBarTitle({

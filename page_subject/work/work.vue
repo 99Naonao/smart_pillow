@@ -51,7 +51,7 @@
 						<image class="icon2" src="@/page_subject/static/adjust/SY_02_Icon02.png" mode=""></image>
 						<label>手动调整</label>
 					</view>
-					<view class="item">
+					<view class="item" @click="showModeHandler">
 						<!-- <image class="item-btn" src="@/page_subject/static/adjust/SY_02_button01a.png"></image> -->
 						<image class="icon3" src="@/page_subject/static/adjust/SY_02_Icon03.png" mode=""></image>
 						<label>选择已有数据</label>
@@ -273,8 +273,8 @@
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 				characteristicStringId: '6E400002-B5A3-F393-E0A9-E50E24DCCA9E', //write，string，rx；
 				searching: false, // 搜索中
-				deviceId: '123', // 连接的蓝牙id
-				serviceId: '123', // 连接的服务id
+				deviceId: '', // 连接的蓝牙id
+				serviceId: '', // 连接的服务id
 				// deviceIdList: [{
 				// 	name: 'margin1'
 				// }], // 检测列表
@@ -283,6 +283,19 @@
 			}
 		},
 		methods: {
+			// 我的模式
+			showModeHandler() {
+				this.closePopUpHandle()
+				var url_ = '/page_subject/mode/mode' + object2Query({
+					pillowName: '自定义模式',
+					deviceId: this.deviceId,
+					serviceId: this.serviceId
+				})
+				console.log('url:', url_)
+				uni.navigateTo({
+					url: url_
+				})
+			},
 			// 跳转手动调整
 			showAdjustHandler() {
 				this.closePopUpHandle()
