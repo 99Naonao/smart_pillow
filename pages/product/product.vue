@@ -1,10 +1,13 @@
 <template>
 	<z-nav-bar backState=2000 home='false'></z-nav-bar>
 	<view class='container'>
-		<image mode="widthFix" class="image1" src="../../static/product/SY_12_bgJY.jpg"></image>
-		<image mode="widthFix" class="image2" src="../../static/product/SY_12_bgQZY.jpg"></image>
-		<image mode="widthFix" class="image2" src="../../static/product/SY_12_bgJKJC.jpg"></image>
-		<image mode="widthFix" class="image3" src="../../static/product/SY_12_bgFJZS.jpg"></image>
+		<image mode="widthFix" class="image1" src="../../static/product/SY_12_bgJY.jpg" @click='productHandler'></image>
+		<image mode="widthFix" class="image2" src="../../static/product/SY_12_bgQZY.jpg" @click='productHandler'>
+		</image>
+		<image mode="widthFix" class="image2" src="../../static/product/SY_12_bgJKJC.jpg" @click='productHandler'>
+		</image>
+		<image mode="widthFix" class="image3" src="../../static/product/SY_12_bgFJZS.jpg" @click='productHandler'>
+		</image>
 	</view>
 </template>
 
@@ -27,7 +30,11 @@
 
 		},
 		methods: {
-
+			productHandler(e) {
+				uni.showToast({
+					title: '暂未开放'
+				})
+			}
 		}
 	}
 </script>
