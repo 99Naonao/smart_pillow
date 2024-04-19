@@ -1,5 +1,6 @@
 <template>
-	<Nav></Nav>
+	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
+		title='测量'></z-nav-bar>
 	<view class="main">
 		<view class="back-img-container">
 			<image class="backimg" mode="widthFix" :src="'../static/SY_05_000.jpg'"></image>
@@ -19,7 +20,7 @@
 			<image class="close-btn" @click="closePopUpHandle" src="@/page_subject/static/adjust/SY_05_buttonCOLa.png"
 				mode="widthFix">
 			</image>
-			<image class="tip" src="@/page_subject/static/adjust/SY_05_B001.png" mode="widthFix"></image>
+			<image class="tip" src="@/static/adjust/SY_05_B001.png" mode="widthFix"></image>
 			<view class="touch">
 				<view>
 					<form @submit="formSubmit" @reset="formReset">
@@ -82,11 +83,8 @@
 </template>
 
 <script>
-	import Nav from '@/comp/Nav'
 	export default {
-		components: {
-			Nav
-		},
+		components: {},
 		data() {
 			return {
 				sexIndex: 1

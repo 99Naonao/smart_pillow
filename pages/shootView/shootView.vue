@@ -1,5 +1,6 @@
 <template>
-	<Nav></Nav>
+	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
+		title='检测'></z-nav-bar>
 	<view class="main" v-if="showFront">
 		<view class="frontPic" :style="frontImageStyle">
 			<image :src="bodyImgUrl" mode="widthFix"></image>
@@ -96,10 +97,9 @@
 </template>
 
 <script>
-	import Nav from '@/comp/Nav'
 	export default {
 		components: {
-			Nav
+
 		},
 		onShareAppMessage() {
 

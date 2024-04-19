@@ -1,8 +1,10 @@
 <template>
-	<Nav :propPillowName="'连接设备'"></Nav>
+	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
+		title='连接设备'></z-nav-bar>
 	<!-- <page-meta :page-style="'overflow:'+(show?'hidden':'visible')"></page-meta> -->
 	<view class="">
-		<image class="topKV" mode="widthFix" :src="'../static/SY_01_000.png'"></image>
+
+		<image class="topKV" mode="widthFix" src="@/static/SY_01_000.png"></image>
 		<view class="tips" for="">监测到以下设备</view>
 		<view class="tips" v-if="deviceIdList.length == 0">暂无设备</view>
 		<view v-for="(item,index) in deviceIdList" :key="index">
@@ -39,7 +41,7 @@
 				<image class="close-btn" @click="closePopUpHandle"
 					src="@/page_subject/static/adjust/SY_05_buttonCOLa.png" mode="widthFix">
 				</image>
-				<image class="tip" src="@/page_subject/static/adjust/SY_05_B001.png" mode="widthFix"></image>
+				<image class="tip" src="@/static/adjust/SY_05_B001.png" mode="widthFix"></image>
 				<view class="touch">
 					<view class="item" @click="autoHandler">
 						<!-- <image class="item-btn" src="@/page_subject/static/adjust/SY_02_button01a.png"></image> -->
@@ -73,10 +75,9 @@
 		write2tooth,
 		parsePillowState
 	} from '@/common/util.js'
-	import Nav from '@/comp/Nav'
 	export default {
 		components: {
-			Nav
+
 		},
 		onShow() {
 			// let curPages = getCurrentPages()[0]

@@ -1,5 +1,6 @@
 <template>
-	<Nav :wrap-style="navWrapStyle" :propPillowName="'23232332'"></Nav>
+	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
+		title='初始设备'></z-nav-bar>
 	<view class="main">
 		<view class="pillow-top border-item">
 			<view class="pillow-name">
@@ -41,7 +42,6 @@
 </template>
 
 <script>
-	import Nav from '@/comp/Nav'
 	import {
 		ab2hex,
 		write2tooth,
@@ -123,7 +123,7 @@
 			})
 		},
 		components: {
-			Nav
+
 		},
 		data() {
 			return {

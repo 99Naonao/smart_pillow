@@ -1,9 +1,6 @@
 <template>
-	<!-- <Nav :wrap-style="navWrapStyle" :propPillowName="pillowName"></Nav> -->
-	<!-- 	<nav-bar title-text="自定义导航栏" back-icon="/images/back.png" home-icon="/images/home_icon.png" background="#f2f2f2"
-		bindback="back" /> -->
-	<!-- 	<NavBar title-text="自定义导航栏" back-icon="/static/index/SY_04_buttonRETa.png" home-icon="/images/home_icon.png"
-		background="#f2f2f2" bindback="back"></NavBar> -->
+	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
+		title='枕头调整'></z-nav-bar>
 	<view class="main">
 		<view class="select-part">
 			<view :class="this.selectIndex==1?'select-btn':'select-btn unselect-btn'" @click="selectHandler(1)">
@@ -58,7 +55,6 @@
 </template>
 
 <script>
-	import Nav from '@/comp/Nav';
 	import {
 		object2Query,
 		handPillowSideState,
@@ -72,7 +68,7 @@
 	} from '@/common/util.js'
 	export default {
 		components: {
-			Nav
+
 		},
 		data() {
 			return {

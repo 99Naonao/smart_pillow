@@ -46,6 +46,9 @@
 
 
 	export default {
+		components: {
+
+		},
 		// behaviors: [getBehavior(), yuvBehavior],
 		onShow() {
 			let curPages = getCurrentPages()[0]

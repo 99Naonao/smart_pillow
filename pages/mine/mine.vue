@@ -1,12 +1,12 @@
 <template>
-	<view>mine</view>
+	<view>min123e</view>
 </template>
 
 <script>
 	export default {
 		data() {
 			return {
-				title: 'Hello123'
+				title: 'Hello12123'
 			}
 		},
 		onShow() {
