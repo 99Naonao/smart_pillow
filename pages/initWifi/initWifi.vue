@@ -1,6 +1,5 @@
 <template>
-	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
-		title='初始设备'></z-nav-bar>
+	<z-nav-bar backState="1000" fontColor='#000' title='初始设备'></z-nav-bar>
 	<view class="main">
 		<view class="pillow-top border-item">
 			<view class="pillow-name">
@@ -250,5 +249,6 @@
 
 	.pillow-name {
 		color: #5B7897;
+		padding-left: 30rpx;
 	}
 </style>

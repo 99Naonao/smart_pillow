@@ -540,6 +540,7 @@
 		text-align: center;
 		color: #5B7897;
 		font-size: 32rpx;
+		padding: 20rpx;
 	}
 
 	.device-item {

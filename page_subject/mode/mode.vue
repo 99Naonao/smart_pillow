@@ -5,14 +5,21 @@
 		<public-module></public-module>
 		<view class="title maintitle">自定义模式</view>
 		<view class="main">
-			<view class="item" v-for="(item,index) in modeList" :key="index">
-				<view class="title">
-					{{item.name}}
+			<uni-swipe-action ref="swaction">
+				<view v-for="(item,index) in modeList" :key="index">
+					<uni-swipe-action-item :right-options="options1" @click="onButton($event,index)" autoClose=true
+						@change='onChange($event,index)'>
+						<view class="item">
+							<view class="title">
+								{{item.name}}
+							</view>
+							<view class="send-btn" @click="sendHandler(item)">
+								发送
+							</view>
+						</view>
+					</uni-swipe-action-item>
 				</view>
-				<view class="send-btn" @click="sendHandler(item)">
-					发送
-				</view>
-			</view>
+			</uni-swipe-action>
 			<view class="item-plus" @click="addModeHandler">
 				+
 			</view>
@@ -67,6 +74,13 @@
 		data() {
 			return {
 				pillowName: '',
+				options1: [{
+					text: '删除',
+					style: {
+						backgroundColor: '#f4220d'
+					},
+				}],
+
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 				deviceId: '',
 				serviceId: '',
@@ -86,6 +100,55 @@
 			}
 		},
 		methods: {
+			onChange(e, indexxx) {
+				console.log(">>>>onChange>>>", indexxx)
+			},
+			/**
+			 * 列表 左滑按钮点击
+			 * 
+			 * @param {Object} e
+			 * content: "点击按钮的options参数",
+			 * index: "循环的时候的索引值",
+			 * buttonIndex: "点击按钮的索引值"
+			 */
+			async onButton(e, indexxx) {
+				// uni.showToast({
+				// 	title: '您点击了滑动列表' + (e.index + 1) + '的第' + (e.buttonIndex + 1) + '个按钮，按钮为‘' + e.content.text + '’',
+				// 	icon: 'none'
+				// });
+
+				// let indexx;
+				// this.modeList.map((item, index) => {
+				// 	if (index == indexxx) {
+				// 		indexx = index
+				// 	}
+				// })
+				console.log(">>>>删除>>>", indexxx)
+
+				uni.showModal({
+					title: '提示',
+					content: '确定删除当前模式么?',
+					success: (res) => {
+						if (res.confirm) {
+							this.modeList.splice(indexxx, 1)
+							uni.showToast({
+								title: '删除成功'
+							})
+						}
+					}
+				})
+				// if (this.$refs.swaction)
+				// 	this.$refs.swaction.closeAll()
+				// console.log(">>>>删除>>>",shopData) 
+				// let params = {
+				// 	id: shopData.id
+				// }
+				// const res = await ShopApi.cartDel(params)
+				// if (res.success) {
+				// 	this.$u.toast("移出购物车成功")
+				// 	this.dataList.splice(e.index, 1) //删除值
+				// }
+			},
 			findStore() {
 				let modeList = uni.getStorageInfoSync({
 					key: 'mode'
