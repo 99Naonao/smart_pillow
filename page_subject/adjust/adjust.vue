@@ -1,6 +1,6 @@
 <template>
-	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
-		title='枕头调整'></z-nav-bar>
+	<!-- 	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
+		title='枕头调整'></z-nav-bar> -->
 	<view class="main">
 		<view class="select-part">
 			<view :class="this.selectIndex==1?'select-btn':'select-btn unselect-btn'" @click="selectHandler(1)">
@@ -216,6 +216,8 @@
 				// console.log('调低:', ab2hex(arraybuffer))
 				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
 					uni.hideLoading()
+				}).catch(res => {
+					uni.hideLoading()
 				})
 			},
 			// 调高枕头
@@ -260,6 +262,8 @@
 				}
 				// console.log('调高:', ab2hex(arraybuffer))
 				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
+					uni.hideLoading()
+				}).catch(e => {
 					uni.hideLoading()
 				})
 			},

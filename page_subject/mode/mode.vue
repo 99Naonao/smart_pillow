@@ -206,7 +206,7 @@
 					background-color: #ff8000;
 					margin: 20rpx;
 					color: white;
-					line-height: 60rpx;
+					line-height: 80rpx;
 					padding-left: 50rpx;
 					padding-right: 50rpx;
 					border-radius: 15rpx;

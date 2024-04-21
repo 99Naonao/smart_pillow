@@ -70,14 +70,15 @@
 		"pages": [{
 				"path": "work/work",
 				"style": {
-					"navigationStyle": "custom"
+					"navigationStyle": "custom",
+					"navigationBarTitleText": "连接设备"
 				}
 			},
 			{
 				"path": "adjust/adjust",
 				"style": {
 					"navigationStyle": "default",
-					"navigationBarTitleText": "调整"
+					"navigationBarTitleText": "手动调整"
 				}
 			},
 			{

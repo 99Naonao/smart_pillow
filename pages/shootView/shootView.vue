@@ -1,98 +1,172 @@
 <template>
-	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
-		title='检测'></z-nav-bar>
-	<view class="main" v-if="showFront">
-		<view class="frontPic" :style="frontImageStyle">
-			<image :src="bodyImgUrl" mode="widthFix"></image>
-			<view class="info-part" :style="frontImageStyle" v-if="bodyImgUrl!=''">
-				<view class="wrap shoulderLeftWrap" :style="shoulderLeftWrapStyle">
-					<view class="circle"></view>
-					<view class="tips">右肩</view>
-					<!-- <view>{{shoulderSpace}}{{unitDesc}}</view> -->
+	<view class="container">
+		<z-nav-bar :bgColor="bgColorList" backState=1000 home='false'>检测</z-nav-bar>
+		<!-- 		<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
+			title='检测'></z-nav-bar> -->
+		<view class="main" v-if="showFront">
+			<view class="frontPic" :style="frontImageStyle">
+				<image v-if="bodyImgUrl!=''" :src="bodyImgUrl" mode="widthFix"></image>
+				<view class="info-part" :style="frontImageStyle" v-if="bodyImgUrl!=''">
+					<view class="wrap shoulderLeftWrap" :style="shoulderLeftWrapStyle">
+						<view class="circle"></view>
+						<view class="tips">右肩</view>
+						<!-- <view>{{shoulderSpace}}{{unitDesc}}</view> -->
+					</view>
+					<view class="wrap shoulderRightWrap" :style="shoulderRightWrapStyle">
+						<view class="circle"></view>
+						<view class="tips">左肩</view>
+						<!-- <view>{{shoulderSpace}}{{unitDesc}}</view> -->
+					</view>
+					<view class="wrap shoulderLeftEarWrap" :style="shoulderLeftEarWrapStyle">
+						<view class="circle"></view>
+						<view class="tips">左耳</view>
+						<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+					</view>
+					<view class="wrap shoulderRightEarWrap" :style="shoulderRightEarWrapStyle">
+						<view class="circle"></view>
+						<view class="tips tips-left">右耳</view>
+						<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+					</view>
+					<!-- <view wx:for="{{markList}}" class="marker">123</view> -->
 				</view>
-				<view class="wrap shoulderRightWrap" :style="shoulderRightWrapStyle">
-					<view class="circle"></view>
-					<view class="tips">左肩</view>
-					<!-- <view>{{shoulderSpace}}{{unitDesc}}</view> -->
-				</view>
-				<view class="wrap shoulderLeftEarWrap" :style="shoulderLeftEarWrapStyle">
-					<view class="circle"></view>
-					<view class="tips">左耳</view>
-					<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
-				</view>
-				<view class="wrap shoulderRightEarWrap" :style="shoulderRightEarWrapStyle">
-					<view class="circle"></view>
-					<view class="tips tips-left">右耳</view>
-					<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
-				</view>
-				<!-- <view wx:for="{{markList}}" class="marker">123</view> -->
+				<text style="line-height: 140rpx;" v-else>
+					上传待检测的图片
+				</text>
 			</view>
-		</view>
-		<view class="uni-common-mt">
-			<view class="uni-form-item uni-column">
-				<view class="title" style="text-align: left;padding: 20rpx;font-weight: 600;">
-					<p>正面信息（照片以0.8米宽度为参照物计算结果）:</p>
+			<view class="uni-common-mt">
+				<view class="datainfo flex" v-if="showFront">
+					<view class="back1" @click="handleSideClick">
+						<image class="side1Img" src="../static/adjust/Side01.png" mode="widthFix"></image>
+						<view>侧面数据</view>
+					</view>
+					<view class="back2 flex1 flex">
+						<view class="left-part">
+							<image class="front1Img" src="../static/adjust/face02.png" mode="widthFix"></image>
+							<view>正面数据</view>
+						</view>
+						<view class="right-info-part">
+							<view class="impress"><label class="title">右耳朵到右肩:</label><label
+									class="sizeImpress">{{frontRightPart}}{{unitDesc}}</label></view>
+							<view><label class="title">肩宽:</label>{{shoulderSpace}}{{unitDesc}}</view>
+							<view><label class="title">左耳朵到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view>
+						</view>
+					</view>
 				</view>
-				<block></block>
-				<view>
-					<view class="impress"><label class="title">右耳朵到右肩:</label><label
-							class="sizeImpress">{{frontRightPart}}{{unitDesc}}</label></view>
-					<view><label class="title">肩宽:</label>{{shoulderSpace}}{{unitDesc}}</view>
-					<view><label class="title">左耳朵到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view>
-					<!-- 					<view><label class="title">脖子中心到左肩:</label>{{frontLeftNeckPart}}{{unitDesc}}</view>
-					<view><label class="title">脖子中心到右肩:</label>{{frontRightNeckPart}}{{unitDesc}}</view> -->
-				</view>
-			</view>
-		</view>
 
-		<view class="btn-cnt flex" style="padding-bottom: 200rpx;">
-			<button class="normal-btn" @click="startCamera">{{bodyImgUrl==''?'开始测量':'重新测量'}}</button>
-			<button class="normal-btn" @click="handleClick">手动微调</button>
-			<button class="save" @click="saveHandler">存储</button>
-		</view>
-	</view>
-	<view class="main" v-else>
-		<view style="text-align: center;padding: 20rpx;font-weight: 600;"><label class="title">侧面图片</label></view>
-		<view class="frontPic" :style="sideImageStyle">
-			<image :src="sideBodyImgUrl" mode="widthFix"></image>
-			<view class="wrap headPointWrap" :style="headPointWrapStyle" v-if="sideBodyImgUrl!=''">
-				<view class="circle"></view>
-				<view class="tips" :class="sideForward=='left'? 'tips-head-right':'tips-head-left'">后脑勺</view>
-				<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
-			</view>
-			<view class="wrap neckPointWrap" :style="neckPointWrapStyle" v-if="sideBodyImgUrl!=''">
-				<view class="circle"></view>
-				<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">颈部凹点</view>
-				<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
-			</view>
-			<view class="wrap backPointWrap" :style="backPointWrapStyle" v-if="sideBodyImgUrl!=''">
-				<view class="circle"></view>
-				<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">后背凸点</view>
-			</view>
-		</view>
-		<view class="uni-common-mt">
-			<view class="uni-form-item uni-column">
-				<view class="title" style="text-align: left;padding: 20rpx;font-weight: 600;">侧面信息（照片以0.8米宽度为参照物计算结果）:
-				</view>
-				<view>
-					<view class="impress"><label class="title">后背凸点与颈部凹点之间:</label><label
-							class="sizeImpress">{{sideLittleNeckBack}}{{unitDesc}}</label>
+				<view class="uni-form-item uni-column" v-if="false">
+					<view class="title" style="text-align: left;padding: 20rpx;font-weight: 600;">
+						<p>正面信息（照片以0.8米宽度为参照物计算结果）:</p>
 					</view>
-					<view class="impress"><label class="title">后背凸点与后脑勺之间:</label><label
-							class="sizeImpress">{{sideLittleBlockBack}}{{unitDesc}}</label>
+					<block></block>
+					<view>
+						<view class="impress"><label class="title">●右耳朵到右肩:</label><label
+								class="sizeImpress">{{frontRightPart}}{{unitDesc}}</label></view>
+						<view><label class="title">●肩宽:</label>{{shoulderSpace}}{{unitDesc}}</view>
+						<view><label class="title">●左耳朵到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view>
+						<!-- 					<view><label class="title">脖子中心到左肩:</label>{{frontLeftNeckPart}}{{unitDesc}}</view>
+					<view><label class="title">脖子中心到右肩:</label>{{frontRightNeckPart}}{{unitDesc}}</view> -->
 					</view>
-					<view><label class="title">后背凸点与脖子中点之间:</label>{{sideNeckBack}}{{unitDesc}}</view>
-					<view><label class="title">后背凸点与耳朵之间:</label>{{sideEarBack}}{{unitDesc}}</view>
 				</view>
 			</view>
+
+			<view class="btn-cnt flex" style="padding-top: 20rpx;">
+				<button class="normal-btn" @click="startCamera">{{bodyImgUrl==''?'开始测量':'重新测量'}}</button>
+				<button class="normal-btn" @click="handleClick">手动微调</button>
+				<button class="save" @click="saveHandler">存储</button>
+			</view>
 		</view>
-		<view class="btn-cnt" style="padding-bottom: 200rpx;">
+		<view class="main" v-else>
+			<!-- <view style="text-align: center;padding: 20rpx;font-weight: 600;"><label class="title">侧面图片</label></view> -->
+			<view class="frontPic" :style="sideImageStyle">
+				<image v-if="sideBodyImgUrl!=''" :src="sideBodyImgUrl" mode="widthFix"></image>
+				<view class="wrap headPointWrap" :style="headPointWrapStyle" v-if="sideBodyImgUrl!=''">
+					<view class="circle"></view>
+					<view class="tips" :class="sideForward=='left'? 'tips-head-right':'tips-head-left'">后脑勺</view>
+					<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+				</view>
+				<view class="wrap neckPointWrap" :style="neckPointWrapStyle" v-if="sideBodyImgUrl!=''">
+					<view class="circle"></view>
+					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">颈部凹点</view>
+					<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+				</view>
+				<view class="wrap backPointWrap" :style="backPointWrapStyle" v-if="sideBodyImgUrl!=''">
+					<view class="circle"></view>
+					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">后背凸点</view>
+				</view>
+				<text style="line-height: 140rpx;" v-else>
+					上传待检测的图片
+				</text>
+			</view>
+			<view class="uni-common-mt">
+				<view class="datainfo flex">
+					<view class="back1" @click="handleFrontClick()">
+						<image class="front2Img" src="../static/adjust/face01.png" mode="widthFix"></image>
+						<view>正面数据</view>
+					</view>
+					<view class="back2 flex1 flex align-center">
+						<view class="left-part">
+							<image class="side2Img" src="../static/adjust/Side02.png" mode="widthFix"></image>
+							<view>侧面数据</view>
+						</view>
+						<view class="right-info-part">
+							<view class="impress"><label class="title">●后背与颈部:</label><label
+									class="sizeImpress">{{sideLittleNeckBack}}{{unitDesc}}</label>
+							</view>
+							<view class="impress"><label class="title">●后背与后脑勺:</label><label
+									class="sizeImpress">{{sideLittleBlockBack}}{{unitDesc}}</label>
+							</view>
+							<view><label class="title">●后背与脖子:</label>{{sideNeckBack}}{{unitDesc}}</view>
+							<view><label class="title">●后背与耳朵:</label>{{sideEarBack}}{{unitDesc}}</view>
+						</view>
+					</view>
+				</view>
+				<view class="uni-form-item uni-column" v-if="false">
+					<view class="title" style="text-align: left;padding: 20rpx;font-weight: 600;">
+						侧面信息（照片以0.8米宽度为参照物计算结果）:
+					</view>
+					<view>
+						<view class="impress"><label class="title">后背凸点与颈部凹点之间:</label><label
+								class="sizeImpress">{{sideLittleNeckBack}}{{unitDesc}}</label>
+						</view>
+						<view class="impress"><label class="title">后背凸点与后脑勺之间:</label><label
+								class="sizeImpress">{{sideLittleBlockBack}}{{unitDesc}}</label>
+						</view>
+						<view><label class="title">后背凸点与脖子中点之间:</label>{{sideNeckBack}}{{unitDesc}}</view>
+						<view><label class="title">后背凸点与耳朵之间:</label>{{sideEarBack}}{{unitDesc}}</view>
+					</view>
+				</view>
+			</view>
+
+			<view class="btn-cnt flex" style="padding-top: 20rpx;">
+				<button class="normal-btn" @click="startSideCamera">{{bodyImgUrl==''?'开始测量':'重新测量'}}</button>
+				<button class="normal-btn" @click="handleClick">手动微调</button>
+				<button class="save" @click="saveHandler">存储</button>
+			</view>
+			<!-- operate part -->
+			<!-- 		<view class="btn-cnt" style="padding-bottom: 200rpx;">
 			<button type="primary" @click="startSideCamera">{{sideBodyImgUrl==''?'开始测量':'重新测量'}}</button>
 			<button class="save" @click="saveHandler">存储</button>
-		</view>
-		<!-- 		<view class="desc">
-			<image mode="widthFix" src="../../static/index/20240322180953.jpg"></image>
 		</view> -->
+		</view>
+		<!-- 存储设置界面弹窗 -->
+		<uni-popup ref="popup" type="bottom" background-color="#fff" border-radius="10px 10px 0 0" :mask-click="false">
+			<view class="popup-container">
+				<view class="flex align-center" style="padding: 30rpx;padding-top: 90rpx;">
+					<image class='icon' src="../../static/adjust/sicon.png" mode="widthFix"></image>
+					<text class="icon-text">储存设定</text>
+				</view>
+				<view class="flex align-center" style="padding: 30rpx;">
+					<text class="">名称</text>
+					<input v-model="inputName" class="flex1 input-area" placeholder="输入我的模式" />
+				</view>
+				<view class="send-btn" @click="closeAndSave">发送至枕头</view>
+				<image class="titleimg" src="../../static/adjust/SY_05_B001.png"></image>
+				<image class="close-btn" src="../../static/adjust/SY_05_buttonCOLa.png" mode="widthFix"
+					@click="closeSave">
+				</image>
+			</view>
+
+		</uni-popup>
 	</view>
 </template>
 
@@ -107,10 +181,11 @@
 		},
 		data() {
 			return {
+				inputName: '模式',
 				showFront: true, //是否显示正面信息
 				frontImageStyle: {
-					'--imgWidth': '100rpx',
-					'--imgHeight': '100rpx',
+					'--imgWidth': '750rpx',
+					'--imgHeight': '140rpx',
 				},
 				shoulderLeftWrapStyle: {
 					'--left': '10rpx',
@@ -153,8 +228,8 @@
 					'--marginleft': '-50rpx'
 				},
 				sideImageStyle: {
-					'--imgWidth': '100rpx',
-					'--imgHeight': '100rpx',
+					'--imgWidth': '750rpx',
+					'--imgHeight': '140rpx',
 				},
 				factor: 1,
 				unit: 100, // 100是cm
@@ -261,6 +336,40 @@
 			this.createMaker()
 		},
 		methods: {
+			// 显示侧面数据
+			handleSideClick() {
+				this.showFront = false
+			},
+			// 显示正面数据
+			handleFrontClick() {
+				this.showFront = true
+			},
+			closeAndSave() {
+				this.$refs.popup.close()
+				console.log('mode:', this.inputName)
+				uni.showToast({
+					title: '发送中',
+					success() {
+						uni.redirectTo({
+							url: '/page_subject/work/work'
+						})
+					}
+				})
+			},
+			closeSave() {
+				this.$refs.popup.close()
+			},
+			// 手动测量
+			handleClick() {
+				uni.redirectTo({
+					url: '/page_subject/adjust/adjust'
+				})
+			},
+			saveHandler() {
+				this.$refs.popup.open('bottom')
+				return
+
+			},
 			createMaker() {
 				//
 				var x = 100
@@ -758,227 +867,5 @@
 </script>
 
 <style scoped lang="scss">
-	.main {
-		margin-left: 30rpx;
-		margin-right: 30rpx;
-	}
-
-	.backimg {
-		width: 100%;
-		display: block;
-	}
-
-	.title {
-		line-height: 45rpx;
-	}
-
-	.impress {
-		color: #ff0000;
-	}
-
-	.sizeImpress {
-		font-weight: bold;
-	}
-
-	.frontPic {
-		width: var(--imgWidth);
-		height: var(--imgHeight);
-		margin: 0 auto;
-		position: relative;
-	}
-
-	.shoulderWrap {
-		left: var(--left);
-		width: var(--imgWidth);
-		bottom: var(--bottom);
-		position: absolute;
-	}
-
-	.shoulderLeftWrap {
-		left: var(--left);
-		bottom: var(--bottom);
-		position: absolute;
-	}
-
-	.shoulderRightWrap {
-		left: var(--left);
-		bottom: var(--bottom);
-		position: absolute;
-	}
-
-	.shoulderLeftEarWrap {
-		left: var(--left);
-		bottom: var(--bottom);
-		position: absolute;
-	}
-
-	.shoulderRightEarWrap {
-		left: var(--left);
-		bottom: var(--bottom);
-		position: absolute;
-	}
-
-	.shoulderEarWrap {
-		left: var(--left);
-		width: var(--imgWidth);
-		bottom: var(--bottom);
-		position: absolute;
-	}
-
-	.headPointWrap {
-		left: var(--left);
-		bottom: var(--bottom);
-		position: absolute;
-	}
-
-	.neckPointWrap {
-		left: var(--left);
-		bottom: var(--bottom);
-		position: absolute;
-	}
-
-	.backPointWrap {
-		left: var(--left);
-		bottom: var(--bottom);
-		position: absolute;
-	}
-
-	.frontPic image {
-		width: 100%;
-		height: 100%;
-	}
-
-	.desc {
-		width: 100%;
-
-	}
-
-	.desc image {
-		width: 100%;
-		height: 100%;
-	}
-
-	.info-part {
-		position: relative;
-		width: 100%;
-	}
-
-	.info-part .marker {
-		position: absolute;
-		width: 20px;
-		height: 20px;
-		background: #f00;
-	}
-
-
-	/* 垂线样式 */
-	.wrap-h {
-		display: flex;
-		position: absolute;
-		justify-content: center;
-		align-items: center;
-		top: 12px;
-		left: 23px;
-		height: 154px;
-		border-top: 1px solid #fff;
-		border-bottom: 1px solid #fff;
-		text-align: center;
-		color: #fff;
-	}
-
-	.wrap-h view {
-		margin: 0 auto;
-		width: 14px;
-		font-size: 14px;
-		line-height: 14px;
-		word-break: break-word;
-	}
-
-	.wrap-h view::before,
-	.wrap-h view::after {
-		position: absolute;
-		left: 6px;
-		width: 1px;
-		height: 18%;
-		content: "";
-		background: #ddd;
-	}
-
-	/*调整背景垂线的上下距离*/
-	.wrap-h view::before {
-		top: 0px;
-	}
-
-	.wrap-h view::after {
-		bottom: 0px;
-	}
-
-	/* 横线样式 */
-	.wrap {
-		position: absolute;
-		// bottom: 6px;
-		text-align: center;
-	}
-
-
-	.circle {
-		width: 16rpx;
-		height: 16rpx;
-		color: red;
-		margin-left: -8rpx;
-		margin-top: -8rpx;
-		background-color: red;
-		border-radius: 50%;
-	}
-
-	.tips {
-		text-align: left;
-		width: 80px;
-		margin-left: 10px;
-		margin-top: -15px;
-		position: absolute;
-	}
-
-	.tips-left {
-		margin-left: -50px;
-		margin-top: -15px;
-	}
-
-	.tips-neck-left {
-		margin-left: -70px;
-	}
-
-	.tips-neck-right {
-		margin-left: 15px;
-	}
-
-	.tips-head-left {
-		margin-left: -55px;
-	}
-
-	.tips-head-right {
-		margin-left: 15px;
-	}
-
-	.normal-btn {
-		width: 200rpx;
-		height: 100rpx;
-		background-color: #5B7897;
-		margin: 0 auto;
-		line-height: 100rpx;
-		text-align: center;
-		color: white;
-		border-radius: 30rpx;
-	}
-
-	.save {
-		width: 200rpx;
-		height: 100rpx;
-		background-color: rgb(238, 126, 39);
-		margin: 0 auto;
-		line-height: 100rpx;
-		text-align: center;
-		color: white;
-		border-radius: 30rpx;
-	}
+	@import './shootView.scss';
 </style>
