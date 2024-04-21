@@ -1,9 +1,9 @@
 <template>
 	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
 		title='连接设备'></z-nav-bar>
+	<public-module></public-module>
 	<!-- <page-meta :page-style="'overflow:'+(show?'hidden':'visible')"></page-meta> -->
 	<view class="">
-
 		<image class="topKV" mode="widthFix" src="@/static/SY_01_000.png"></image>
 		<view class="tips" for="">监测到以下设备</view>
 		<view class="tips" v-if="deviceIdList.length == 0">暂无设备</view>
@@ -277,10 +277,10 @@
 				searching: false, // 搜索中
 				deviceId: '', // 连接的蓝牙id
 				serviceId: '', // 连接的服务id
-				// deviceIdList: [{
-				// 	name: 'margin1'
-				// }], // 检测列表
-				deviceIdList: [],
+				deviceIdList: [{
+					name: 'margin-test1'
+				}], // 检测列表
+				// deviceIdList: [],
 				connectList: [], // 连接列表
 			}
 		},
@@ -532,6 +532,10 @@
 		width: 100%;
 	}
 
+	.header {
+		height: 80rpx;
+	}
+
 	.tips {
 		text-align: center;
 		color: #5B7897;
@@ -555,7 +559,7 @@
 		}
 
 		.item-name {
-			line-height: 118rpx;
+			line-height: 38rpx;
 			color: #5B7897;
 			font-size: 32rpx;
 			padding-left: 30rpx;
@@ -601,6 +605,18 @@
 				height: 29rpx;
 			}
 		}
+	}
+
+	.uni-popup__wrapper-box {
+
+		display: block;
+
+		position: relative;
+		/* iphonex 等安全区设置，底部安全区适配 */
+
+		padding-bottom: constant(safe-area-inset-bottom);
+		padding-bottom: env(safe-area-inset-bottom);
+
 	}
 
 

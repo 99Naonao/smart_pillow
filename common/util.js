@@ -185,6 +185,9 @@ var write2tooth = async function(deviceId, serviceId, characteristicId, buffer) 
 			success(res) {
 				resolve(res)
 				console.log('writeBLECharacteristicValue success', res)
+			},
+			fail() {
+				reject()
 			}
 		})
 	});

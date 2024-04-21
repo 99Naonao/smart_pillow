@@ -711,8 +711,8 @@
 <style lang="scss">
 	.main {
 		width: 100%;
-		height: 100%;
-		margin-bottom: 100rpx;
+		padding-bottom: constant(safe-area-inset-bottom);
+		padding-bottom: env(safe-area-inset-bottom);
 	}
 
 	.logo {

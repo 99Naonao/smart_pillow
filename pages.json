@@ -1,11 +1,12 @@
 {
 	"easycom": {
-		"autoscan": true,
-		"custom": {
-			// uni-ui 规则如下配置
-			"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
-			"^vue-file-(.*)": "packageName/path/to/vue-file-$1.vue" // 匹配node_modules内的vue文件
-		}
+		// npm安装的方式不需要前面的"@/"，下载安装的方式需要"@/"
+		// npm安装方式
+		// "^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
+		// 下载安装方式
+		"^u-(.*)": "@/uni_modules/uview-ui/components/u-$1/u-$1.vue",
+		// "^z-(.*)": "@/uni_modules/z-$1/components/z-$1/z-$1.vue",s
+		"^mix-(.*)": "@/components/mix-$1/mix-$1.vue"
 	},
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
@@ -75,19 +76,22 @@
 			{
 				"path": "adjust/adjust",
 				"style": {
-					"navigationStyle": "default"
+					"navigationStyle": "default",
+					"navigationBarTitleText": "调整"
 				}
 			},
 			{
 				"path": "mode/mode",
 				"style": {
-					"navigationStyle": "default"
+					"navigationStyle": "default",
+					"navigationBarTitleText": "我的模式"
 				}
 			},
 			{
 				"path": "measure/measure",
 				"style": {
-					"navigationStyle": "custom"
+					"navigationStyle": "default",
+					"navigationBarTitleText": "测量"
 				}
 			}
 		]
