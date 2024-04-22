@@ -103,7 +103,10 @@
 		},
 		methods: {
 			saveHandler() {
-				uni.navigateBack()
+				uni.switchTab({
+					url: '/pages/status/status'
+				})
+				// uni.navigateBack()
 			},
 			handleMessage(res) {
 				console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)

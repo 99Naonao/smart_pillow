@@ -115,8 +115,11 @@
 			measureHandler() {
 				this.$refs.ppp.open('bottom')
 			},
+			closePopUpHandle() {
+				this.$refs.ppp.close()
+			},
 			saveHandler() {
-
+				this.$refs.ppp.close()
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 <template>
-	<view class="main">
+	<view class="main" v-if="hasLogin">
 		<view class="">
 			<image class="backimg" src="../../static/index/SY_00A_001.jpg" mode="widthFix"></image>
 		</view>
@@ -20,17 +20,43 @@
 				<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
 				<label class="title" for="">调节</label>
 				<image class="icon1" src="../../static/index/SY_00A_IconTJa.png" mode="widthFix"></image>
+				<label class="desc" for="">未连接</label>
 			</view>
 			<view class="item" @click="hotHandler()">
 				<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
 				<label class="title" for="">热敷{{hotLast}}分</label>
 				<image class="icon2" src="../../static/index/SY_00A_IconRFa.png" mode="widthFix"></image>
+				<label class="desc" for="">未开启</label>
 			</view>
 			<view class="item" @click="statusCheck()">
 				<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
 				<label class="title" for="">状态</label>
 				<image class="icon3" src="../../static/index/SY_00A_IconYW.png" mode="widthFix"></image>
+				<label class="desc" for="">仰卧中</label>
 			</view>
+		</view>
+	</view>
+	<view class="main">
+		<view class="">
+			<image class="backimg" src="../../static/index/SY_00_000.jpg" mode="widthFix"></image>
+		</view>
+		<view class="logoTip">
+			<image class="logoTipImg" src="../../static/index/SY_00_F01.png" mode="widthFix"></image>
+		</view>
+		<view class="rotateimgblock">
+			<image class="rotateimg" src="../../static/index/SY_00_001.png" mode="widthFix"></image>
+		</view>
+		<view class="logo">
+			<image src="../../static/index/SY_00_logo.png" mode="aspectFit"></image>
+		</view>
+		<view class="">
+			<view v-for="(item,index) in deviceIdList" :key="index">
+				{{item.name}}
+				<button @click="connectSleepHandler(item)">{{item.deviceId == connectDeviceId ?'已连接':'连接'}}</button>
+			</view>
+		</view>
+		<view class="connectBtn" @click="connectHandler">
+			<image src="../../static/index/SY_00_button01a.png" mode="aspectFit"></image>
 		</view>
 	</view>
 </template>
@@ -48,6 +74,7 @@
 	export default {
 		data() {
 			return {
+				hasLogin: true,
 				hotLast: 0, // 热敷持续时间
 				show: false,
 				imgData: '',
@@ -79,63 +106,63 @@
 				});
 			}
 
-			console.log('createScopedThreejs:', createScopedThreejs)
+			// console.log('createScopedThreejs:', createScopedThreejs)
 
-			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
-			uni.onBLECharacteristicValueChange((res) => {
-				console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
-				let arrayBuffer = new Uint8Array(res.value);
-				console.log('接收到数据', this.ab2hex(res.value), arrayBuffer.length)
-				// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
-				if (arrayBuffer.length == 4) {
-					let receive16 = this.ab2hex(res.value);
-					let last = '0x' + receive16
-					let total = 0
-					Array.prototype.map.call(
-						arrayBuffer,
-						function(bit) {
-							total += Number(bit.toString(10))
-							return ('00' + bit.toString(16)).slice(-2)
-						}
-					)
-					let shake1 = this.hand1Shake(Number(
-						total), arrayBuffer)
+			// // 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
+			// uni.onBLECharacteristicValueChange((res) => {
+			// 	console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
+			// 	let arrayBuffer = new Uint8Array(res.value);
+			// 	console.log('接收到数据', this.ab2hex(res.value), arrayBuffer.length)
+			// 	// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
+			// 	if (arrayBuffer.length == 4) {
+			// 		let receive16 = this.ab2hex(res.value);
+			// 		let last = '0x' + receive16
+			// 		let total = 0
+			// 		Array.prototype.map.call(
+			// 			arrayBuffer,
+			// 			function(bit) {
+			// 				total += Number(bit.toString(10))
+			// 				return ('00' + bit.toString(16)).slice(-2)
+			// 			}
+			// 		)
+			// 		let shake1 = this.hand1Shake(Number(
+			// 			total), arrayBuffer)
 
 
-					// let dataView = new DataView(shake1)
-					// let u1 = dataView.getUint8(0)
-					// let u2 = dataView.getUint8(1)
-					// let u3 = dataView.getUint8(2)
-					// let u4 = dataView.getUint8(3)
-					// let u5 = dataView.getUint8(4)
-					// let u6 = dataView.getUint8(5)
-					// let u7 = dataView.getUint8(6)
-					// let u8 = dataView.getUint8(7)
-					// let flow = u1.toString(2) + u2.toString(2) + u3.toString(2) + u4.toString(2) + u5.toString(2) +
-					// 	u6.toString(2) + u7.toString(2) + u8.toString(2)
+			// 		// let dataView = new DataView(shake1)
+			// 		// let u1 = dataView.getUint8(0)
+			// 		// let u2 = dataView.getUint8(1)
+			// 		// let u3 = dataView.getUint8(2)
+			// 		// let u4 = dataView.getUint8(3)
+			// 		// let u5 = dataView.getUint8(4)
+			// 		// let u6 = dataView.getUint8(5)
+			// 		// let u7 = dataView.getUint8(6)
+			// 		// let u8 = dataView.getUint8(7)
+			// 		// let flow = u1.toString(2) + u2.toString(2) + u3.toString(2) + u4.toString(2) + u5.toString(2) +
+			// 		// 	u6.toString(2) + u7.toString(2) + u8.toString(2)
 
-					// console.log('flowflowflow1:', u1.toString(2))
-					// console.log('flowflowflow2:', u2.toString(2))
-					// console.log('flowflowflow3:', u3.toString(2))
-					// console.log('flowflowflow4:', u4.toString(2))
-					// console.log('flowflowflow5:', u5.toString(2))
-					// console.log('flowflowflow6:', u6.toString(2))
-					// console.log('flowflowflow7:', u7.toString(2))
-					// console.log('flowflowflow8:', u8.toString(2))
-					console.log("total:", total)
-					this.write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
-					console.log('第一次握手', this.ab2hex(shake1))
-				} else if (arrayBuffer.length == 2) {
-					let receive16 = this.ab2hex(res.value);
-					let mark = receive16.slice(2, 4)
-					let len = receive16.slice(0, 2)
-					console.log('接收到回复数据123', mark, len)
-					if (mark == '55') {
-						console.log('接收到回复数据', this.ab2hex(res.value))
-						console.log('校验长度', parseInt('0x' + len))
-					}
-				}
-			})
+			// 		// console.log('flowflowflow1:', u1.toString(2))
+			// 		// console.log('flowflowflow2:', u2.toString(2))
+			// 		// console.log('flowflowflow3:', u3.toString(2))
+			// 		// console.log('flowflowflow4:', u4.toString(2))
+			// 		// console.log('flowflowflow5:', u5.toString(2))
+			// 		// console.log('flowflowflow6:', u6.toString(2))
+			// 		// console.log('flowflowflow7:', u7.toString(2))
+			// 		// console.log('flowflowflow8:', u8.toString(2))
+			// 		console.log("total:", total)
+			// 		this.write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
+			// 		console.log('第一次握手', this.ab2hex(shake1))
+			// 	} else if (arrayBuffer.length == 2) {
+			// 		let receive16 = this.ab2hex(res.value);
+			// 		let mark = receive16.slice(2, 4)
+			// 		let len = receive16.slice(0, 2)
+			// 		console.log('接收到回复数据123', mark, len)
+			// 		if (mark == '55') {
+			// 			console.log('接收到回复数据', this.ab2hex(res.value))
+			// 			console.log('校验长度', parseInt('0x' + len))
+			// 		}
+			// 	}
+			// })
 		},
 		onHide: () => {
 			let that = this
@@ -217,7 +244,7 @@
 
 		methods: {
 			adjustHandler(item) {
-
+				this.connectHandler()
 			},
 			statusCheck() {
 
@@ -459,22 +486,10 @@
 				return buffer
 			},
 			connectHandler() {
-				// this.$nextTick(() => {
-				// 	// console.log(uni.createSelectorQuery().select('.popup').boundingClientRect().exec())
-				// 	this.show = true
-				// 	// uni.createSelectorQuery().select('.popup').open('bottom')
-				// 	console.log('this,', this.$refs.ppp)
-
-				// })
-				// return
 				uni.navigateTo({
 					url: '/page_subject/work/work'
 				})
 				return
-				// uni.navigateTo({
-				// 	url: '/page_subject/adjust/adjust'
-				// })
-				// return;
 				let that = this;
 				// 监听设备变化
 				uni.onBLEConnectionStateChange((res) => {
@@ -801,10 +816,21 @@
 				line-height: 60rpx;
 			}
 
+			.desc {
+				position: absolute;
+				left: 0;
+				bottom: 0rpx;
+				width: 100%;
+				color: white;
+				text-align: center;
+				line-height: 60rpx;
+				color: #5B7897;
+			}
+
 			.icon1 {
 				position: absolute;
 				left: 50%;
-				top: 52%;
+				top: 45%;
 				margin-left: -25rpx;
 				// margin-top: -50%;
 				width: 50rpx;
@@ -815,7 +841,7 @@
 			.icon2 {
 				position: absolute;
 				left: 50%;
-				top: 52%;
+				top: 45%;
 				margin-left: -22rpx;
 				width: 43rpx;
 				height: 42rpx;
@@ -824,7 +850,7 @@
 			.icon3 {
 				position: absolute;
 				left: 50%;
-				top: 52%;
+				top: 45%;
 				margin-left: -30rpx;
 				width: 60rpx;
 				height: 37rpx;

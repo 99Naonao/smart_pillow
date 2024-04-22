@@ -3,7 +3,7 @@
 		<!-- 		<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
 			title='自定义模式'></z-nav-bar> -->
 		<public-module></public-module>
-		<view class="title maintitle">自定义模式</view>
+		<!-- <view class="title maintitle">自定义模式</view> -->
 		<view class="main">
 			<uni-swipe-action ref="swaction">
 				<view v-for="(item,index) in modeList" :key="index">
@@ -71,6 +71,14 @@
 			})
 			this.findStore()
 		},
+		onShow() {
+			let mode = uni.getStorageSync('myMode');
+			if (mode) {
+				this.modeList = JSON.parse(mode)
+			} else {
+				this.modeList = []
+			}
+		},
 		data() {
 			return {
 				pillowName: '',
@@ -134,6 +142,8 @@
 							uni.showToast({
 								title: '删除成功'
 							})
+
+							this.saveMode()
 						}
 					}
 				})
@@ -149,6 +159,9 @@
 				// 	this.dataList.splice(e.index, 1) //删除值
 				// }
 			},
+			saveMode() {
+				uni.setStorageSync('myMode', JSON.stringify(this.modeList));
+			},
 			findStore() {
 				let modeList = uni.getStorageInfoSync({
 					key: 'mode'
@@ -156,6 +169,9 @@
 			},
 			// 发送模式设置
 			sendHandler(item) {
+				uni.switchTab({
+					url: '/pages/status/status'
+				})
 				uni.showLoading({
 					title: '调整中'
 				})

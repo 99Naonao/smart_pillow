@@ -346,12 +346,22 @@
 			},
 			closeAndSave() {
 				this.$refs.popup.close()
-				console.log('mode:', this.inputName)
+				let storageObj = uni.getStorageSync('myMode');
+				console.log('mode:', this.inputName, storageObj)
+				if (!storageObj) {
+					storageObj = []
+				} else {
+					storageObj = JSON.parse(storageObj)
+				}
+				storageObj.push({
+					name: this.inputName
+				})
+				uni.setStorageSync('myMode', JSON.stringify(storageObj));
 				uni.showToast({
 					title: '发送中',
 					success() {
-						uni.redirectTo({
-							url: '/page_subject/work/work'
+						uni.switchTab({
+							url: '/pages/status/status'
 						})
 					}
 				})

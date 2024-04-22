@@ -10,6 +10,11 @@
 	},
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
+			"path": "pages/status/status",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		}, {
 			"path": "pages/login/login",
 			"style": {
 				"navigationStyle": "custom"
@@ -54,12 +59,6 @@
 		},
 		{
 			"path": "pages/shootView/shootView",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/status/status",
 			"style": {
 				"navigationStyle": "custom"
 			}
@@ -117,7 +116,7 @@
 		"color": "#CCCCCC",
 		"selectedColor": "#0066d4",
 		"list": [{
-				"pagePath": "pages/login/login",
+				"pagePath": "pages/status/status",
 				"iconPath": "./static/index/SY_00_buttonSYa.png",
 				"selectedIconPath": "./static/index/SY_00_buttonSYb.png",
 				"text": ""

@@ -12,7 +12,7 @@ Component({
 		color: "#7A7E83",
 		selectedColor: "#3cc51f",
 		list: [{
-				"pagePath": "/pages/login/login",
+				"pagePath": "/pages/status/status",
 				"iconPath": "/static/index/SY_00_buttonSYa.png",
 				"selectedIconPath": "/static/index/SY_00_buttonSYb.png",
 				"text": ""
