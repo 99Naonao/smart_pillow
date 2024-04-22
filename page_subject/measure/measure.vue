@@ -1,6 +1,5 @@
 <template>
-	<!-- 	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
-		title='测量'></z-nav-bar> -->
+	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'></z-nav-bar>
 	<view class="main">
 		<view class="back-img-container">
 			<image class="backimg" mode="widthFix" :src="'../static/SY_05_000.jpg'"></image>
@@ -106,7 +105,7 @@
 				// });
 
 				uni.navigateTo({
-					url: '/pages/shootView/shootView'
+					url: '/pages/shoot/shooting'
 				})
 			},
 			formReset: function(e) {

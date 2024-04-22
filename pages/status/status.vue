@@ -36,7 +36,7 @@
 			</view>
 		</view>
 	</view>
-	<view class="main">
+	<view v-else class="main">
 		<view class="">
 			<image class="backimg" src="../../static/index/SY_00_000.jpg" mode="widthFix"></image>
 		</view>

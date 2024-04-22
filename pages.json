@@ -26,7 +26,12 @@
 				"navigationStyle": "custom"
 			}
 		},
-
+		{
+			"path": "pages/shoot/shooting",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
 		{
 			"path": "pages/help/help",
 			"style": {
@@ -90,7 +95,7 @@
 			{
 				"path": "measure/measure",
 				"style": {
-					"navigationStyle": "default",
+					"navigationStyle": "custom",
 					"navigationBarTitleText": "测量"
 				}
 			}

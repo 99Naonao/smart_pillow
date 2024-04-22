@@ -68,7 +68,12 @@
 	@import './common/uni.css';
 
 	page {
+		width: 100%;
 		height: 100%;
+	}
+
+	view {
+		display: block;
 	}
 
 	/*每个页面公共css */
@@ -79,6 +84,26 @@
 
 	.flex {
 		display: flex;
+	}
+
+	.align-center {
+		align-items: center;
+	}
+
+	.justify-content-center {
+		justify-content: center;
+	}
+
+	.justify-content-space-around {
+		justify-content: space-around;
+	}
+
+	.justify-content-space-between {
+		justify-content: space-between;
+	}
+
+	.text-align-center {
+		text-align: center;
 	}
 
 	.flex1 {

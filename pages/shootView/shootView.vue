@@ -112,7 +112,7 @@
 							<view class="impress"><label class="title">●后背与颈部:</label><label
 									class="sizeImpress">{{sideLittleNeckBack}}{{unitDesc}}</label>
 							</view>
-							<view class="impress"><label class="title">●后背与后脑勺:</label><label
+							<view class="impress"><label class="title">●后背与后脑:</label><label
 									class="sizeImpress">{{sideLittleBlockBack}}{{unitDesc}}</label>
 							</view>
 							<view><label class="title">●后背与脖子:</label>{{sideNeckBack}}{{unitDesc}}</view>
@@ -174,6 +174,16 @@
 	export default {
 		components: {
 
+		},
+		onLoad(options) {
+			this.sideBodyImgUrl = decodeURIComponent(options.sideImage)
+			this.bodyImgUrl = decodeURIComponent(options.frontImage)
+			console.log('options:', this.sideBodyImgUrl, this.bodyImgUrl)
+
+		},
+		onShow() {
+			this.createMaker()
+			this.checkBodyUrl()
 		},
 		onShareAppMessage() {
 
@@ -332,10 +342,76 @@
 				return 3
 			}
 		},
-		onShow() {
-			this.createMaker()
-		},
 		methods: {
+			checkBodyUrl() {
+				uni.showLoading({
+					title: '检测中'
+				})
+				wx.getImageInfo({
+					src: this.bodyImgUrl,
+					success: res => {
+						const fixWidth = 300
+						const {
+							width,
+							height
+						} = res
+						console.log('getImageInfo res', res)
+						console.log('bodyImgUrl', this.bodyImgUrl)
+						this.bodyImgWidth = fixWidth;
+						this.bodyImgHeight = (fixWidth / width) * height;
+
+						this.$set(this.frontImageStyle, '--imgWidth', (this.bodyImgWidth) +
+							'px')
+						this.$set(this.frontImageStyle, '--imgHeight', (this
+								.bodyImgHeight) +
+							'px')
+
+						this.factor = width * (1 / 0.8) // 1米参参照物
+						this.bodyImgOriginWidth = width;
+						this.bodyImgOriginHeight = height;
+						this.detecting(this.bodyImgUrl, false)
+					},
+					fail: res => {
+						console.error(res)
+					}
+				})
+			},
+			checkSideUrl() {
+				uni.showLoading({
+					title: '侧面检测中'
+				})
+				wx.getImageInfo({
+					src: this.sideBodyImgUrl,
+					success: res => {
+						const fixWidth = 300
+						let {
+							width,
+							height,
+							orientation
+						} = res
+						console.log('getImageInfo res', res)
+						console.log('sideBodyImgUrl', this.sideBodyImgUrl);
+						if (orientation == 'right' || orientation == 'left') {
+							height = res.width
+							width = res.height
+						}
+						var bodyImgWidth = fixWidth;
+						var bodyImgHeight = (fixWidth / width) * height;
+						this.$set(this.sideImageStyle, '--imgWidth', bodyImgWidth +
+							'px');
+						this.$set(this.sideImageStyle, '--imgHeight', bodyImgHeight +
+							'px');
+
+						this.factor = width * (1 / 0.8) // 参参照物宽度
+						this.bodyImgOriginWidth = width;
+						this.bodyImgOriginHeight = height;
+						this.detecting(this.sideBodyImgUrl, true)
+					},
+					fail: res => {
+						console.error(res)
+					}
+				})
+			},
 			// 显示侧面数据
 			handleSideClick() {
 				this.showFront = false
@@ -445,7 +521,7 @@
 								this.factor = width * (1 / 0.8) // 1米参参照物
 								this.bodyImgOriginWidth = width;
 								this.bodyImgOriginHeight = height;
-								this.detecting(tempFilePaths, false)
+								this.detecting(tempFilePaths[0], false)
 							},
 							fail: res => {
 								console.error(res)
@@ -489,7 +565,7 @@
 								this.factor = width * (1 / 0.8) // 参参照物宽度
 								this.bodyImgOriginWidth = width;
 								this.bodyImgOriginHeight = height;
-								this.detecting(tempFilePaths, true)
+								this.detecting(tempFilePaths[0], true)
 							},
 							fail: res => {
 								console.error(res)
@@ -498,13 +574,14 @@
 					}
 				})
 			},
-			async detecting(tempFilePaths, isSide) {
+			async detecting(tempUrl, isSide) {
 				let base64 = await this.base64({
-					url: tempFilePaths[0]
+					url: tempUrl
 				});
+
 				const uploadTask = uni.uploadFile({
 					url: 'https://dev.ic1101.top/new_battle/zhBaiduAip',
-					filePath: tempFilePaths[0],
+					filePath: tempUrl,
 					name: 'file',
 					formData: {
 						'fileName': base64,
@@ -516,17 +593,10 @@
 						console.log('success', obj)
 						// 如果是侧面图
 						if (isSide) {
-							this.handleSideData(obj, base64, tempFilePaths)
+							this.handleSideData(obj, base64)
 						} else {
 							this.handleFrontData(obj)
 						}
-
-						// uni.showToast({
-						// 	title: '肩宽约:' + space + 'm',
-						// 	icon: 'none', //如果要纯文本，不要icon，将值设为'none'
-						// 	duration: 5000 //持续时间为 2秒
-						// })
-
 					},
 					fail: () => {
 						uni.hideLoading()
@@ -535,9 +605,9 @@
 				})
 			},
 			// 处理侧面信息
-			handleSideData(obj, base64, tempFilePaths) {
+			handleSideData(obj, base64) {
 				uni.showLoading({
-					title: '处理中'
+					title: '处理侧面中'
 				})
 				let person = obj.person_info[0]
 				let body_parts = person.body_parts
@@ -557,24 +627,7 @@
 					forward = 'right'
 				}
 				// //如果检测到左眼
-				// if (body_parts.left_eye.score > 0.5) {
-				// 	// 如果检测到右眼
-				// 	if (body_parts.right_eye.score > 0.5) {
-				// 		if ((body_parts.left_eye.x - body_parts.right_eye.x) > 0) {
-				// 			forward = 'left'
-				// 		} else {
-				// 			forward = 'right'
-				// 		}
-				// 	} else {
-				// 		forward = 'left'
-				// 	}
-				// } else {
-				// 	if (body_parts.right_eye.score > 0.5) {
-				// 		forward = 'right'
-				// 	} else {
-				// 		forward = 'error 两只眼睛都没有检测到'
-				// 	}
-				// }
+
 				let top = body_parts.top_head.y;
 				let bottom = body_parts.neck.y;
 				let left = 0
@@ -594,13 +647,10 @@
 				}
 
 				this.sideForward = forward
-
-				// this.findSideInfo('d:/pyt/65fefb65-c5c0-49dd-88e0-522fd0bb6bb8.jpg', left, top, right, bottom, forward)
-				// return
 				// 上传图片
 				const uploadTask = uni.uploadFile({
 					url: 'https://dev.ic1101.top/new_battle/zhPyImgUpload',
-					filePath: tempFilePaths[0],
+					filePath: this.sideBodyImgUrl,
 					name: 'file',
 					formData: {
 						'fileName': base64,
@@ -612,19 +662,6 @@
 						let obj = JSON.parse(uploadFileRes.data)
 						console.log('success', obj)
 						this.findSideGrayImage(obj.data, left, top, right, bottom, forward)
-						// this.findSideInfo(obj.data, left, top, right, bottom, forward)
-						// if (isSide) {
-						// 	this.handleSideData(obj, base64)
-						// } else {
-						// 	this.handleFrontData(obj)
-						// }
-
-						// uni.showToast({
-						// 	title: '肩宽约:' + space + 'm',
-						// 	icon: 'none', //如果要纯文本，不要icon，将值设为'none'
-						// 	duration: 5000 //持续时间为 2秒
-						// })
-
 					},
 					fail: () => {
 						uni.hideLoading()
@@ -871,6 +908,8 @@
 				// this.$set(this.shoulderTipsStyle, '--bottom', (300 * Math.abs(right_shoulder.y - this
 				// 		.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 				// 	'px')
+
+				this.checkSideUrl()
 			},
 		}
 	}
