@@ -167,6 +167,27 @@ var hand1Shake = function(checkNum, arrayUnit8Buffer_) {
 	return buffer
 }
 
+// 请求枕头状态
+var handPillowStatus = function() {
+	// 向蓝牙设备发送一个0x00的2进制数据
+
+	// 向蓝牙设备发送一个0x00的2进制数据
+	let littleEdition = true
+	const buffer = new ArrayBuffer(8)
+	const dataView = new DataView(buffer)
+	// 指令码；1：2,3,4,5
+	dataView.setUint8(0, 5)
+	dataView.setUint8(1, 0x0079)
+	// （1——正卧设置，数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0）
+	dataView.setUint8(2, 0)
+	dataView.setUint8(3, 0)
+	dataView.setUint8(4, 0)
+	dataView.setUint8(5, 0)
+	dataView.setUint8(6, 0)
+	dataView.setUint8(7, 0)
+	return buffer
+}
+
 var write2tooth = async function(deviceId, serviceId, characteristicId, buffer) {
 	return new Promise((resolve, reject) => {
 		console.log('write2tooth,deviceId:,', deviceId, ',serviceId:,' + serviceId,
@@ -240,6 +261,39 @@ var parsePillowState = function(arraybuffer) {
 	}
 }
 
+// 解析枕头状态
+var parsePillowRealState = function(arraybuffer) {
+	// （0~1：0x6037；2:正卧头部气囊值；3：正卧颈部气囊值；4~5：延时值；6：侧卧头部气囊值；7：侧卧颈部气囊值；））。
+	// const buffer = new ArrayBuffer(8)
+	const dataView = new DataView(arraybuffer)
+	// dataView.setUint8(0, 0)
+	// dataView.setUint8(1, checkNum)
+	// dataView.setUint8(2, arrayUnit8Buffer_[0])
+	// dataView.setUint8(3, arrayUnit8Buffer_[1])
+	// dataView.setUint8(4, arrayUnit8Buffer_[2])
+	// dataView.setUint8(5, arrayUnit8Buffer_[3])
+	// dataView.setUint8(6, 0)
+	// dataView.setUint8(7, 0)
+	let one = dataView.getUint16(0)
+	// 正卧头部气囊值
+	let head = dataView.getUint8(2)
+	// 正卧颈部气囊值；
+	let neck = dataView.getUint8(3)
+	let time = dataView.getUint16(4)
+	// 侧卧头部气囊值
+	let sideHead = dataView.getUint8(6)
+	// 侧卧颈部气囊值；
+	let sideNeck = dataView.getUint8(7)
+	return {
+		'one': one,
+		'head': head,
+		'neck': neck,
+		'sideHead': sideHead,
+		'sideNeck': sideNeck,
+		'time': time,
+	}
+}
+
 
 // ArrayBuffer转16进度字符串示例
 var ab2hex = function(buffer) {
@@ -268,6 +322,8 @@ var object2Query = function(obj) {
 
 export {
 	object2Query,
+	parsePillowRealState,
+	handPillowStatus,
 	handPillowSideState,
 	parsePillowState,
 	hexCharCodeToStr,

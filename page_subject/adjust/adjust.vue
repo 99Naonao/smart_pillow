@@ -57,6 +57,8 @@
 <script>
 	import {
 		object2Query,
+		parsePillowRealState,
+		handPillowStatus,
 		handPillowSideState,
 		handPillowFrontState,
 		handlePillowDelayState,
@@ -97,11 +99,17 @@
 		onShow() {
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
 			uni.onBLECharacteristicValueChange(this.handleMessage)
+			this.requestStatus()
 		},
 		onHide() {
 			uni.offBLECharacteristicValueChange(this.handleMessage)
 		},
 		methods: {
+			// 请求枕头状态
+			requestStatus() {
+				let shake1 = handPillowStatus()
+				write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
+			},
 			saveHandler() {
 				uni.switchTab({
 					url: '/pages/status/status'
@@ -158,15 +166,23 @@
 						//正卧
 						let result = parsePillowState(res.value)
 						console.log('resultadjust仰卧数据:', result)
-						this.head = result.head
-						this.neck = result.neck
+						// this.head = result.head
+						// this.neck = result.neck
 
 					} else if (head == '2319') {
 						//侧卧
 						let result = parsePillowState(res.value)
-						this.sideHead = result.head
-						this.sideNeck = result.neck
+						// this.sideHead = result.head
+						// this.sideNeck = result.neck
 						console.log('resultadjust侧卧数据:', result)
+					} else if (head = '6037') {
+						// 同步状态
+						let result = parsePillowRealState(res.value)
+						console.log('result 60376037 数据:', result)
+						this.sideHead = result.sideHead
+						this.sideNeck = result.sideNeck
+						this.head = result.head
+						this.neck = result.neck
 					}
 				}
 			},
