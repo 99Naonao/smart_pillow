@@ -195,7 +195,7 @@
 			// 调低枕头
 			adjustLowSleepHandler() {
 				uni.showLoading({
-					title: '调整中'
+					title: '调低中'
 				})
 				let arraybuffer
 				// 如果选择的仰卧
@@ -242,7 +242,7 @@
 			// 调高枕头
 			adjustHighSleepHandler() {
 				uni.showLoading({
-					title: '调整中'
+					title: '调高中'
 				})
 				let arraybuffer
 

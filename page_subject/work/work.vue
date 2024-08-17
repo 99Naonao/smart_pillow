@@ -105,6 +105,10 @@
 				console.log('接收到数据', ab2hex(res.value), arrayBuffer.length)
 				// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
 				if (arrayBuffer.length == 4) {
+					if (this.success) {
+						console.log('已经握手成功了!')
+						return;
+					}
 					let receive16 = ab2hex(res.value);
 					let last = '0x' + receive16
 					let total = 0
@@ -117,7 +121,7 @@
 					)
 					let shake1 = hand1Shake(Number(
 						total), arrayBuffer)
-					console.log("total:", total)
+					console.log("total:", total, shake1)
 					write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
 					console.log('第一次握手', ab2hex(shake1))
 				} else if (arrayBuffer.length == 2) {
@@ -129,6 +133,7 @@
 						console.log('接收到回复数据', ab2hex(res.value))
 						console.log('校验长度', parseInt('0x' + len))
 						console.log('握手成功可以发送ssid了')
+						this.success = true
 						write2tooth(this.deviceId, this.serviceId, this.characteristicStringId,
 							hexStringToArrayBuffer('jimlee'))
 					} else if (mark == '66') {
@@ -141,22 +146,53 @@
 					} else if (mark == '33') {
 						console.log('收到成功调整枕头')
 						console.log('8个字节指令的校验和', parseInt('0x' + len))
+						console.log('后四位', receive16, receive16.slice(4, 1), receive16.slice(5, 1))
 					}
 				} else if (arrayBuffer.length == 8) {
+					//默认是枕头状态 5s收到一次
 					let receive16 = ab2hex(res.value);
-					let head = receive16.slice(0, 4)
-					if (head == '2318') {
-						//正卧
-						let result = parsePillowState(res.value)
-						console.log('result1:', result)
-						this.head = result.head
-						this.neck = result.neck
+					// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
+					let status = receive16.slice(0, 2);
+					let status1 = '0x' + status;
 
-					} else if (head == '2319') {
-						//侧卧
-						let result = parsePillowState(res.value)
-						console.log('result2:', result)
+					let status10 = parseInt(status1);
+					switch (status10) {
+						case 0:
+							console.log('枕头空闲状态')
+							break;
+						case 1:
+							console.log('枕头平躺状态')
+							break;
+						case 2:
+							console.log('枕头侧卧状态')
+							break;
 					}
+					let headHeight = receive16.slice(2, 4);
+					let headHeight10 = parseInt('0x' + headHeight);
+					let neckHeight = receive16.slice(4, 6);
+					let neckHeight10 = parseInt('0x' + neckHeight);
+					let vesrion = receive16.slice(6, 8);
+					let vesrion10 = parseInt('0x' + vesrion);
+					let isright = receive16.slice(8, 9);
+					let isright10 = parseInt('0x' + isright);
+					let press = receive16.slice(9, 11);
+					let press10 = parseInt('0x' + press);
+					// let status1 = '0x' + status;
+
+					console.log('888=>', status, headHeight, neckHeight, vesrion, isright, press)
+					console.log('888111=>', status10, headHeight10, neckHeight10, vesrion10, isright10, press10)
+					// if (head == '2318') {
+					// 	//正卧
+					// 	let result = parsePillowState(res.value)
+					// 	console.log('result1:', result)
+					// 	this.head = result.head
+					// 	this.neck = result.neck
+
+					// } else if (head == '2319') {
+					// 	//侧卧
+					// 	let result = parsePillowState(res.value)
+					// 	console.log('result2:', result)
+					// }
 				}
 			})
 		},
@@ -198,10 +234,13 @@
 							isnotexist = false
 						}
 					}
-					if (isnotexist && result.devices[0].name != '' && result.devices[0].name.indexOf('Minga') > -
-						1) {
+					if (isnotexist && result.devices[0].name != '') {
 						that.deviceIdList.push(result.devices[0])
 					}
+					// if (isnotexist && result.devices[0].name != '' && result.devices[0].name.indexOf('Minga') > -
+					// 	1) {
+					// 	that.deviceIdList.push(result.devices[0])
+					// }
 				} else if (result[0]) {
 					if (result[0].advertisData) {
 						result[0].advertisData = ab2hex(result[0].advertisData)
@@ -272,6 +311,7 @@
 			return {
 				currentItem: {},
 				show: false,
+				success: false, //第一次握手成功
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 				characteristicStringId: '6E400002-B5A3-F393-E0A9-E50E24DCCA9E', //write，string，rx；
 				searching: false, // 搜索中
@@ -432,14 +472,21 @@
 						this.stopBlueTooth()
 
 						console.log('connectBluetooth success!:', deviceId, res)
+
+
 						uni.getBLEDeviceServices({
 							deviceId,
 							success: (res) => {
 								console.log('getBLEDeviceServices success:', res)
+								console.log('getBLEDeviceServices res.services:', res.services)
 								for (let i = 0; i < res.services.length; i++) {
 									if (res.services[i].isPrimary) {
+										// this.addNotify(deviceId, res.services[i]
+										// 	.uuid, '6E400003-B5A3-F393-E0A9-E50E24DCCA9E')
 										this.getBLEDeviceCharacteristics(deviceId, res.services[i]
 											.uuid)
+										//这里只取第一个哈！！！！！！！！
+										break;
 										// 可根据具体业务需要，选择一个主服务进行通信
 									}
 								}
@@ -460,27 +507,32 @@
 			// 获取蓝牙设备某个服务中所有特征值(characteristic)。
 			getBLEDeviceCharacteristics(deviceId, serviceId) {
 				let that = this
-				console.log('getBLEDeviceCharacteristics:', deviceId, serviceId)
+				// serviceId = '6E400003-B5A3-F393-E0A9-E50E24DCCA9E'
+				console.log('getBLEDeviceCharacteristics123:', deviceId, serviceId)
 				uni.getBLEDeviceCharacteristics({
 					deviceId: deviceId,
 					serviceId: serviceId,
 					success: (res) => {
 						console.log("%c getBLEDeviceCharacteristics success", "color:red;", res
 							.characteristics);
-
-						uni.notifyBLECharacteristicValueChange({
-							state: true,
-							deviceId: deviceId,
-							serviceId: serviceId,
-							characteristicId: res.characteristics[0].uuid,
-							success: (res) => {
-
-								that.deviceId = deviceId
-								that.serviceId = serviceId
-								// this.characteristicId = res.characteristics[0].uuid
-								console.log('启用notify成功')
-							}
-						})
+						let notify_character = ''
+						if (res.characteristics[1]) {
+							// 启用notify
+							notify_character = res.characteristics[1].uuid
+							uni.notifyBLECharacteristicValueChange({
+								state: true,
+								deviceId: deviceId,
+								serviceId: serviceId,
+								characteristicId: notify_character,
+								success: (res) => {
+									that.deviceId = deviceId
+									that.serviceId = serviceId
+									// this.characteristicId = res.characteristics[0].uuid
+									console.log('启用notify成功：', deviceId, serviceId,
+										notify_character)
+								}
+							})
+						}
 						// console.log('device getBLEDeviceCharacteristics:', res.characteristics);
 						// this.msg = JSON.stringify(res.characteristics)
 						// var notifyServicweId = this.notifyServicweId; //具有写、通知属性的服务uuid
