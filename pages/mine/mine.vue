@@ -42,6 +42,9 @@
 </template>
 
 <script>
+	import {
+		autoLogin
+	} from '@/utils/miniapp.js'
 	export default {
 		data() {
 			return {
@@ -77,7 +80,11 @@
 					title: '暂未开放'
 				})
 			},
-			clickWxLogin() {}
+			clickWxLogin() {
+				autoLogin((res) => {
+					console.log('success')
+				})
+			}
 		}
 	}
 </script>

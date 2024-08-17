@@ -64,6 +64,7 @@
 		handlePillowDelayState,
 		hexStringToArrayBuffer,
 		ab2hex,
+		changeAdjustMode,
 		hand1Shake,
 		write2tooth,
 		parsePillowState
@@ -100,6 +101,7 @@
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
 			uni.onBLECharacteristicValueChange(this.handleMessage)
 			this.requestStatus()
+			changeAdjustMode()
 		},
 		onHide() {
 			uni.offBLECharacteristicValueChange(this.handleMessage)

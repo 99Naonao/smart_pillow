@@ -65,7 +65,30 @@ var dateUtils = {
 		return new Date(a[0], a[1] - 1, a[2], a[3], a[4], a[5]);
 	}
 };
-
+// 更改枕头状态
+var changeAdjustMode = function() {
+	// 向蓝牙设备发送一个0x00的2进制数据
+	//先构造数据
+	// 模式，0--自动，1--手动配置模式，配置其他参数前须切换到该模式
+	const data_buffer = new ArrayBuffer(2);
+	const dataBufferView = new DataView(data_buffer);
+	// 0--头部气囊，1--颈部气囊）
+	dataBufferView.setUint8(0, 1);
+	// (0--不保存，1--保存)
+	dataBufferView.setUint8(1, 1);
+	let withLengthBuffer = handleSendFormart(data_buffer)
+	console.log("[changeMode] withLengthBuffer", withLengthBuffer)
+	const orign_buffer = new DataView(withLengthBuffer)
+	console.log("[changeMode]", withLengthBuffer.byteLength)
+	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
+	const dataView = new DataView(buffer)
+	// 指令码；1：模式设置2,3,4--手动调整 
+	dataView.setUint8(0, 1)
+	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
+		dataView.setUint8(index + 1, orign_buffer.getUint8(index))
+	}
+	return buffer
+}
 
 // 数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0
 // 正卧数据（手动调整
@@ -382,6 +405,7 @@ export {
 	handPillowState,
 	handPillowFrontState,
 	handleUserInitData,
+	changeAdjustMode,
 	handleSendFormart,
 	dateUtils
 }

@@ -204,8 +204,9 @@
 			})
 		},
 		onHide: () => {
-			let that = this
-			that.deviceIdList = [];
+			this.deviceIdList = [{
+				name: 'margin-test1'
+			}]; // 检测列表
 			this.onShowing = false;
 			// if (this.searching) {
 			// uni.stopBluetoothDevicesDiscovery({
