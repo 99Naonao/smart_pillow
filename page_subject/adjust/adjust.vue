@@ -35,12 +35,12 @@
 					<image mode="widthFix" class="icon" style="transform: rotate(-180deg);"
 						:src="'../static/adjust/SY_11_butUP.png'"></image>升高
 				</button> -->
-				<view class="opt-btn" @click="adjustHighSleepHandler">
+				<view class="opt-btn" @touchstart="adjustHighSleepHandler" @touchend="stopAdjustHighHandler">
 					<image mode="widthFix" class="icon" style="transform: rotate(-180deg);"
 						:src="'../static/adjust/SY_11_butUP.png'"></image>
 					<label>升高</label>
 				</view>
-				<view class="opt-btn" @click="adjustLowSleepHandler">
+				<view class="opt-btn" @touchstart="adjustLowSleepHandler" @touchend="stopAdjustHighHandler">
 					<image mode="widthFix" class="icon" :src="'../static/adjust/SY_11_butUP.png'">
 					</image>
 					<label>降低</label>
@@ -123,20 +123,26 @@
 				// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
 				if (arrayBuffer.length == 4) {
 					let receive16 = ab2hex(res.value);
-					let last = '0x' + receive16
-					let total = 0
-					Array.prototype.map.call(
-						arrayBuffer,
-						function(bit) {
-							total += Number(bit.toString(10))
-							return ('00' + bit.toString(16)).slice(-2)
-						}
-					)
-					let shake1 = hand1Shake(Number(
-						total), arrayBuffer)
-					console.log("total:", total)
-					write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
-					console.log('第一次握手', ab2hex(shake1))
+					let len = receive16.slice(0, 2);
+					let result = receive16.slice(2, 3);
+					let mark = receive16.slice(3, 4);
+
+					console.log('数据长度:', len, result, ('0x' + result).toString(10), mark)
+					// let receive_data = new DataView(arrayBuffer)
+					// let last = '0x' + receive16
+					// let total = 0
+					// Array.prototype.map.call(
+					// 	arrayBuffer,
+					// 	function(bit) {
+					// 		total += Number(bit.toString(10))
+					// 		return ('00' + bit.toString(16)).slice(-2)
+					// 	}
+					// )
+					// let shake1 = hand1Shake(Number(
+					// 	total), arrayBuffer)
+					// console.log("total:", total)
+					// write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
+					// console.log('第一次握手', ab2hex(shake1))
 				} else if (arrayBuffer.length == 2) {
 					let receive16 = ab2hex(res.value);
 					let mark = receive16.slice(2, 4)
@@ -160,30 +166,41 @@
 						console.log('8个字节指令的校验和', parseInt('0x' + len))
 					}
 				} else if (arrayBuffer.length == 8) {
+					//默认是枕头状态 5s收到一次
 					let receive16 = ab2hex(res.value);
-					let head = receive16.slice(0, 4)
-					if (head == '2318') {
-						//正卧
-						let result = parsePillowState(res.value)
-						console.log('resultadjust仰卧数据:', result)
-						// this.head = result.head
-						// this.neck = result.neck
+					// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
+					let status = receive16.slice(0, 2);
+					let status1 = '0x' + status;
 
-					} else if (head == '2319') {
-						//侧卧
-						let result = parsePillowState(res.value)
-						// this.sideHead = result.head
-						// this.sideNeck = result.neck
-						console.log('resultadjust侧卧数据:', result)
-					} else if (head = '6037') {
-						// 同步状态
-						let result = parsePillowRealState(res.value)
-						console.log('result 60376037 数据:', result)
-						this.sideHead = result.sideHead
-						this.sideNeck = result.sideNeck
-						this.head = result.head
-						this.neck = result.neck
+					let status10 = parseInt(status1);
+					switch (status10) {
+						case 0:
+							console.log('枕头空闲状态')
+							break;
+						case 1:
+							console.log('枕头平躺状态')
+							break;
+						case 2:
+							console.log('枕头侧卧状态')
+							break;
 					}
+					let headHeight = receive16.slice(4, 6);
+					let headHeight10 = parseInt('0x' + headHeight);
+					let neckHeight = receive16.slice(6, 8);
+					let neckHeight10 = parseInt('0x' + neckHeight);
+					let vesrion = receive16.slice(8, 10);
+					let vesrion10 = parseInt('0x' + vesrion);
+					let isright = receive16.slice(10, 12);
+					let isright10 = parseInt('0x' + isright);
+					let press = receive16.slice(12, 14);
+					let press10 = parseInt('0x' + press);
+
+					this.head = headHeight10;
+					this.neck = neckHeight10;
+					// let status1 = '0x' + status;
+
+					console.log('888=>', status, headHeight, neckHeight, vesrion, isright, press)
+					console.log('888111=>', status10, headHeight10, neckHeight10, vesrion10, isright10, press10)
 				}
 			},
 			selectHeadHandler(bool) {
@@ -194,9 +211,7 @@
 			},
 			// 调低枕头
 			adjustLowSleepHandler() {
-				uni.showLoading({
-					title: '调低中'
-				})
+				let action = 2
 				let arraybuffer
 				// 如果选择的仰卧
 				if (this.selectIndex == 1) {
@@ -212,9 +227,9 @@
 							this.neck = 0
 						}
 					}
-					arraybuffer = handPillowFrontState(this.head, this
+					arraybuffer = handPillowFrontState(action, this
 						.neck)
-					console.log('调低仰卧:', this.head, this.neck, ab2hex(arraybuffer))
+					console.log('调低仰卧:', action, ab2hex(arraybuffer))
 				} else {
 					// 如果选择的侧卧
 					if (this.selectHead) {
@@ -234,17 +249,61 @@
 				}
 				// console.log('调低:', ab2hex(arraybuffer))
 				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
-					uni.hideLoading()
+					// uni.hideLoading()
 				}).catch(res => {
-					uni.hideLoading()
+					// uni.hideLoading()
+				})
+			},
+			stopAdjustHighHandler() {
+				// 停止调节枕头
+				// 如果选择的仰卧
+				let action = 0
+				if (this.selectIndex == 1) {
+					if (this.selectHead) {
+						this.head += 1
+						if (this.head >= 100) {
+							this.head = 100
+						}
+					} else {
+						this.neck += 1
+						if (this.neck >= 100) {
+							this.neck = 100
+						}
+					}
+					arraybuffer = handPillowFrontState(action, this
+						.neck)
+					console.log('停止调节:', action, ab2hex(arraybuffer))
+				} else {
+					if (this.selectHead) {
+						this.sideHead += 1
+						if (this.sideHead >= 100) {
+							this.sideHead = 100
+						}
+					} else {
+						this.sideNeck += 1
+						if (this.sideNeck >= 100) {
+							this.sideNeck = 100
+						}
+					}
+					// 如果选择的侧卧
+					arraybuffer = handPillowSideState(action, this
+						.sideNeck)
+					console.log('调高侧卧:', this.head, this.neck, ab2hex(arraybuffer))
+				}
+				// console.log('调高:', ab2hex(arraybuffer))
+				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
+					// uni.hideLoading()
+				}).catch(e => {
+					// uni.hideLoading()
 				})
 			},
 			// 调高枕头
 			adjustHighSleepHandler() {
-				uni.showLoading({
-					title: '调高中'
-				})
+				// uni.showLoading({
+				// 	title: '调高中'
+				// })
 				let arraybuffer
+				let action = 1
 
 				// 如果选择的仰卧
 				if (this.selectIndex == 1) {
@@ -259,8 +318,8 @@
 							this.neck = 100
 						}
 					}
-					arraybuffer = handPillowFrontState(this.head, this
-						.neck, ab2hex(arraybuffer))
+					arraybuffer = handPillowFrontState(action, this
+						.neck)
 					console.log('调高仰卧:', this.head, this.neck, ab2hex(arraybuffer))
 				} else {
 					if (this.selectHead) {
@@ -281,9 +340,9 @@
 				}
 				// console.log('调高:', ab2hex(arraybuffer))
 				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
-					uni.hideLoading()
+					// uni.hideLoading()
 				}).catch(e => {
-					uni.hideLoading()
+					// uni.hideLoading()
 				})
 			},
 		}

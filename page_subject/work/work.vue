@@ -80,6 +80,7 @@
 
 		},
 		onShow() {
+			this.onShowing = true;
 			// let curPages = getCurrentPages()[0]
 			// if (typeof curPages.getTabBar === 'function' && curPages.getTabBar()) {
 			// 	curPages.getTabBar().setData({
@@ -100,6 +101,12 @@
 
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
 			uni.onBLECharacteristicValueChange((res) => {
+				if (this.onShowing) {
+
+				} else {
+					console.log('[no showing]')
+					return;
+				}
 				console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
 				let arrayBuffer = new Uint8Array(res.value);
 				console.log('接收到数据', ab2hex(res.value), arrayBuffer.length)
@@ -167,15 +174,15 @@
 							console.log('枕头侧卧状态')
 							break;
 					}
-					let headHeight = receive16.slice(2, 4);
+					let headHeight = receive16.slice(4, 6);
 					let headHeight10 = parseInt('0x' + headHeight);
-					let neckHeight = receive16.slice(4, 6);
+					let neckHeight = receive16.slice(6, 8);
 					let neckHeight10 = parseInt('0x' + neckHeight);
-					let vesrion = receive16.slice(6, 8);
+					let vesrion = receive16.slice(8, 10);
 					let vesrion10 = parseInt('0x' + vesrion);
-					let isright = receive16.slice(8, 9);
+					let isright = receive16.slice(10, 12);
 					let isright10 = parseInt('0x' + isright);
-					let press = receive16.slice(9, 11);
+					let press = receive16.slice(12, 14);
 					let press10 = parseInt('0x' + press);
 					// let status1 = '0x' + status;
 
@@ -199,6 +206,7 @@
 		onHide: () => {
 			let that = this
 			that.deviceIdList = [];
+			this.onShowing = false;
 			// if (this.searching) {
 			// uni.stopBluetoothDevicesDiscovery({
 			// 	success: function(res) {
@@ -310,6 +318,7 @@
 		data() {
 			return {
 				currentItem: {},
+				onShowing: false, //页面是否显示
 				show: false,
 				success: false, //第一次握手成功
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值

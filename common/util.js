@@ -69,7 +69,7 @@ var dateUtils = {
 
 // 数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0
 // 正卧数据（手动调整
-var handPillowFrontState = function(head, neck) {
+var handPillowFrontState = function(action, neck) {
 	// 向蓝牙设备发送一个0x00的2进制数据
 	//先构造数据
 	const data_buffer = new ArrayBuffer(2);
@@ -77,7 +77,7 @@ var handPillowFrontState = function(head, neck) {
 	// 0--头部气囊，1--颈部气囊）
 	dataBufferView.setUint8(0, 0)
 	// 动作(U8)(0--停止，1--升高，2--降低)
-	dataBufferView.setUint8(1, 1)
+	dataBufferView.setUint8(1, action)
 	let withLengthBuffer = handleSendFormart(data_buffer)
 	console.log("[handPillowFrontState] withLengthBuffer", withLengthBuffer)
 	const orign_buffer = new DataView(withLengthBuffer)
