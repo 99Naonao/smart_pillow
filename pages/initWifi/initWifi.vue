@@ -13,13 +13,15 @@
 					当前选择
 				</view>
 				<view class="uni-list-cell-db">
-					<picker @change="bindPickerChange" :value="index" :range="wifiList">
+					<uni-combox class="combox-style" label="" :border="false" :candidates="candidates"
+						v-model="wifiList" placeholder="选择网络"></uni-combox>
+					<!-- <picker @change="bindPickerChange" :value="index" :range="wifiList">
 						<view class="uni-input">{{wifiList[index]}}</view>
-					</picker>
+					</picker> -->
 				</view>
-				<view class="image-right">
+				<!-- <view class="image-right">
 					<image class="drop-arrow" src="@/static/index/SY_10_button01a.png"></image>
-				</view>
+				</view> -->
 			</view>
 		</view>
 		<view class="uni-list border-item">
@@ -32,10 +34,11 @@
 				</view>
 			</view>
 		</view>
-		<view class="opt-part">
+		<view class="opt-part flex align-center">
 			<view class="save-btn" @click="saveHandler">
 				保存
 			</view>
+			<view class="wifi-info" @click="navWifiHandler">从wifi列表中选择</view>
 		</view>
 	</view>
 </template>
@@ -52,31 +55,41 @@
 			console.log('options', options, JSON.stringify(options), options.pillowName);
 			this.pillowName = options.pillowName || '';
 			console.log('this.pillowName', this.pillowName);
-			uni.startWifi({
-				success: res => {
-					// console.log("初始化wifi模块成功123" + res.errMsg)
-					// 需要自行进入“设置 - 无线局域网”，然后等待无线网刷新完成
-					uni.getWifiList({
-						success: (res) => {
-							console.log("getWifiList123模块成功", res)
-						},
-						fail: (res) => {
-							uni.showToast({
-								title: res.errMsg
-							})
-						}
-					})
+
+
+			uni.getConnectedWifi({
+				partialInfo: true,
+				success: (res) => {
+					let wifi = res.wifi;
+					if (wifi) {
+						this.connectSSID = wifi.SSID;
+						this.wifiList.push(this.connectSSID)
+					}
 				}
-			});
+			})
+		},
+		onUnload() {
+			uni.offGetWifiList(this.onWifiList)
 		},
 		onHide() {
-			// uni.offGetWifiList(this.onWifiList)
+
 		},
 		onShow() {
 			// 把wx.onGetWifiList()放在onShow()中，在第3步骤“无线网刷新完成后，自行回到“微信””后，便可以正常执行wx.onGetWifiList()的回调函数，可以在控制台打印，手机打开调试。
 			uni.onGetWifiList((res) => {
 				console.log('onGetWIfiList!!!!:::', res)
-				this.wifiList = res.wifiList;
+				// this.wifiList = res.wifiList;
+				this.wifiList = []
+				if (this.connectSSID) {
+					this.wifiList.push(this.connectSSID)
+				}
+				for (var item in res.wifiList) {
+					if (this.connectSSID == res.wifiList[item].SSID) {
+						continue
+					}
+					this.wifiList.push(res.wifiList[item].SSID)
+				}
+				// this.wifiList = res.wifiList
 			})
 
 			// 监听蓝牙接收的数据
@@ -127,14 +140,14 @@
 		data() {
 			return {
 				showPassword: false,
-				wifiList: [
-					'123'
-				],
+				candidates: ['北京', '南京', '东京', '武汉', '天津', '上海', '海口'],
+				wifiList: ['123', '456'],
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值write，byte，rxi；
 				characteristicStringId: '6E400002-B5A3-F393-E0A9-E50E24DCCA9E', //string，rx；
 				psd: '',
 				index: 0,
 				pillowName: '123',
+				connectSSID: '',
 				statusBarHeight: 0,
 				navBarWidth: 0,
 				navBarHeight: 0,
@@ -152,6 +165,24 @@
 			},
 		},
 		methods: {
+			navWifiHandler() {
+				uni.startWifi({
+					success: res => {
+						// console.log("初始化wifi模块成功123" + res.errMsg)
+						// 需要自行进入“设置 - 无线局域网”，然后等待无线网刷新完成
+						uni.getWifiList({
+							success: (res) => {
+								// console.log("getWifiList123模块成功", res)
+							},
+							fail: (res) => {
+								uni.showToast({
+									title: res.errMsg
+								})
+							}
+						})
+					}
+				});
+			},
 			saveHandler() {
 				console.log(this.psd, this.index, this.wifiList[this.index], this.deviceId, this.serviceId, this
 					.characteristicStringId)
@@ -212,6 +243,16 @@
 			padding-bottom: 0rpx;
 		}
 
+		.wifi-info {
+			color: #5B7897;
+			text-decoration: underline;
+		}
+
+		.uni-combox {
+			padding-top: 0 !important;
+			padding-bottom: 0 !important;
+		}
+
 
 		.opt-part {
 			text-align: center;
@@ -220,7 +261,7 @@
 			.save-btn {
 				width: 150rpx;
 				margin: 0 auto;
-				padding: 30rpx;
+				padding: 20rpx;
 				line-height: 50rpx;
 				background-color: #5B7897;
 				border-radius: 30rpx;
