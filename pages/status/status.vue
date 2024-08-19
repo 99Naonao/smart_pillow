@@ -164,7 +164,7 @@
 			// 	}
 			// })
 		},
-		onHide: () => {
+		onHide() {
 			let that = this
 			that.deviceIdList = [];
 			if (this.searching) {

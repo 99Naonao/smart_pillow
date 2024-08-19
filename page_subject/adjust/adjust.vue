@@ -15,9 +15,9 @@
 		<view class="info-part">
 			<view class="info-second-part">
 				<label class='desc1'>脖颈部</label>
-				<label class='desc1size'>{{this.selectIndex==1?this.neck:this.sideNeck}}%</label>
+				<label class='desc1size'>{{this.selectIndex==1?this.neck:this.sideNeck}}mm</label>
 				<label class='desc2'>头枕部</label>
-				<label class='desc2size'>{{this.selectIndex==1?this.head:this.sideHead}}%</label>
+				<label class='desc2size'>{{this.selectIndex==1?this.head:this.sideHead}}mm</label>
 				<image class="main-icon" :src="'../static/adjust/SY_11_DITU.png'"></image>
 				<image class="down-icon" :src="'../static/adjust/SY_11_DOW.png'"></image>
 				<image class="up-icon" :src="'../static/adjust/SY_11_UP.png'"></image>
@@ -46,6 +46,15 @@
 					<label>降低</label>
 				</view>
 			</view>
+			<view class="opt-part">
+				<view class="opt-btn" @click="uploadDataHandle">
+					<label>上报数据</label>
+				</view>
+
+				<view class="opt-btn" @click="resetHandle">
+					<label>设备校准</label>
+				</view>
+			</view>
 			<view class="bottom-part">
 				<view class="save" @click="saveHandler">保存</view>
 			</view>
@@ -55,6 +64,7 @@
 </template>
 
 <script>
+	import blue_class from '../../utils/BlueManager'
 	import {
 		object2Query,
 		parsePillowRealState,
@@ -64,7 +74,10 @@
 		handlePillowDelayState,
 		hexStringToArrayBuffer,
 		ab2hex,
+		resetPillow,
+		uploadDataRequest,
 		changeAdjustMode,
+		changeSaveAdjustMode,
 		hand1Shake,
 		write2tooth,
 		parsePillowState
@@ -99,52 +112,63 @@
 		},
 		onShow() {
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
-			uni.onBLECharacteristicValueChange(this.handleMessage)
-			this.requestStatus()
-			changeAdjustMode()
+			// uni.onBLECharacteristicValueChange(this.handleMessage)
+			uni.$on('xx', this.handleMessage);
+			// this.requestStatus()
+			let arraybuffer = changeAdjustMode();
+			// let app = getApp()
+			blue_class.getInstance().write2tooth(arraybuffer)
 		},
 		onHide() {
-			uni.offBLECharacteristicValueChange(this.handleMessage)
+			uni.$off('xx', this.handleMessage);
+			// uni.offBLECharacteristicValueChange(this.handleMessage)
 		},
 		methods: {
+			uploadDataHandle() {
+				let upload_data = uploadDataRequest()
+				blue_class.getInstance().write2tooth(upload_data)
+			},
+			resetHandle() {
+				let reset_data = resetPillow()
+				blue_class.getInstance().write2tooth(reset_data)
+			},
 			// 请求枕头状态
 			requestStatus() {
 				let shake1 = handPillowStatus()
-				write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
+				blue_class.getInstance().write2tooth(shake1)
 			},
 			saveHandler() {
-				uni.switchTab({
-					url: '/pages/status/status'
-				})
+				let changeAdjust = changeSaveAdjustMode();
+				blue_class.getInstance().write2tooth(changeAdjust)
+				// uni.switchTab({
+				// 	url: '/pages/status/status'
+				// })
 				// uni.navigateBack()
 			},
 			handleMessage(res) {
-				console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
+				// console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
 				let arrayBuffer = new Uint8Array(res.value);
-				console.log('handleMessage 接收到数据', ab2hex(res.value), arrayBuffer.length)
+				console.log('handleMessage adjust 接收到数据', ab2hex(res.value), arrayBuffer.length)
 				// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
 				if (arrayBuffer.length == 4) {
 					let receive16 = ab2hex(res.value);
-					let len = receive16.slice(0, 2);
-					let result = receive16.slice(2, 3);
-					let mark = receive16.slice(3, 4);
+					let ask = receive16.slice(0, 2);
+					let len = receive16.slice(2, 4);
+					let result = receive16.slice(4, 6);
+					let mark = receive16.slice(6, 8);
 
 					console.log('数据长度:', len, result, ('0x' + result).toString(10), mark)
-					// let receive_data = new DataView(arrayBuffer)
-					// let last = '0x' + receive16
-					// let total = 0
-					// Array.prototype.map.call(
-					// 	arrayBuffer,
-					// 	function(bit) {
-					// 		total += Number(bit.toString(10))
-					// 		return ('00' + bit.toString(16)).slice(-2)
-					// 	}
-					// )
-					// let shake1 = hand1Shake(Number(
-					// 	total), arrayBuffer)
-					// console.log("total:", total)
-					// write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
-					// console.log('第一次握手', ab2hex(shake1))
+					//指令应答
+					if (mark == '33') {
+						switch (parseInt(ask)) {
+							case 1:
+								console.log('33 => 1:', result);
+								break;
+							case 4:
+								console.log('33 => 4:', result);
+								break;
+						}
+					}
 				} else if (arrayBuffer.length == 2) {
 					let receive16 = ab2hex(res.value);
 					let mark = receive16.slice(2, 4)
@@ -168,7 +192,7 @@
 						console.log('8个字节指令的校验和', parseInt('0x' + len))
 					}
 				} else if (arrayBuffer.length == 8) {
-					//默认是枕头状态 5s收到一次
+					// //默认是枕头状态 5s收到一次
 					let receive16 = ab2hex(res.value);
 					// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
 					let status = receive16.slice(0, 2);
@@ -201,8 +225,9 @@
 					this.neck = neckHeight10;
 					// let status1 = '0x' + status;
 
-					console.log('888=>', status, headHeight, neckHeight, vesrion, isright, press)
-					console.log('888111=>', status10, headHeight10, neckHeight10, vesrion10, isright10, press10)
+					console.log('adjust =>', status, headHeight, neckHeight, vesrion, isright, press)
+					console.log('adjust mm=>', status10, headHeight10 + 'mm', neckHeight10 + 'mm', vesrion10, isright10,
+						press10)
 				}
 			},
 			selectHeadHandler(bool) {
@@ -250,11 +275,7 @@
 					console.log('调低侧卧:', this.sideHead, this.sideNeck, ab2hex(arraybuffer))
 				}
 				// console.log('调低:', ab2hex(arraybuffer))
-				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
-					// uni.hideLoading()
-				}).catch(res => {
-					// uni.hideLoading()
-				})
+				blue_class.getInstance().write2tooth(arraybuffer)
 			},
 			stopAdjustHighHandler() {
 				// 停止调节枕头
@@ -274,7 +295,7 @@
 					}
 					arraybuffer = handPillowFrontState(action, this
 						.neck)
-					console.log('停止调节:', action, ab2hex(arraybuffer))
+					console.log('停止调节仰卧:', action, ab2hex(arraybuffer))
 				} else {
 					if (this.selectHead) {
 						this.sideHead += 1
@@ -290,14 +311,10 @@
 					// 如果选择的侧卧
 					arraybuffer = handPillowSideState(action, this
 						.sideNeck)
-					console.log('调高侧卧:', this.head, this.neck, ab2hex(arraybuffer))
+					console.log('停止调节侧卧:', this.head, this.neck, ab2hex(arraybuffer))
 				}
 				// console.log('调高:', ab2hex(arraybuffer))
-				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
-					// uni.hideLoading()
-				}).catch(e => {
-					// uni.hideLoading()
-				})
+				blue_class.getInstance().write2tooth(arraybuffer)
 			},
 			// 调高枕头
 			adjustHighSleepHandler() {
@@ -341,11 +358,7 @@
 					console.log('调高侧卧:', this.head, this.neck, ab2hex(arraybuffer))
 				}
 				// console.log('调高:', ab2hex(arraybuffer))
-				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
-					// uni.hideLoading()
-				}).catch(e => {
-					// uni.hideLoading()
-				})
+				blue_class.getInstance().write2tooth(arraybuffer)
 			},
 		}
 	}

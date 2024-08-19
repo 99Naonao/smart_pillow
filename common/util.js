@@ -75,11 +75,36 @@ var changeAdjustMode = function() {
 	// 0--头部气囊，1--颈部气囊）
 	dataBufferView.setUint8(0, 1);
 	// (0--不保存，1--保存)
-	dataBufferView.setUint8(1, 1);
+	dataBufferView.setUint8(1, 0);
 	let withLengthBuffer = handleSendFormart(data_buffer)
 	console.log("[changeMode] withLengthBuffer", withLengthBuffer)
 	const orign_buffer = new DataView(withLengthBuffer)
 	console.log("[changeMode]", withLengthBuffer.byteLength)
+	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
+	const dataView = new DataView(buffer)
+	// 指令码；1：模式设置2,3,4--手动调整 
+	dataView.setUint8(0, 1)
+	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
+		dataView.setUint8(index + 1, orign_buffer.getUint8(index))
+	}
+	return buffer
+}
+
+// 更改枕头状态
+var changeSaveAdjustMode = function() {
+	// 向蓝牙设备发送一个0x00的2进制数据
+	//先构造数据
+	// 模式，0--自动，1--手动配置模式，配置其他参数前须切换到该模式
+	const data_buffer = new ArrayBuffer(2);
+	const dataBufferView = new DataView(data_buffer);
+	// 0--头部气囊，1--颈部气囊）
+	dataBufferView.setUint8(0, 0);
+	// (0--不保存，1--保存)
+	dataBufferView.setUint8(1, 1);
+	let withLengthBuffer = handleSendFormart(data_buffer)
+	console.log("[changeSaveAdjustMode] withLengthBuffer", withLengthBuffer)
+	const orign_buffer = new DataView(withLengthBuffer)
+	console.log("[changeSaveAdjustMode]", withLengthBuffer.byteLength)
 	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
 	const dataView = new DataView(buffer)
 	// 指令码；1：模式设置2,3,4--手动调整 
@@ -151,8 +176,8 @@ var handlePillowDelayState = function(head, neck) {
 	return buffer
 }
 
-function handleTime() {
-	var now = new Date();
+function handleTime(timstamp = 0) {
+	var now = new Date(timstamp);
 	var second = now.getSeconds();
 	var minutes = now.getMinutes();
 	var hours = now.getHours();
@@ -180,7 +205,7 @@ var hand1Shake = function(checkNum, arrayUnit8Buffer_) {
 	dataView.setUint8(3, arrayUnit8Buffer_[1])
 	dataView.setUint8(4, arrayUnit8Buffer_[2])
 	dataView.setUint8(5, arrayUnit8Buffer_[3])
-	let time = handleTime()
+	let time = handleTime(Date.now())
 	const dataView_time = new DataView(time);
 	console.log('time1:', time)
 	dataView.setUint8(6, dataView_time.getUint8(0))
@@ -374,6 +399,52 @@ var ab2hex = function(buffer) {
 	return hexArr.join('')
 }
 
+// 生成第一步握手数据
+var uploadDataRequest = function(checkNum, arrayUnit8Buffer_) {
+	// 向蓝牙设备发送一个0x00的2进制数据
+	// 11. APP收到设备ID后，发送10个字节的应答（0：0；1：设备ID的校验和；2~5：APP-ID；6~9：当前时间（T4））
+	let littleEdition = true
+	const buffer = new ArrayBuffer(10)
+	const dataView = new DataView(buffer)
+	dataView.setUint8(0, 1)
+	let time = handleTime(Date.now() - 3600 * 24)
+	const dataView_time = new DataView(time);
+	dataView.setUint8(2, dataView_time.getUint8(0))
+	dataView.setUint8(3, dataView_time.getUint8(1))
+	dataView.setUint8(4, dataView_time.getUint8(2))
+	dataView.setUint8(5, dataView_time.getUint8(3))
+	let time_end = handleTime(Date.now())
+	const dataView_time_end = new DataView(time_end);
+	dataView.setUint8(6, dataView_time_end.getUint8(0))
+	dataView.setUint8(7, dataView_time_end.getUint8(1))
+	dataView.setUint8(8, dataView_time_end.getUint8(2))
+	dataView.setUint8(9, dataView_time_end.getUint8(3))
+
+	let withLengthBuffer = handleSendFormart(buffer);
+	console.log("[handPillowFrontState] withLengthBuffer", withLengthBuffer)
+	const orign_buffer = new DataView(withLengthBuffer)
+	console.log("[handPillowFrontState]", withLengthBuffer.byteLength)
+	const write_buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
+	const write_dataView = new DataView(write_buffer)
+	// 指令码；1：2,3,4 5--上报数据
+	write_dataView.setUint8(0, 5)
+	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
+		write_dataView.setUint8(index + 1, orign_buffer.getUint8(index))
+	}
+	return write_buffer
+}
+
+// 增加数据长度
+var resetPillow = function() {
+	console.log('[handleresetPillow] buffer');
+	const n_buffer = new ArrayBuffer(4)
+	const dataView = new DataView(n_buffer)
+	// 写入长度
+	dataView.setUint16(0, 0xAA55)
+	dataView.setUint16(2, 0x07E8)
+	return n_buffer
+}
+
 /**
  * uni跳转参数转化
  * @param {Object} obj
@@ -400,12 +471,15 @@ export {
 	hand1Shake,
 	write2tooth,
 	ab2hex,
+	resetPillow,
 	formatTime,
 	formatLocation,
 	handPillowState,
 	handPillowFrontState,
 	handleUserInitData,
 	changeAdjustMode,
+	changeSaveAdjustMode,
 	handleSendFormart,
+	uploadDataRequest,
 	dateUtils
 }
