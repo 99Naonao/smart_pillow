@@ -421,20 +421,25 @@ var uploadDataRequest = function(checkNum, arrayUnit8Buffer_) {
 	dataView.setUint8(9, dataView_time_end.getUint8(3))
 
 	let withLengthBuffer = handleSendFormart(buffer);
-	console.log("[handPillowFrontState] withLengthBuffer", withLengthBuffer)
-	const orign_buffer = new DataView(withLengthBuffer)
-	console.log("[handPillowFrontState]", withLengthBuffer.byteLength)
-	const write_buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
-	const write_dataView = new DataView(write_buffer)
-	// 指令码；1：2,3,4 5--上报数据
-	write_dataView.setUint8(0, 5)
-	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
-		write_dataView.setUint8(index + 1, orign_buffer.getUint8(index))
-	}
+	console.log("[handPillowFrontState] withLengthBuffer", withLengthBuffer.byteLength, ab2hex(withLengthBuffer))
+	// console.log("[handPillowFrontState]", withLengthBuffer.byteLength)
+	const write_buffer = handleMarkSend(withLengthBuffer)
 	return write_buffer
 }
+//增加指令头
+var handleMarkSend = function(mark, buffer) {
+	const orign_buffer_view = new DataView(buffer)
+	const write_buffer = new ArrayBuffer(buffer.byteLength + 1)
+	const write_dataView = new DataView(write_buffer)
+	// 指令码；1：2,3,4 5--上报数据
+	write_dataView.setUint8(0, mark)
+	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
+		write_dataView.setUint8(index + 1, orign_buffer_view.getUint8(index))
+	}
+	return write_buffer;
+}
 
-// 增加数据长度
+// 重置校准
 var resetPillow = function() {
 	console.log('[handleresetPillow] buffer');
 	const n_buffer = new ArrayBuffer(4)
@@ -442,7 +447,8 @@ var resetPillow = function() {
 	// 写入长度
 	dataView.setUint16(0, 0xAA55)
 	dataView.setUint16(2, 0x07E8)
-	return n_buffer
+	let withLengthBuffer = handleSendFormart(n_buffer);
+	return handleMarkSend(88, withLengthBuffer)
 }
 
 /**
