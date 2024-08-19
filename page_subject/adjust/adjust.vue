@@ -381,8 +381,7 @@
 							this.neck = 100
 						}
 					}
-					arraybuffer = handPillowFrontState(action, this
-						.neck)
+					arraybuffer = handPillowFrontState(action, this.selectHead)
 					console.log('停止调节仰卧:', action, ab2hex(arraybuffer))
 				} else {
 					if (this.selectHead) {
