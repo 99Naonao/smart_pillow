@@ -125,11 +125,11 @@
 		},
 		methods: {
 			uploadDataHandle() {
-				let upload_data = uploadDataRequest()
+				let upload_data = uploadDataRequest(5)
 				blue_class.getInstance().write2tooth(upload_data)
 			},
 			resetHandle() {
-				let reset_data = resetPillow()
+				let reset_data = resetPillow(88)
 				blue_class.getInstance().write2tooth(reset_data)
 			},
 			// 请求枕头状态
@@ -146,9 +146,59 @@
 				// uni.navigateBack()
 			},
 			handleMessage(res) {
-				// console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
-				let arrayBuffer = new Uint8Array(res.value);
-				console.log('handleMessage adjust 接收到数据', ab2hex(res.value), arrayBuffer.length)
+				// console.log(`value:`, res.value)
+				let arrayBuffer_res = new Uint8Array(res.value);
+				// let arrayBuffer_DateView = new DataView(arrayBuffer_res);
+				let mark = arrayBuffer_res[0];
+				console.log('handleMessage 接收到数据 mark:', parseInt(mark))
+				let length = arrayBuffer_res[1];
+				console.log('handleMessage 接收到数据 length:', parseInt(length))
+				let arrayBuffer = new ArrayBuffer(length);
+				let receive_dataView = new DataView(arrayBuffer);
+				for (var index = 0; index < arrayBuffer.byteLength; index++) {
+					receive_dataView.setUint8(index, arrayBuffer_res[index + 2])
+				}
+				console.log('handleMessage adjust 接收到数据', ab2hex(res.value), mark, arrayBuffer.length);
+				switch (parseInt(mark)) {
+					case 1:
+						let result = receive_dataView.getUint8(0)
+						switch (parseInt(result)) {
+							case 0:
+								console.log("[调整模式成功]")
+								break;
+							case 1:
+								console.log("[调整模式参数非法]")
+								break;
+							case 2:
+								console.log("[不支持的指令]")
+								break;
+						}
+						break;
+					case 2:
+						break;
+					case 4:
+						let result4 = receive_dataView.getUint8(0)
+						switch (parseInt(result4)) {
+							case 0:
+								console.log("[调整枕头成功]")
+								break;
+							case 1:
+								console.log("[调整模式参数非法]")
+								break;
+							case 2:
+								console.log("[不支持的指令]")
+								break;
+						}
+						break;
+					case 5:
+						break;
+					case 6:
+						this.parsePillowStatus(arrayBuffer)
+						break;
+					case 88:
+						break;
+				}
+				return;
 				// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
 				if (arrayBuffer.length == 4) {
 					let receive16 = ab2hex(res.value);
@@ -230,6 +280,44 @@
 						press10)
 				}
 			},
+			parsePillowStatus(arraybuffer) {
+				// //默认是枕头状态 5s收到一次
+				let receive16 = ab2hex(arraybuffer);
+				// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
+				let status = receive16.slice(0, 2);
+				let status1 = '0x' + status;
+
+				let status10 = parseInt(status1);
+				switch (status10) {
+					case 0:
+						console.log('枕头空闲状态')
+						break;
+					case 1:
+						console.log('枕头平躺状态')
+						break;
+					case 2:
+						console.log('枕头侧卧状态')
+						break;
+				}
+				let headHeight = receive16.slice(4, 6);
+				let headHeight10 = parseInt('0x' + headHeight);
+				let neckHeight = receive16.slice(6, 8);
+				let neckHeight10 = parseInt('0x' + neckHeight);
+				let vesrion = receive16.slice(8, 10);
+				let vesrion10 = parseInt('0x' + vesrion);
+				let isright = receive16.slice(10, 12);
+				let isright10 = parseInt('0x' + isright);
+				let press = receive16.slice(12, 14);
+				let press10 = parseInt('0x' + press);
+
+				this.head = headHeight10;
+				this.neck = neckHeight10;
+				// let status1 = '0x' + status;
+
+				console.log('adjust =>', status, headHeight, neckHeight, vesrion, isright, press)
+				console.log('adjust mm=>', status10, headHeight10 + 'mm', neckHeight10 + 'mm', vesrion10, isright10,
+					press10)
+			},
 			selectHeadHandler(bool) {
 				this.selectHead = bool
 			},
@@ -254,9 +342,8 @@
 							this.neck = 0
 						}
 					}
-					arraybuffer = handPillowFrontState(action, this
-						.neck)
-					console.log('调低仰卧:', action, ab2hex(arraybuffer))
+					arraybuffer = handPillowFrontState(action, this.selectHead)
+					console.log('调低仰卧:', this.selectHead ? '调整头部' : '调整颈部', action, ab2hex(arraybuffer))
 				} else {
 					// 如果选择的侧卧
 					if (this.selectHead) {
@@ -281,6 +368,7 @@
 				// 停止调节枕头
 				// 如果选择的仰卧
 				let action = 0
+				let arraybuffer = null;
 				if (this.selectIndex == 1) {
 					if (this.selectHead) {
 						this.head += 1
@@ -337,9 +425,8 @@
 							this.neck = 100
 						}
 					}
-					arraybuffer = handPillowFrontState(action, this
-						.neck)
-					console.log('调高仰卧:', this.head, this.neck, ab2hex(arraybuffer))
+					arraybuffer = handPillowFrontState(action, this.selectHead)
+					console.log('调高仰卧:', this.selectHead ? '调整头部' : '调整颈部', ab2hex(arraybuffer))
 				} else {
 					if (this.selectHead) {
 						this.sideHead += 1

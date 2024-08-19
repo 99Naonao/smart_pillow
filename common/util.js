@@ -117,13 +117,14 @@ var changeSaveAdjustMode = function() {
 
 // 数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0
 // 正卧数据（手动调整
-var handPillowFrontState = function(action, neck) {
+// isHead 是否是头枕
+var handPillowFrontState = function(action, isHead = true) {
 	// 向蓝牙设备发送一个0x00的2进制数据
 	//先构造数据
 	const data_buffer = new ArrayBuffer(2);
 	const dataBufferView = new DataView(data_buffer);
 	// 0--头部气囊，1--颈部气囊）
-	dataBufferView.setUint8(0, 0)
+	dataBufferView.setUint8(0, isHead ? 0 : 1)
 	// 动作(U8)(0--停止，1--升高，2--降低)
 	dataBufferView.setUint8(1, action)
 	let withLengthBuffer = handleSendFormart(data_buffer)
@@ -400,30 +401,30 @@ var ab2hex = function(buffer) {
 }
 
 // 生成第一步握手数据
-var uploadDataRequest = function(checkNum, arrayUnit8Buffer_) {
+var uploadDataRequest = function(mark) {
 	// 向蓝牙设备发送一个0x00的2进制数据
 	// 11. APP收到设备ID后，发送10个字节的应答（0：0；1：设备ID的校验和；2~5：APP-ID；6~9：当前时间（T4））
 	let littleEdition = true
-	const buffer = new ArrayBuffer(10)
+	const buffer = new ArrayBuffer(9)
 	const dataView = new DataView(buffer)
 	dataView.setUint8(0, 1)
 	let time = handleTime(Date.now() - 3600 * 24)
 	const dataView_time = new DataView(time);
-	dataView.setUint8(2, dataView_time.getUint8(0))
-	dataView.setUint8(3, dataView_time.getUint8(1))
-	dataView.setUint8(4, dataView_time.getUint8(2))
-	dataView.setUint8(5, dataView_time.getUint8(3))
+	dataView.setUint8(1, dataView_time.getUint8(0))
+	dataView.setUint8(2, dataView_time.getUint8(1))
+	dataView.setUint8(3, dataView_time.getUint8(2))
+	dataView.setUint8(4, dataView_time.getUint8(3))
 	let time_end = handleTime(Date.now())
 	const dataView_time_end = new DataView(time_end);
-	dataView.setUint8(6, dataView_time_end.getUint8(0))
-	dataView.setUint8(7, dataView_time_end.getUint8(1))
-	dataView.setUint8(8, dataView_time_end.getUint8(2))
-	dataView.setUint8(9, dataView_time_end.getUint8(3))
+	dataView.setUint8(5, dataView_time_end.getUint8(0))
+	dataView.setUint8(6, dataView_time_end.getUint8(1))
+	dataView.setUint8(7, dataView_time_end.getUint8(2))
+	dataView.setUint8(8, dataView_time_end.getUint8(3))
 
-	let withLengthBuffer = handleSendFormart(buffer);
-	console.log("[handPillowFrontState] withLengthBuffer", withLengthBuffer.byteLength, ab2hex(withLengthBuffer))
-	// console.log("[handPillowFrontState]", withLengthBuffer.byteLength)
-	const write_buffer = handleMarkSend(withLengthBuffer)
+	let uploadLengthBuffer = handleSendFormart(buffer);
+	console.log("[uploadDataRequest] withLengthBuffer", ab2hex(uploadLengthBuffer), uploadLengthBuffer.byteLength)
+	let write_buffer = handleMarkSend(mark, uploadLengthBuffer)
+	console.log("[uploadDataRequest222] uploadLengthBuffer", ab2hex(write_buffer))
 	return write_buffer
 }
 //增加指令头
@@ -433,14 +434,14 @@ var handleMarkSend = function(mark, buffer) {
 	const write_dataView = new DataView(write_buffer)
 	// 指令码；1：2,3,4 5--上报数据
 	write_dataView.setUint8(0, mark)
-	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
+	for (var index = 0; index < buffer.byteLength; index++) {
 		write_dataView.setUint8(index + 1, orign_buffer_view.getUint8(index))
 	}
 	return write_buffer;
 }
 
 // 重置校准
-var resetPillow = function() {
+var resetPillow = function(mark) {
 	console.log('[handleresetPillow] buffer');
 	const n_buffer = new ArrayBuffer(4)
 	const dataView = new DataView(n_buffer)
@@ -448,7 +449,7 @@ var resetPillow = function() {
 	dataView.setUint16(0, 0xAA55)
 	dataView.setUint16(2, 0x07E8)
 	let withLengthBuffer = handleSendFormart(n_buffer);
-	return handleMarkSend(88, withLengthBuffer)
+	return handleMarkSend(mark, withLengthBuffer)
 }
 
 /**
