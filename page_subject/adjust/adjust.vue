@@ -19,8 +19,10 @@
 				<label class='desc2'>头枕部</label>
 				<label class='desc2size'>{{this.selectIndex==1?this.head:this.sideHead}}mm</label>
 				<image class="main-icon" :src="'../static/adjust/SY_11_DITU.png'"></image>
-				<image class="down-icon" :src="'../static/adjust/SY_11_DOW.png'"></image>
-				<image class="up-icon" :src="'../static/adjust/SY_11_UP.png'"></image>
+				<image class="down-icon" :class="touchingDown?['down-icon-effect']:[]"
+					:src="'../static/adjust/SY_11_DOW.png'"></image>
+				<image class="up-icon" :class="touchingUp?['up-icon-effect']:[]" :src="'../static/adjust/SY_11_UP.png'">
+				</image>
 				<image class="bzb-icon" :src="'../static/adjust/SY_11_buttonBZb.png'"></image>
 				<image class="tzb-icon" :src="'../static/adjust/SY_11_buttonTZb.png'"></image>
 				<view :class="this.selectHead?'bo bo-left':'bo bo-left select'" @click="selectHeadHandler(false)">
@@ -46,7 +48,7 @@
 					<label>降低</label>
 				</view>
 			</view>
-			<view class="opt-part">
+			<view class="opt-part" v-if="false">
 				<view class="opt-btn" @click="uploadDataHandle">
 					<label>上报数据</label>
 				</view>
@@ -88,6 +90,8 @@
 		},
 		data() {
 			return {
+				touchingDown: false,
+				touchingUp: false,
 				deviceId: '', // 连接的蓝牙id
 				serviceId: '', // 连接的服务id
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
@@ -326,6 +330,7 @@
 			},
 			// 调低枕头
 			adjustLowSleepHandler() {
+				this.touchingDown = true
 				let action = 2
 				let arraybuffer
 				// 如果选择的仰卧
@@ -365,6 +370,8 @@
 				blue_class.getInstance().write2tooth(arraybuffer)
 			},
 			stopAdjustHighHandler() {
+				this.touchingDown = false;
+				this.touchingUp = false;
 				// 停止调节枕头
 				// 如果选择的仰卧
 				let action = 0
@@ -409,7 +416,8 @@
 				// 	title: '调高中'
 				// })
 				let arraybuffer
-				let action = 1
+				let action = 1;
+				this.touchingUp = true
 
 				// 如果选择的仰卧
 				if (this.selectIndex == 1) {
@@ -612,6 +620,88 @@
 				position: absolute;
 				right: 27rpx;
 				top: 100rpx;
+				display: block;
+			}
+
+			@-webkit-keyframes downEffect {
+				0% {
+					transform: translateY(0);
+					opacity: 0.3;
+				}
+
+				30% {
+					transform: translateY(120);
+					opacity: 1;
+
+				}
+
+				100% {
+					transform: translateY(0);
+					top: 70px;
+					opacity: 1;
+				}
+			}
+
+			@keyframes downEffect {
+				0% {
+					transform: translateY(0);
+					opacity: 0.3;
+				}
+
+				30% {
+					transform: translateY(120);
+					opacity: 1;
+
+				}
+
+				100% {
+					transform: translateY(0);
+					top: 70px;
+					opacity: 1;
+				}
+			}
+
+
+			.down-icon-effect {
+				animation: 1s linear 0s infinite downEffect;
+				-webkit-animation: 1s linear 0s infinite downEffect;
+			}
+
+			@-webkit-keyframes upEffect {
+				0% {
+					opacity: 0.3;
+					top: 50px;
+				}
+
+				30% {
+					opacity: 1;
+				}
+
+				100% {
+					top: 20px;
+					opacity: 1;
+				}
+			}
+
+			@keyframes upEffect {
+				0% {
+					opacity: 0.3;
+					top: 50px;
+				}
+
+				30% {
+					opacity: 1;
+				}
+
+				100% {
+					top: 20px;
+					opacity: 1;
+				}
+			}
+
+			.up-icon-effect {
+				animation: 1s linear 0s infinite upEffect;
+				-webkit-animation: 1s linear 0s infinite upEffect;
 			}
 		}
 
