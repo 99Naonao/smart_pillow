@@ -78,6 +78,7 @@
 		ab2hex,
 		resetPillow,
 		uploadDataRequest,
+		initPillow,
 		changeAdjustMode,
 		changeSaveAdjustMode,
 		hand1Shake,
@@ -133,10 +134,19 @@
 			let arraybuffer = changeAdjustMode();
 			// let app = getApp()
 			blue_class.getInstance().write2tooth(arraybuffer)
+
+			if (this.initHeadHeight > 0 && this.initNeckHeight > 0) {
+				let init_arraybuffer = initPillow();
+				// let app = getApp()
+				blue_class.getInstance().write2tooth(init_arraybuffer)
+			}
 		},
 		onHide() {
+			// 把模式还原成自动
+			let arraybuffer = changeAdjustMode(0);
+			blue_class.getInstance().write2tooth(arraybuffer)
+
 			uni.$off('xx', this.handleMessage);
-			// uni.offBLECharacteristicValueChange(this.handleMessage)
 		},
 		methods: {
 			uploadDataHandle() {

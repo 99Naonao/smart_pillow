@@ -66,7 +66,7 @@ var dateUtils = {
 	}
 };
 // 更改枕头状态
-var changeAdjustMode = function() {
+var changeAdjustMode = function(mode = 1) {
 	// 向蓝牙设备发送一个0x00的2进制数据
 	//先构造数据
 	// 模式，0--自动，1--手动配置模式，配置其他参数前须切换到该模式
@@ -83,7 +83,7 @@ var changeAdjustMode = function() {
 	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
 	const dataView = new DataView(buffer)
 	// 指令码；1：模式设置2,3,4--手动调整 
-	dataView.setUint8(0, 1)
+	dataView.setUint8(0, mode)
 	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
 		dataView.setUint8(index + 1, orign_buffer.getUint8(index))
 	}
@@ -515,5 +515,6 @@ export {
 	changeSaveAdjustMode,
 	handleSendFormart,
 	uploadDataRequest,
+	initPillow,
 	dateUtils
 }
