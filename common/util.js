@@ -451,6 +451,33 @@ var resetPillow = function(mark) {
 	let withLengthBuffer = handleSendFormart(n_buffer);
 	return handleMarkSend(mark, withLengthBuffer)
 }
+// 初始数据校准
+var initPillow = function(head, neck, width, sideHead, sideNexck, sideWidth) {
+	// 2——用户卧姿参数设置，数据1－正卧头部气囊高度值（U8），数据2－正卧颈部气囊高度值（U8），数据3－正卧肩宽值（U16）数据4－侧卧头部气囊高度值（U8），数据5－侧卧颈部气囊高度值（U8），数据6－侧卧肩宽值（U16）
+	console.log('[initPillow] buffer');
+
+	const data_buffer = new ArrayBuffer(6);
+	const dataBufferView = new DataView(data_buffer);
+	// 0--头部气囊，1--颈部气囊）
+	dataBufferView.setUint8(0, head);
+	dataBufferView.setUint8(1, neck);
+	dataBufferView.setUint8(2, width);
+	dataBufferView.setUint8(3, sideHead);
+	dataBufferView.setUint8(4, sideNexck);
+	dataBufferView.setUint8(5, sideWidth);
+	let withLengthBuffer = handleSendFormart(data_buffer)
+	console.log("[changeMode] withLengthBuffer", withLengthBuffer)
+	const orign_buffer = new DataView(withLengthBuffer)
+	console.log("[changeMode]", withLengthBuffer.byteLength)
+	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
+	const dataView = new DataView(buffer)
+	// 指令码；1：模式设置2,用户卧姿参数设置
+	dataView.setUint8(0, 2)
+	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
+		dataView.setUint8(index + 1, orign_buffer.getUint8(index))
+	}
+	return buffer
+}
 
 /**
  * uni跳转参数转化

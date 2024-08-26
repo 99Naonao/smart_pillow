@@ -167,13 +167,18 @@
 			</view>
 
 		</uni-popup>
+		<input-view ref="inputView"></input-view>
 	</view>
 </template>
 
 <script>
+	import InputView from './InputView.vue'
+	import {
+		object2Query
+	} from '@/common/util.js'
 	export default {
 		components: {
-
+			InputView
 		},
 		onLoad(options) {
 			this.sideBodyImgUrl = decodeURIComponent(options.sideImage)
@@ -422,6 +427,8 @@
 			},
 			closeAndSave() {
 				this.$refs.popup.close()
+				let params = this.$refs.inputView.getParams();
+				console.log('params:', params)
 				let storageObj = uni.getStorageSync('myMode');
 				console.log('mode:', this.inputName, storageObj)
 				if (!storageObj) {
@@ -437,7 +444,7 @@
 					title: '发送中',
 					success() {
 						uni.switchTab({
-							url: '/pages/status/status'
+							url: '/pages/status/status' + object2Query(params)
 						})
 					}
 				})

@@ -102,7 +102,12 @@
 				head: 0,
 				sideHead: 0,
 				neck: 0,
-				sideNeck: 0
+				sideNeck: 0,
+				initHeadHeight: 0,
+				initNeckHeight: 0,
+				initWidthHeight: 0,
+				initSideNeckHeight: 0,
+				initSideWdithHeight: 0,
 			}
 		},
 		onLoad(options) {
@@ -110,6 +115,12 @@
 			this.pillowName = decodeURIComponent(options.pillowName || '')
 			this.deviceId = options.deviceId || ''
 			this.serviceId = options.serviceId || ''
+			this.initHeadHeight = options.headHeight || 0
+			this.initNeckHeight = options.neckHeight || 0
+			this.initWidthHeight = options.widthHeight || 0
+			this.initSideNeckHeight = options.sideNeckHeight || 0
+			this.initSideHeadHeight = options.sideHeadHeight || 0
+			this.initSideWdithHeight = options.sideWidthHeight || 0
 			uni.setNavigationBarTitle({
 				title: this.pillowName
 			})
