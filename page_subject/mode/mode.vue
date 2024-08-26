@@ -45,10 +45,12 @@
 				</view>
 			</view>
 		</view>
+		<input-view ref="inputView"></input-view>
 	</view>
 </template>
 
 <script>
+	import InputView from '../../pages/shootView/InputView.vue'
 	import {
 		object2Query,
 		handPillowSideState,
@@ -58,9 +60,33 @@
 		ab2hex,
 		hand1Shake,
 		write2tooth,
+		initPillow,
 		parsePillowState
 	} from '@/common/util.js'
+
+	import blue_class from '../../utils/BlueManager'
+	// import {
+	// 	object2Query,
+	// 	parsePillowRealState,
+	// 	handPillowStatus,
+	// 	handPillowSideState,
+	// 	handPillowFrontState,
+	// 	handlePillowDelayState,
+	// 	hexStringToArrayBuffer,
+	// 	ab2hex,
+	// 	resetPillow,
+	// 	uploadDataRequest,
+	// 	initPillow,
+	// 	changeAdjustMode,
+	// 	changeSaveAdjustMode,
+	// 	hand1Shake,
+	// 	write2tooth,
+	// 	parsePillowState
+	// } from '@/common/util.js'
 	export default {
+		components: {
+			InputView
+		},
 		onLoad(options) {
 			this.pillowName = decodeURIComponent(options.pillowName || '')
 			this.deviceId = options.deviceId || ''
@@ -169,9 +195,19 @@
 			},
 			// 发送模式设置
 			sendHandler(item) {
-				uni.switchTab({
-					url: '/pages/status/status'
-				})
+				// uni.switchTab({
+				// 	url: '/pages/status/status'
+				// })
+				let params = this.$refs.inputView.getParams();
+				console.log('params:', params)
+
+
+				let init_arraybuffer = initPillow(params.headHeight, params.neckHeight, params.shoulderHeight, params
+					.sideHeadHeight, params.sideNeckHeight, params.sideShoulderHeight);
+				// let app = getApp()
+				blue_class.getInstance().write2tooth(init_arraybuffer);
+
+				return;
 				uni.showLoading({
 					title: '调整中'
 				})

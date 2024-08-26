@@ -61,12 +61,14 @@
 				<view class="save" @click="saveHandler">保存</view>
 			</view>
 		</view>
+		<input-view ref="inputView" class="input-part" v-if="showMeasure"></input-view>
 	</view>
 
 </template>
 
 <script>
 	import blue_class from '../../utils/BlueManager'
+	import InputView from '../../pages/shootView/InputView.vue'
 	import {
 		object2Query,
 		parsePillowRealState,
@@ -87,10 +89,12 @@
 	} from '@/common/util.js'
 	export default {
 		components: {
-
+			InputView
 		},
 		data() {
 			return {
+				saveOptions: {},
+				showMeasure: false, // 是否显示信息
 				touchingDown: false,
 				touchingUp: false,
 				deviceId: '', // 连接的蓝牙id
@@ -118,10 +122,11 @@
 			this.serviceId = options.serviceId || ''
 			this.initHeadHeight = options.headHeight || 0
 			this.initNeckHeight = options.neckHeight || 0
-			this.initWidthHeight = options.widthHeight || 0
+			this.initWidthHeight = options.shoulderHeight || 0
 			this.initSideNeckHeight = options.sideNeckHeight || 0
 			this.initSideHeadHeight = options.sideHeadHeight || 0
-			this.initSideWdithHeight = options.sideWidthHeight || 0
+			this.initSideWdithHeight = options.sideShoulderHeight || 0
+			this.saveOptions = options
 			uni.setNavigationBarTitle({
 				title: this.pillowName
 			})
@@ -136,9 +141,14 @@
 			blue_class.getInstance().write2tooth(arraybuffer)
 
 			if (this.initHeadHeight > 0 && this.initNeckHeight > 0) {
-				let init_arraybuffer = initPillow();
-				// let app = getApp()
-				blue_class.getInstance().write2tooth(init_arraybuffer)
+				// let init_arraybuffer = initPillow(this.initHeadHeight, this.initNeckHeight, this.initWidthHeight, this
+				// 	.initSideHeadHeight, this.initSideNeckHeight, this.initSideWdithHeight);
+				// // let app = getApp()
+				// blue_class.getInstance().write2tooth(init_arraybuffer);
+				this.showMeasure = true;
+				this.$refs.inputView.showParams(this.saveOptions);
+			} else {
+				this.showMeasure = false;
 			}
 		},
 		onHide() {
@@ -164,7 +174,7 @@
 			},
 			saveHandler() {
 				let changeAdjust = changeSaveAdjustMode();
-				blue_class.getInstance().write2tooth(changeAdjust)
+				blue_class.getInstance().write2tooth(changeAdjust);
 				// uni.switchTab({
 				// 	url: '/pages/status/status'
 				// })
@@ -480,6 +490,10 @@
 </script>
 
 <style lang="scss">
+	::v-deep(.input-part) {
+		bottom: 0 !important;
+	}
+
 	.selected {
 		background-color: #5B7897;
 	}

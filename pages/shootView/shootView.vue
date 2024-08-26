@@ -454,8 +454,10 @@
 			},
 			// 手动测量
 			handleClick() {
+				let params = this.$refs.inputView.getParams();
+				console.log('params:', params)
 				uni.redirectTo({
-					url: '/page_subject/adjust/adjust'
+					url: '/page_subject/adjust/adjust' + object2Query(params)
 				})
 			},
 			saveHandler() {

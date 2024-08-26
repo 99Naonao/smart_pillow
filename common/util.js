@@ -66,7 +66,7 @@ var dateUtils = {
 	}
 };
 // 更改枕头状态
-var changeAdjustMode = function(mode = 1) {
+var changeAdjustMode = function(mode = 1, save = 0) {
 	// 向蓝牙设备发送一个0x00的2进制数据
 	//先构造数据
 	// 模式，0--自动，1--手动配置模式，配置其他参数前须切换到该模式
@@ -75,7 +75,7 @@ var changeAdjustMode = function(mode = 1) {
 	// 0--头部气囊，1--颈部气囊）
 	dataBufferView.setUint8(0, 1);
 	// (0--不保存，1--保存)
-	dataBufferView.setUint8(1, 0);
+	dataBufferView.setUint8(1, save);
 	let withLengthBuffer = handleSendFormart(data_buffer)
 	console.log("[changeMode] withLengthBuffer", withLengthBuffer)
 	const orign_buffer = new DataView(withLengthBuffer)
@@ -456,27 +456,21 @@ var initPillow = function(head, neck, width, sideHead, sideNexck, sideWidth) {
 	// 2——用户卧姿参数设置，数据1－正卧头部气囊高度值（U8），数据2－正卧颈部气囊高度值（U8），数据3－正卧肩宽值（U16）数据4－侧卧头部气囊高度值（U8），数据5－侧卧颈部气囊高度值（U8），数据6－侧卧肩宽值（U16）
 	console.log('[initPillow] buffer');
 
-	const data_buffer = new ArrayBuffer(6);
+	const data_buffer = new ArrayBuffer(8);
 	const dataBufferView = new DataView(data_buffer);
 	// 0--头部气囊，1--颈部气囊）
 	dataBufferView.setUint8(0, head);
 	dataBufferView.setUint8(1, neck);
-	dataBufferView.setUint8(2, width);
-	dataBufferView.setUint8(3, sideHead);
-	dataBufferView.setUint8(4, sideNexck);
-	dataBufferView.setUint8(5, sideWidth);
+	dataBufferView.setUint16(2, width);
+	dataBufferView.setUint8(4, sideHead);
+	dataBufferView.setUint8(5, sideNexck);
+	dataBufferView.setUint16(6, sideWidth);
 	let withLengthBuffer = handleSendFormart(data_buffer)
-	console.log("[changeMode] withLengthBuffer", withLengthBuffer)
-	const orign_buffer = new DataView(withLengthBuffer)
-	console.log("[changeMode]", withLengthBuffer.byteLength)
-	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
-	const dataView = new DataView(buffer)
+	console.log("[initPillow] withLengthBuffer", ab2hex(withLengthBuffer))
+	let return_buffer = handleMarkSend(2, withLengthBuffer)
+	console.log("[initPillow] return_buffer", ab2hex(return_buffer))
 	// 指令码；1：模式设置2,用户卧姿参数设置
-	dataView.setUint8(0, 2)
-	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
-		dataView.setUint8(index + 1, orign_buffer.getUint8(index))
-	}
-	return buffer
+	return return_buffer
 }
 
 /**

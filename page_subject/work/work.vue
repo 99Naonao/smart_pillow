@@ -141,7 +141,11 @@
 						}
 					}
 					if (isnotexist && result.devices[0].name != '') {
-						that.deviceIdList.push(result.devices[0])
+						if (result.devices[0].name.indexOf('Minga') > -1) {
+							that.deviceIdList.push(result.devices[0])
+						}
+						console.log('result.devices[0].name:', result.devices[0].name)
+						// }
 					}
 					// if (isnotexist && result.devices[0].name != '' && result.devices[0].name.indexOf('Minga') > -
 					// 	1) {
@@ -224,9 +228,7 @@
 				searching: false, // 搜索中
 				deviceId: '', // 连接的蓝牙id
 				serviceId: '', // 连接的服务id
-				deviceIdList: [{
-					name: 'margin-test1'
-				}], // 检测列表
+				deviceIdList: [], // 检测列表
 				// deviceIdList: [],
 				connectList: [], // 连接列表
 			}

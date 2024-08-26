@@ -59,12 +59,12 @@
 		},
 		data() {
 			return {
-				headHeight: '',
-				shoulderHeight: '',
-				neckHeight: '',
-				sideHeadHeight: '',
-				sideShoulderHeight: '',
-				sideNeckHeight: '',
+				headHeight: '80',
+				shoulderHeight: '200',
+				neckHeight: '80',
+				sideHeadHeight: '80',
+				sideShoulderHeight: '200',
+				sideNeckHeight: '80',
 			}
 		},
 		methods: {
@@ -77,6 +77,14 @@
 					sideShoulderHeight: this.sideShoulderHeight,
 					sideNeckHeight: this.sideNeckHeight,
 				}
+			},
+			showParams(params) {
+				this.headHeight = params.headHeight;
+				this.shoulderHeight = params.shoulderHeight;
+				this.neckHeight = params.neckHeight;
+				this.sideHeadHeight = params.sideHeadHeight;
+				this.sideShoulderHeight = params.sideShoulderHeight;
+				this.sideNeckHeight = params.sideNeckHeight;
 			}
 		}
 	}
@@ -85,9 +93,10 @@
 <style scoped>
 	.input-part {
 		position: absolute;
-		top: 258rpx;
+		bottom: 158rpx;
 		left: 10rpx;
 		right: 0rpx;
+		height: fit-content;
 		background-color: aliceblue;
 	}
 
@@ -101,6 +110,7 @@
 	.info {
 		line-height: 60rpx;
 		padding: 20rpx;
+		padding-bottom: 40px;
 	}
 
 	.input-item {
