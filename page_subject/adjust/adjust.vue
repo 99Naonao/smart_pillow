@@ -325,12 +325,6 @@
 
 					this.head = headHeight10;
 					this.neck = neckHeight10;
-					// let status1 = '0x' + status;
-					this.pillowVersion = '固件版本:' + version10;
-					console.log('adjust1 =>', status, headHeight, neckHeight, vesrion, isright, press)
-					console.log('adjust1 mm=>', status10, headHeight10 + 'mm', neckHeight10 + 'mm', 'v:' + vesrion10,
-						isright10,
-						this.pillowVersion)
 				}
 			},
 			parsePillowStatus(arraybuffer) {
@@ -366,6 +360,7 @@
 				this.head = headHeight10;
 				this.neck = neckHeight10;
 				// let status1 = '0x' + status;
+				this.pillowVersion = '固件版本:' + vesrion10;
 
 				console.log('adjust12 =>', status, headHeight, neckHeight, vesrion, isright, press)
 				console.log('adjust12 mm=>', status10, headHeight10 + 'mm', neckHeight10 + 'mm', 'v:' + vesrion10,
