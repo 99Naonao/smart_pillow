@@ -16,7 +16,7 @@
 					<image mode="widthFix" :src="checkConnectList(item)" @click="connectBlueToothSleepHandler(item)">
 					</image>
 				</view>
-				<view class="wifi">
+				<view class="wifi" v-if="false">
 					<image mode="widthFix" :src="(checkWifiConnectList(item))" @click="connectWifiSleepHandler(item)">
 					</image>
 				</view>
@@ -96,6 +96,12 @@
 						this.searching = false
 					}
 				})
+			} else {
+				if (blue_class.getInstance().deviceName != '') {
+					this.deviceIdList = [{
+						name: blue_class.getInstance().deviceName
+					}];
+				}
 			}
 			uni.$on('xx', this.handleMessage)
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
@@ -248,7 +254,8 @@
 				if (arrayBuffer.length == 4) {
 					let receive16 = ab2hex(res.value);
 					let last = '0x' + receive16
-					let total = 0
+					let total = 0;
+					blue_class.getInstance().updateDeviceName(receive16.slice(4, 8));
 					Array.prototype.map.call(
 						arrayBuffer,
 						function(bit) {
@@ -656,7 +663,7 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			margin-right: 30rpx;
+			// margin-right: 30rpx;
 
 			image {
 				display: inline-block;

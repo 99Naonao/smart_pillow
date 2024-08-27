@@ -7,6 +7,7 @@ class blue_class {
 		this.isNotify = false; //用于防止重复启动notify功能
 		this.notifyCount = 0; //用于判断启动了几次notify功能
 		this.serviceId = '';
+		this.deviceName = ''; // 设备名称
 		this.characteristicId = '6E400004-B5A3-F393-E0A9-E50E24DCCA9E';
 		this.deviceId = ''; // 连接的蓝牙id
 	}
@@ -54,6 +55,9 @@ class blue_class {
 			// var resData = this.ab2hex(sjRes.value);
 			uni.$emit('xx', res);
 		})
+	}
+	updateDeviceName(dname) {
+		this.deviceName = dname;
 	}
 	// 启用 notify 功能
 	startNotice(uuid) {
