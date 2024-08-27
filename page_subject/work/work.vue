@@ -255,7 +255,6 @@
 					let receive16 = ab2hex(res.value);
 					let last = '0x' + receive16
 					let total = 0;
-					blue_class.getInstance().updateDeviceName(receive16.slice(4, 8));
 					Array.prototype.map.call(
 						arrayBuffer,
 						function(bit) {
@@ -325,6 +324,8 @@
 					let isright10 = parseInt('0x' + isright);
 					let press = receive16.slice(12, 14);
 					let press10 = parseInt('0x' + press);
+					//保存版本号
+					blue_class.getInstance().version = vesrion10;
 					// let status1 = '0x' + status;
 
 					console.log('枕头状态=>', status, headHeight, neckHeight, vesrion, isright, press)

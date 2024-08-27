@@ -32,6 +32,9 @@
 					头枕
 				</view>
 			</view>
+			<view class="version">
+				{{pillowVersion}}
+			</view>
 			<view class="opt-part">
 				<!-- 				<button class="opt-btn" hover-class="is-hover">
 					<image mode="widthFix" class="icon" style="transform: rotate(-180deg);"
@@ -87,12 +90,16 @@
 		write2tooth,
 		parsePillowState
 	} from '@/common/util.js'
+	import {
+		version
+	} from 'vue'
 	export default {
 		components: {
 			InputView
 		},
 		data() {
 			return {
+				pillowVersion: '固件版本:0.1',
 				saveOptions: {},
 				showMeasure: false, // 是否显示信息
 				touchingDown: false,
@@ -126,7 +133,8 @@
 			this.initSideNeckHeight = options.sideNeckHeight || 0
 			this.initSideHeadHeight = options.sideHeadHeight || 0
 			this.initSideWdithHeight = options.sideShoulderHeight || 0
-			this.saveOptions = options
+			this.saveOptions = options;
+			blue_class.getInstance().updateDeviceName(this.pillowName);
 			uni.setNavigationBarTitle({
 				title: this.pillowName
 			})
@@ -151,7 +159,16 @@
 				this.showMeasure = false;
 			}
 		},
+		onUnload() {
+			console.log('adjust on onUnload!')
+			// 把模式还原成自动
+			let arraybuffer = changeAdjustMode(0);
+			blue_class.getInstance().write2tooth(arraybuffer)
+
+			uni.$off('xx', this.handleMessage);
+		},
 		onHide() {
+			console.log('adjust on hide!')
 			// 把模式还原成自动
 			let arraybuffer = changeAdjustMode(0);
 			blue_class.getInstance().write2tooth(arraybuffer)
@@ -309,10 +326,11 @@
 					this.head = headHeight10;
 					this.neck = neckHeight10;
 					// let status1 = '0x' + status;
-
-					console.log('adjust =>', status, headHeight, neckHeight, vesrion, isright, press)
-					console.log('adjust mm=>', status10, headHeight10 + 'mm', neckHeight10 + 'mm', vesrion10, isright10,
-						press10)
+					this.pillowVersion = '固件版本:' + version10;
+					console.log('adjust1 =>', status, headHeight, neckHeight, vesrion, isright, press)
+					console.log('adjust1 mm=>', status10, headHeight10 + 'mm', neckHeight10 + 'mm', 'v:' + vesrion10,
+						isright10,
+						this.pillowVersion)
 				}
 			},
 			parsePillowStatus(arraybuffer) {
@@ -349,8 +367,9 @@
 				this.neck = neckHeight10;
 				// let status1 = '0x' + status;
 
-				console.log('adjust =>', status, headHeight, neckHeight, vesrion, isright, press)
-				console.log('adjust mm=>', status10, headHeight10 + 'mm', neckHeight10 + 'mm', vesrion10, isright10,
+				console.log('adjust12 =>', status, headHeight, neckHeight, vesrion, isright, press)
+				console.log('adjust12 mm=>', status10, headHeight10 + 'mm', neckHeight10 + 'mm', 'v:' + vesrion10,
+					isright10,
 					press10)
 			},
 			selectHeadHandler(bool) {
@@ -500,6 +519,12 @@
 
 	.unselect-btn {
 		background-color: #5B7897 !important;
+	}
+
+	.version {
+		width: 100%;
+		text-align: center;
+		font-size: 18rpx;
 	}
 
 	.select-btn {
