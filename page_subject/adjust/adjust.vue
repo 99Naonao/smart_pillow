@@ -51,13 +51,16 @@
 					<label>降低</label>
 				</view>
 			</view>
-			<view class="opt-part" v-if="false">
+			<view class="opt-part" v-if="true" style="margin-top: 10rpx;">
 				<view class="opt-btn" @click="uploadDataHandle">
 					<label>上报数据</label>
 				</view>
 
 				<view class="opt-btn" @click="resetHandle">
 					<label>设备校准</label>
+				</view>
+				<view class="opt-btn" @click="restartHandle">
+					<label>设备重启</label>
 				</view>
 			</view>
 			<view class="bottom-part">
@@ -93,6 +96,9 @@
 	import {
 		version
 	} from 'vue'
+	import {
+		restartPillow
+	} from '../../common/util'
 	export default {
 		components: {
 			InputView
@@ -180,8 +186,12 @@
 				let upload_data = uploadDataRequest(5)
 				blue_class.getInstance().write2tooth(upload_data)
 			},
+			restartHandle() {
+				let arraybuffer = restartPillow(77);
+				blue_class.getInstance().write2tooth(arraybuffer)
+			},
 			resetHandle() {
-				let reset_data = resetPillow(88)
+				let reset_data = resetPillow(88);
 				blue_class.getInstance().write2tooth(reset_data)
 			},
 			// 请求枕头状态
@@ -562,6 +572,12 @@
 			height: 41rpx;
 		}
 
+	}
+
+	.resetbtn {
+		padding: 5rpx;
+		color: white;
+		background-color: rgb(109, 0, 1);
 	}
 
 	.main {

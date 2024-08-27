@@ -451,6 +451,15 @@ var resetPillow = function(mark) {
 	let withLengthBuffer = handleSendFormart(n_buffer);
 	return handleMarkSend(mark, withLengthBuffer)
 }
+
+// 重启
+var restartPillow = function(mark) {
+	console.log('[handlerestartPillowrestartPillow] buffer');
+	const n_buffer = new ArrayBuffer(0)
+	const dataView = new DataView(n_buffer)
+	let withLengthBuffer = handleSendFormart(n_buffer);
+	return handleMarkSend(mark, withLengthBuffer)
+}
 // 初始数据校准
 var initPillow = function(head, neck, width, sideHead, sideNexck, sideWidth) {
 	// 2——用户卧姿参数设置，数据1－正卧头部气囊高度值（U8），数据2－正卧颈部气囊高度值（U8），数据3－正卧肩宽值（U16）数据4－侧卧头部气囊高度值（U8），数据5－侧卧颈部气囊高度值（U8），数据6－侧卧肩宽值（U16）
@@ -509,6 +518,7 @@ export {
 	changeSaveAdjustMode,
 	handleSendFormart,
 	uploadDataRequest,
+	restartPillow,
 	initPillow,
 	dateUtils
 }
