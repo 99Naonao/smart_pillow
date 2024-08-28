@@ -78,6 +78,9 @@
 		parsePillowState
 	} from '@/common/util.js'
 	import blue_class from '../../utils/BlueManager';
+	import {
+		appAnswer
+	} from '../../common/util';
 	export default {
 		components: {
 
@@ -336,6 +339,7 @@
 							}
 							break;
 						case 5:
+							this.parsePillowSleepData(arrayBuffer_order)
 							break;
 						case 6:
 							this.parsePillowStatus(arrayBuffer_order)
@@ -399,8 +403,9 @@
 						console.log('枕头侧卧状态')
 						break;
 				}
-				let detail_status = receive16.slice(2, 4);
-				let n1 = detail_status >> 1;
+				let detail_status_16 = receive16.slice(2, 4);
+				let detail_status = '0x' + detail_status_16;
+				let n1 = (detail_status & 0x03);
 				// 0--空闲，1--充电中，2--充电完成
 				switch (n1) {
 					case 0:
@@ -413,17 +418,17 @@
 						console.log('枕头在充电完成状态');
 						break;
 				}
-				let n2 = detail_status >> 2;
+				let n2 = (detail_status >> 2) & 0x01;
 				console.log('泵1电流:', n2);
-				let n3 = detail_status >> 3;
+				let n3 = (detail_status >> 3) & 0x01;
 				console.log('泵2电流:', n3);
-				let n4 = detail_status >> 4;
+				let n4 = (detail_status >> 4) & 0x01;
 				console.log('气囊1升高超时:', n4);
-				let n5 = detail_status >> 5;
+				let n5 = (detail_status >> 5) & 0x01;
 				console.log('气囊2升高超时:', n5);
-				let n6 = detail_status >> 6;
+				let n6 = (detail_status >> 6) & 0x01;
 				console.log('气囊1气压超高:', n6);
-				let n7 = detail_status >> 7;
+				let n7 = (detail_status >> 7) & 0x01;
 				console.log('气囊2气压超高:', n7);
 				let headHeight = receive16.slice(4, 6);
 				let headHeight10 = parseInt('0x' + headHeight);
@@ -433,7 +438,7 @@
 				let vesrion10 = parseInt('0x' + vesrion);
 				let isright = receive16.slice(10, 12);
 				let isright10 = parseInt('0x' + isright);
-				let press = receive16.slice(12, 14);
+				let press = receive16.slice(12, 16);
 				let press10 = parseInt('0x' + press);
 
 
@@ -449,6 +454,13 @@
 					vesrion10,
 					'校准:' + isright10,
 					'电池:' + press10)
+			},
+			parsePillowSleepData(array_buffer) {
+				//解析枕头睡眠阶段状态	
+				// 数据1-姿态（U8）(1--平躺，2--侧卧) + 数据2开始时间（T4）+数据3结束时间（T4）+ 数据4-姿态（U8）(1--平躺，2--侧卧) + 数据5开始时间（T4）+数据6结束时间（T4）+ ... ,关于该指令的说明，是多个姿态+开始时间和结束时间的条目的组合，根据数据长度计算一条指令中包含多少组数据
+				blue_class.getInstance().write2tooth(appAnswer(5))
+				// let receive8 = new Uint8Array(array_buffer);
+				// console.log('姿态:', receive8.getUint8(0))
 			},
 			// ai识别
 			autoHandler() {

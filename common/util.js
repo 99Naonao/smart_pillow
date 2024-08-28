@@ -192,6 +192,16 @@ function handleTime(timstamp = 0) {
 	return buffer;
 }
 
+var appAnswer = function(mark) {
+	const buffer = new ArrayBuffer(5);
+	const dataView = new DataView(buffer);
+	dataView.setUint8(0, mark);
+	dataView.setUint8(1, 3);
+	dataView.setUint8(2, 0);
+	dataView.setUint16(3, 33);
+	return buffer;
+}
+
 
 // 生成第一步握手数据
 var hand1Shake = function(checkNum, arrayUnit8Buffer_) {
@@ -520,5 +530,6 @@ export {
 	uploadDataRequest,
 	restartPillow,
 	initPillow,
+	appAnswer,
 	dateUtils
 }
