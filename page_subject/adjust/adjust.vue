@@ -356,6 +356,34 @@
 						console.log('枕头侧卧状态')
 						break;
 				}
+
+				let detail_status = receive16.slice(2, 4);
+				let n1 = detail_status >> 1;
+				// 0--空闲，1--充电中，2--充电完成
+				switch (n1) {
+					case 0:
+						console.log('枕头在空闲状态');
+						break;
+					case 1:
+						console.log('枕头在充电中状态');
+						break;
+					case 2:
+						console.log('枕头在充电完成状态');
+						break;
+				}
+				let n2 = detail_status >> 2;
+				console.log('泵1电流:', n2);
+				let n3 = detail_status >> 3;
+				console.log('泵2电流:', n3);
+				let n4 = detail_status >> 4;
+				console.log('气囊1升高超时:', n4);
+				let n5 = detail_status >> 5;
+				console.log('气囊2升高超时:', n5);
+				let n6 = detail_status >> 6;
+				console.log('气囊1气压超高:', n6);
+				let n7 = detail_status >> 7;
+				console.log('气囊2气压超高:', n7);
+
 				let headHeight = receive16.slice(4, 6);
 				let headHeight10 = parseInt('0x' + headHeight);
 				let neckHeight = receive16.slice(6, 8);

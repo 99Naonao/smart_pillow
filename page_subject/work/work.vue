@@ -295,7 +295,55 @@
 						console.log('8个字节指令的校验和', parseInt('0x' + len))
 						console.log('后四位', receive16, receive16.slice(4, 1), receive16.slice(5, 1))
 					}
-				} else if (arrayBuffer.length == 8) {
+				} else {
+					let mark = arrayBuffer[0];
+					let length = arrayBuffer[1];
+					let arrayBuffer_order = new ArrayBuffer(length);
+					let receive_dataView = new DataView(arrayBuffer_order);
+					for (var index = 0; index < arrayBuffer_order.byteLength; index++) {
+						receive_dataView.setUint8(index, arrayBuffer[index + 2])
+					}
+					console.log('handleMessage 接收到数据 mark:', parseInt(mark))
+					switch (parseInt(mark)) {
+						case 1:
+							let result = receive_dataView.getUint8(0)
+							switch (parseInt(result)) {
+								case 0:
+									console.log("[调整模式成功]")
+									break;
+								case 1:
+									console.log("[调整模式参数非法]")
+									break;
+								case 2:
+									console.log("[不支持的指令]")
+									break;
+							}
+							break;
+						case 2:
+							break;
+						case 4:
+							let result4 = receive_dataView.getUint8(0)
+							switch (parseInt(result4)) {
+								case 0:
+									console.log("[调整枕头成功]")
+									break;
+								case 1:
+									console.log("[调整模式参数非法]")
+									break;
+								case 2:
+									console.log("[不支持的指令]")
+									break;
+							}
+							break;
+						case 5:
+							break;
+						case 6:
+							this.parsePillowStatus(arrayBuffer_order)
+							break;
+						case 88:
+							break;
+					}
+					return;
 					//默认是枕头状态 5s收到一次
 					let receive16 = ab2hex(res.value);
 					// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
@@ -331,6 +379,76 @@
 					console.log('枕头状态=>', status, headHeight, neckHeight, vesrion, isright, press)
 					console.log('枕头状态=>', status10, headHeight10, neckHeight10, vesrion10, isright10, press10)
 				}
+			},
+			parsePillowStatus(arraybuffer) {
+				// //默认是枕头状态 5s收到一次
+				let receive16 = ab2hex(arraybuffer);
+				// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
+				let status = receive16.slice(0, 2);
+				let status1 = '0x' + status;
+
+				let status10 = parseInt(status1);
+				switch (status10) {
+					case 0:
+						console.log('枕头空闲状态')
+						break;
+					case 1:
+						console.log('枕头平躺状态')
+						break;
+					case 2:
+						console.log('枕头侧卧状态')
+						break;
+				}
+				let detail_status = receive16.slice(2, 4);
+				let n1 = detail_status >> 1;
+				// 0--空闲，1--充电中，2--充电完成
+				switch (n1) {
+					case 0:
+						console.log('枕头在空闲状态');
+						break;
+					case 1:
+						console.log('枕头在充电中状态');
+						break;
+					case 2:
+						console.log('枕头在充电完成状态');
+						break;
+				}
+				let n2 = detail_status >> 2;
+				console.log('泵1电流:', n2);
+				let n3 = detail_status >> 3;
+				console.log('泵2电流:', n3);
+				let n4 = detail_status >> 4;
+				console.log('气囊1升高超时:', n4);
+				let n5 = detail_status >> 5;
+				console.log('气囊2升高超时:', n5);
+				let n6 = detail_status >> 6;
+				console.log('气囊1气压超高:', n6);
+				let n7 = detail_status >> 7;
+				console.log('气囊2气压超高:', n7);
+				let headHeight = receive16.slice(4, 6);
+				let headHeight10 = parseInt('0x' + headHeight);
+				let neckHeight = receive16.slice(6, 8);
+				let neckHeight10 = parseInt('0x' + neckHeight);
+				let vesrion = receive16.slice(8, 10);
+				let vesrion10 = parseInt('0x' + vesrion);
+				let isright = receive16.slice(10, 12);
+				let isright10 = parseInt('0x' + isright);
+				let press = receive16.slice(12, 14);
+				let press10 = parseInt('0x' + press);
+
+
+				// 0100970d030101f3
+				// dataView.setUint32(0, second | (minutes << 6) | (hours << 12) | (days << 17) | (months << 22) | ((year -
+				// 		2020) <<
+				// 	26))
+
+				// work 枕头状态 mm=> 1 height:151mm neckheight:13mm version:3 校准:1 电池:1
+				// console.log('work 枕头状态 =>', 'height:' + headHeight, 'neckheight:' + neckHeight, vesrion, isright, press)
+				console.log('work 枕头状态 mm=>', status10, 'height:' + headHeight10 + 'mm', 'neckheight:' + neckHeight10 +
+					'mm', 'version:' +
+					vesrion10,
+					'校准:' + isright10,
+					'电池:' + press10)
 			},
 			// ai识别
 			autoHandler() {
