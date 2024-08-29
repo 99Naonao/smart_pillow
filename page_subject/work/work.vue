@@ -385,6 +385,7 @@
 				}
 			},
 			parsePillowStatus(arraybuffer) {
+				// this.parsePillowSleepData(null)
 				// //默认是枕头状态 5s收到一次
 				let receive16 = ab2hex(arraybuffer);
 				// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
@@ -456,6 +457,7 @@
 					'电池:' + press10)
 			},
 			parsePillowSleepData(array_buffer) {
+				// 05090000c02212eb113a12 11
 				//解析枕头睡眠阶段状态	
 				// 数据1-姿态（U8）(1--平躺，2--侧卧) + 数据2开始时间（T4）+数据3结束时间（T4）+ 数据4-姿态（U8）(1--平躺，2--侧卧) + 数据5开始时间（T4）+数据6结束时间（T4）+ ... ,关于该指令的说明，是多个姿态+开始时间和结束时间的条目的组合，根据数据长度计算一条指令中包含多少组数据
 				blue_class.getInstance().write2tooth(appAnswer(5))

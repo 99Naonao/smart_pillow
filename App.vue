@@ -44,6 +44,9 @@
 			}
 		},
 		globalData: {
+			characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E',
+			deviceId: '', // 连接的蓝牙id
+			serviceId: '', // 连接的服务id
 			tabIndex: 0,
 			//全局数据管理
 			navBarHeight: 0, // 导航栏高度

@@ -59,12 +59,12 @@
 		},
 		data() {
 			return {
-				headHeight: '80',
+				headHeight: '60',
 				shoulderHeight: '200',
-				neckHeight: '80',
-				sideHeadHeight: '80',
+				neckHeight: '60',
+				sideHeadHeight: '60',
 				sideShoulderHeight: '200',
-				sideNeckHeight: '80',
+				sideNeckHeight: '60',
 			}
 		},
 		methods: {

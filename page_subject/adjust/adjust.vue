@@ -3,11 +3,11 @@
 		title='枕头调整'></z-nav-bar> -->
 	<view class="main">
 		<view class="select-part">
-			<view :class="this.selectIndex==1?'select-btn':'select-btn unselect-btn'" @click="selectHandler(1)">
+			<view :class="this.selectIndex==1?'select-btn':'select-btn unselect-btn'">
 				<image mode="widthFix" class="icon1" :src="'../static/adjust/SY_11_IconYWb.png'"></image>
 				<label>仰卧调节</label>
 			</view>
-			<view :class="this.selectIndex==2?'select-btn':'select-btn unselect-btn'" @click="selectHandler(2)">
+			<view :class="this.selectIndex==2?'select-btn':'select-btn unselect-btn'">
 				<image mode="widthFix" class="icon2" :src="'../static/adjust/SY_11_IconCWb.png'"></image>
 				<label>侧卧调节</label>
 			</view>
@@ -33,7 +33,7 @@
 				</view>
 			</view>
 			<view class="version">
-				{{pillowVersion}}
+				{{pillowVersion+':'+pillowStatus}}
 			</view>
 			<view class="opt-part">
 				<!-- 				<button class="opt-btn" hover-class="is-hover">
@@ -107,6 +107,8 @@
 		data() {
 			return {
 				pillowVersion: '固件版本:0.1',
+				pillowStatus: '',
+				pillowStatusNum: 0, // 枕头状态
 				saveOptions: {},
 				showMeasure: false, // 是否显示信息
 				touchingDown: false,
@@ -347,15 +349,22 @@
 				let status1 = '0x' + status;
 
 				let status10 = parseInt(status1);
+				this.pillowStatusNum = status10;
 				switch (status10) {
 					case 0:
-						console.log('枕头空闲状态')
+						console.log('枕头空闲状态');
+						this.pillowStatus = '枕头空闲状态';
+						this.selectIndex = 1;
 						break;
 					case 1:
 						console.log('枕头平躺状态')
+						this.pillowStatus = '枕头平躺状态';
+						this.selectIndex = 1;
 						break;
 					case 2:
 						console.log('枕头侧卧状态')
+						this.pillowStatus = '枕头侧卧状态';
+						this.selectIndex = 2;
 						break;
 				}
 
@@ -401,6 +410,8 @@
 				this.neck = neckHeight10;
 				// let status1 = '0x' + status;
 				this.pillowVersion = '固件版本:' + vesrion10;
+
+
 
 				console.log('adjust12 =>', status, headHeight, neckHeight, vesrion, isright, press)
 				console.log('adjust12 mm=>', status10, headHeight10 + 'mm', neckHeight10 + 'mm', 'v:' + vesrion10,

@@ -193,12 +193,12 @@ function handleTime(timstamp = 0) {
 }
 
 var appAnswer = function(mark) {
-	const buffer = new ArrayBuffer(5);
+	const buffer = new ArrayBuffer(4);
 	const dataView = new DataView(buffer);
 	dataView.setUint8(0, mark);
-	dataView.setUint8(1, 3);
+	dataView.setUint8(1, 2);
 	dataView.setUint8(2, 0);
-	dataView.setUint16(3, 33);
+	dataView.setUint8(3, 0x33);
 	return buffer;
 }
 
