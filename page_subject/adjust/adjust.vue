@@ -408,6 +408,9 @@
 
 				this.head = headHeight10;
 				this.neck = neckHeight10;
+
+				this.sideHead = headHeight10;
+				this.sideNeck = neckHeight10;
 				// let status1 = '0x' + status;
 				this.pillowVersion = '固件版本:' + vesrion10;
 
@@ -440,12 +443,12 @@
 				if (this.selectIndex == 1) {
 					// 如果选择的是调整头枕
 					if (this.selectHead) {
-						this.head -= 1
+						// this.head -= 1
 						if (this.head <= 0) {
 							this.head = 0
 						}
 					} else {
-						this.neck -= 1
+						// this.neck -= 1
 						if (this.neck <= 0) {
 							this.neck = 0
 						}
@@ -455,19 +458,19 @@
 				} else {
 					// 如果选择的侧卧
 					if (this.selectHead) {
-						this.sideHead -= 1
+						// this.sideHead -= 1
 						if (this.sideHead <= 0) {
 							this.sideHead = 0
 						}
 					} else {
-						this.sideNeck -= 1
+						// this.sideNeck -= 1
 						if (this.sideNeck <= 0) {
 							this.sideNeck = 0
 						}
 					}
-					arraybuffer = handPillowSideState(this.sideHead, this
-						.sideNeck)
-					console.log('调低侧卧:', this.sideHead, this.sideNeck, ab2hex(arraybuffer))
+					arraybuffer = handPillowFrontState(action, this
+						.selectHead)
+					console.log('调低侧卧:', action, ab2hex(arraybuffer))
 				}
 				// console.log('调低:', ab2hex(arraybuffer))
 				blue_class.getInstance().write2tooth(arraybuffer)
@@ -481,12 +484,12 @@
 				let arraybuffer = null;
 				if (this.selectIndex == 1) {
 					if (this.selectHead) {
-						this.head += 1
+						// this.head += 1
 						if (this.head >= 100) {
 							this.head = 100
 						}
 					} else {
-						this.neck += 1
+						// this.neck += 1
 						if (this.neck >= 100) {
 							this.neck = 100
 						}
@@ -495,20 +498,20 @@
 					console.log('停止调节仰卧:', action, ab2hex(arraybuffer))
 				} else {
 					if (this.selectHead) {
-						this.sideHead += 1
+						// this.sideHead += 1
 						if (this.sideHead >= 100) {
 							this.sideHead = 100
 						}
 					} else {
-						this.sideNeck += 1
+						// this.sideNeck += 1
 						if (this.sideNeck >= 100) {
 							this.sideNeck = 100
 						}
 					}
 					// 如果选择的侧卧
-					arraybuffer = handPillowSideState(action, this
-						.sideNeck)
-					console.log('停止调节侧卧:', this.head, this.neck, ab2hex(arraybuffer))
+					arraybuffer = handPillowFrontState(action, this
+						.selectHead)
+					console.log('停止调节侧卧:', action, ab2hex(arraybuffer))
 				}
 				// console.log('调高:', ab2hex(arraybuffer))
 				blue_class.getInstance().write2tooth(arraybuffer)
@@ -525,12 +528,12 @@
 				// 如果选择的仰卧
 				if (this.selectIndex == 1) {
 					if (this.selectHead) {
-						this.head += 1
+						// this.head += 1
 						if (this.head >= 100) {
 							this.head = 100
 						}
 					} else {
-						this.neck += 1
+						// this.neck += 1
 						if (this.neck >= 100) {
 							this.neck = 100
 						}
@@ -539,20 +542,19 @@
 					console.log('调高仰卧:', this.selectHead ? '调整头部' : '调整颈部', ab2hex(arraybuffer))
 				} else {
 					if (this.selectHead) {
-						this.sideHead += 1
+						// this.sideHead += 1
 						if (this.sideHead >= 100) {
 							this.sideHead = 100
 						}
 					} else {
-						this.sideNeck += 1
+						// this.sideNeck += 1
 						if (this.sideNeck >= 100) {
 							this.sideNeck = 100
 						}
 					}
 					// 如果选择的侧卧
-					arraybuffer = handPillowSideState(this.sideHead, this
-						.sideNeck)
-					console.log('调高侧卧:', this.head, this.neck, ab2hex(arraybuffer))
+					arraybuffer = handPillowFrontState(action, this.selectHead)
+					console.log('调高侧卧:', action, ab2hex(arraybuffer))
 				}
 				// console.log('调高:', ab2hex(arraybuffer))
 				blue_class.getInstance().write2tooth(arraybuffer)

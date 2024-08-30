@@ -143,19 +143,24 @@ var handPillowFrontState = function(action, isHead = true) {
 // 侧卧数据
 var handPillowSideState = function(head, neck) {
 	// 向蓝牙设备发送一个0x00的2进制数据
-	let littleEdition = true
-	const buffer = new ArrayBuffer(8)
+	//先构造数据
+	const data_buffer = new ArrayBuffer(2);
+	const dataBufferView = new DataView(data_buffer);
+	// 0--头部气囊，1--颈部气囊）
+	dataBufferView.setUint8(0, isHead ? 0 : 1)
+	// 动作(U8)(0--停止，1--升高，2--降低)
+	dataBufferView.setUint8(1, action)
+	let withLengthBuffer = handleSendFormart(data_buffer)
+	console.log("[handPillowSideState] withLengthBuffer", withLengthBuffer)
+	const orign_buffer = new DataView(withLengthBuffer)
+	console.log("[handPillowSideState]", withLengthBuffer.byteLength)
+	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
 	const dataView = new DataView(buffer)
+	// 指令码；1：2,3,4--手动调整 
 	dataView.setUint8(0, 4)
-	// （0--头部气囊，1--颈部气囊）
-	dataView.setUint8(1, 1)
-	// （1——正卧设置，数据1－头部气囊值，数据2－颈部气囊值，数据3－暂为0）
-	dataView.setUint8(2, 0)
-	dataView.setUint8(3, head)
-	dataView.setUint8(4, 0)
-	dataView.setUint8(5, neck)
-	dataView.setUint8(6, 0)
-	dataView.setUint8(7, 0)
+	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
+		dataView.setUint8(index + 1, orign_buffer.getUint8(index))
+	}
 	return buffer
 };
 // （4——延时设置，数据1-小时，数据2-分钟，数据3-秒钟）。
@@ -192,6 +197,30 @@ function handleTime(timstamp = 0) {
 	return buffer;
 }
 
+function parseTime(uint32_t) {
+	// 秒：0-5bit，分：6-11bit，时：12-16bit，日：17-21bit，月：22-25bit，年：26-31bit），年基于2020，月取值1-12
+	let seconds = (uint32_t >> 0) & 63
+	let minutes = (uint32_t >> 6) & 63
+	let hour = (uint32_t >> 12) & 31
+	let day = (uint32_t >> 17) & 31
+	let month = (uint32_t >> 22) & 15
+	let year = (uint32_t >> 26) & 63
+
+	return year + '年-' + month + '月-' + day + '日-' + hour + '小时-' + minutes + '分-' + seconds + '秒'
+	// console.log(a>>0 & 31,5,'秒');
+
+	// console.log(a>>5 & 31,5,'分');
+
+	// console.log(a>>10 & 15,4,'小时');
+
+	// console.log(a>>14 & 15,4,'日');
+
+	// console.log(a>>18 & 7,3,'月');
+
+	// console.log(a>>21,a>>26 & 31,5,'年');
+
+
+}
 var appAnswer = function(mark) {
 	const buffer = new ArrayBuffer(4);
 	const dataView = new DataView(buffer);
@@ -531,5 +560,6 @@ export {
 	restartPillow,
 	initPillow,
 	appAnswer,
+	parseTime,
 	dateUtils
 }

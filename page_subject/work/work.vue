@@ -79,7 +79,8 @@
 	} from '@/common/util.js'
 	import blue_class from '../../utils/BlueManager';
 	import {
-		appAnswer
+		appAnswer,
+		parseTime
 	} from '../../common/util';
 	export default {
 		components: {
@@ -343,6 +344,7 @@
 							break;
 						case 6:
 							this.parsePillowStatus(arrayBuffer_order)
+							this.parsePillowSleepData(null)
 							break;
 						case 88:
 							break;
@@ -385,7 +387,6 @@
 				}
 			},
 			parsePillowStatus(arraybuffer) {
-				// this.parsePillowSleepData(null)
 				// //默认是枕头状态 5s收到一次
 				let receive16 = ab2hex(arraybuffer);
 				// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
@@ -457,12 +458,45 @@
 					'电池:' + press10)
 			},
 			parsePillowSleepData(array_buffer) {
-				// 05090000c02212eb113a12 11
+
+				blue_class.getInstance().write2tooth(appAnswer(5))
+				//02123c2356123c2363
+				// let temp = new ArrayBuffer(9)
+				// let dataView2 = new DataView(temp);
+				// dataView2.setUint8(8, 0x63)
+				// dataView2.setUint8(7, 0x23)
+				// dataView2.setUint8(6, 0x3c)
+				// dataView2.setUint8(5, 0x12)
+				// dataView2.setUint8(4, 0x56)
+				// dataView2.setUint8(3, 0x23)
+				// dataView2.setUint8(2, 0x3c)
+				// dataView2.setUint8(1, 0x12)
+				// dataView2.setUint8(0, 0x02)
+				// console.log('姿态:', dataView2.getUint8(0));
+				// let uint32_s = dataView2.getUint32(1);
+				// let unit32_e = dataView2.getUint32(5);
+				// // parseTime(uint32_s)
+				// // 秒：0-5bit，分：6-11bit，时：12-16bit，日：17-21bit，月：22-25bit，年：26-31bit），年基于2020，月取值1-12
+				// console.log('开始时间:', uint32_s, parseTime(uint32_s))
+				// console.log('结束时间:', unit32_e, parseTime(unit32_e))
+				// return;
 				//解析枕头睡眠阶段状态	
 				// 数据1-姿态（U8）(1--平躺，2--侧卧) + 数据2开始时间（T4）+数据3结束时间（T4）+ 数据4-姿态（U8）(1--平躺，2--侧卧) + 数据5开始时间（T4）+数据6结束时间（T4）+ ... ,关于该指令的说明，是多个姿态+开始时间和结束时间的条目的组合，根据数据长度计算一条指令中包含多少组数据
-				blue_class.getInstance().write2tooth(appAnswer(5))
-				// let receive8 = new Uint8Array(array_buffer);
-				// console.log('姿态:', receive8.getUint8(0))
+				let receive8 = new ArrayBuffer(array_buffer);
+				let dataView = new DataView(receive8)
+				console.log('姿态:', dataView.getUint8(0));
+				let uint32_s = dataView.getUint32(1);
+				let unit32_e = dataView.getUint32(5);
+				// parseTime(uint32_s)
+				// 秒：0-5bit，分：6-11bit，时：12-16bit，日：17-21bit，月：22-25bit，年：26-31bit），年基于2020，月取值1-12
+				console.log('开始时间:', uint32_s, parseTime(uint32_s))
+				console.log('结束时间:', unit32_e, parseTime(unit32_e))
+				// let uint32_s = dataView.getUint32(1);
+				// let unit32_e = dataView.getUint32(5);
+				// // parseTime(uint32_s)
+				// // 秒：0-5bit，分：6-11bit，时：12-16bit，日：17-21bit，月：22-25bit，年：26-31bit），年基于2020，月取值1-12
+				// console.log('开始时间:', uint32_s, parseTime(uint32_s))
+				// console.log('结束时间:', unit32_e, parseTime(unit32_e))
 			},
 			// ai识别
 			autoHandler() {
