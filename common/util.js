@@ -346,6 +346,45 @@ var write2tooth = async function(deviceId, serviceId, characteristicId, buffer) 
 		})
 	});
 }
+
+var ab2str = function(buf) {
+	return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+
+var str2ab = function(str) {
+	var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+	var bufView = new Uint16Array(buf);
+	for (var i = 0, strLen = str.length; i < strLen; i++) {
+		bufView[i] = str.charCodeAt(i);
+	}
+	return buf;
+}
+
+var write2toothstr = async function(deviceId, serviceId, characteristicId, buffer) {
+	return new Promise((resolve, reject) => {
+		console.log('write2tooth,deviceId:,', deviceId, ',serviceId:,' + serviceId,
+			',characteristicId:,' + characteristicId)
+		// 向蓝牙设备发送一个0x00的16进制数据
+		uni.writeBLECharacteristicValue({
+			// 这里的 deviceId 需要在 getBluetoothDevices 或 onBluetoothDeviceFound 接口中获取
+			deviceId,
+			// 这里的 serviceId 需要在 getBLEDeviceServices 接口中获取
+			serviceId,
+			// 这里的 characteristicId 需要在 getBLEDeviceCharacteristics 接口中获取
+			characteristicId,
+			// 这里的value是ArrayBuffer类型
+			value: buffer,
+			writeType: 'write',
+			success(res) {
+				resolve(res)
+				console.log('writeBLECharacteristicValue success', res)
+			},
+			fail() {
+				reject()
+			}
+		})
+	});
+}
 // 将字符串转为arraybuffer
 var hexStringToArrayBuffer = function(str) {
 	if (!str) {
@@ -557,9 +596,12 @@ export {
 	changeSaveAdjustMode,
 	handleSendFormart,
 	uploadDataRequest,
+	write2toothstr,
 	restartPillow,
 	initPillow,
 	appAnswer,
 	parseTime,
+	ab2str,
+	str2ab,
 	dateUtils
 }

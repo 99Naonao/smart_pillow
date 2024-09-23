@@ -163,7 +163,7 @@
 				// // let app = getApp()
 				// blue_class.getInstance().write2tooth(init_arraybuffer);
 				this.showMeasure = true;
-				this.$refs.inputView.showParams(this.saveOptions);
+				// this.$refs.inputView.showParams(this.saveOptions);
 			} else {
 				this.showMeasure = false;
 			}

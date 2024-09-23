@@ -72,6 +72,8 @@
 		hexStringToArrayBuffer,
 		ab2hex,
 		hand1Shake,
+		write2toothstr,
+		str2ab,
 		write2tooth,
 		changeAdjustMode,
 		handPillowSideState,
@@ -109,7 +111,7 @@
 			}
 			uni.$on('xx', this.handleMessage)
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
-			// uni.onBLECharacteristicValueChange(this.handleMessage)
+			uni.onBLECharacteristicValueChange(this.handleMessage)
 		},
 		onHide() {
 			// uni.offBLECharacteristicValueChange(this.handleMessage)
@@ -150,8 +152,9 @@
 							isnotexist = false
 						}
 					}
+
 					if (isnotexist && result.devices[0].name != '') {
-						if (result.devices[0].name.indexOf('Minga') > -1) {
+						if (result.devices[0].name.indexOf('zzZMinga') > -1) {
 							that.deviceIdList.push(result.devices[0])
 						}
 						console.log('result.devices[0].name:', result.devices[0].name)
@@ -173,7 +176,7 @@
 							isnotexist = false
 						}
 					}
-					if (isnotexist && result[0].name != '' && result[0].name.indexOf('Minga') > -1) {
+					if (isnotexist && result[0].name != '' && result[0].name.indexOf('zzZMinga') > -1) {
 						that.deviceIdList.push(result[0])
 					}
 				}
@@ -233,6 +236,8 @@
 				onShowing: false, //页面是否显示
 				show: false,
 				success: false, //第一次握手成功
+				playStatusUUID: '0001ffe7-6865-6f6e-652d-7a732d717a51', //特征值
+				playStatusServerUUID: '0001ffe7-6865-6f6e-652d-7a732d717a50', //特征值
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 				characteristicStringId: '6E400002-B5A3-F393-E0A9-E50E24DCCA9E', //write，string，rx；
 				searching: false, // 搜索中
@@ -256,134 +261,11 @@
 				console.log('接收到数据', ab2hex(res.value), arrayBuffer.length)
 				// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
 				if (arrayBuffer.length == 4) {
-					let receive16 = ab2hex(res.value);
-					let last = '0x' + receive16
-					let total = 0;
-					Array.prototype.map.call(
-						arrayBuffer,
-						function(bit) {
-							total += Number(bit.toString(10))
-							return ('00' + bit.toString(16)).slice(-2)
-						}
-					)
-					let shake1 = hand1Shake(Number(
-						total), arrayBuffer)
-					console.log("total:", total, shake1)
-					if (this.success) {
-						console.log('已经握手成功了!')
-						return;
-					}
-					blue_class.getInstance().write2tooth(shake1)
-					console.log('第一次握手', ab2hex(shake1))
+
 				} else if (arrayBuffer.length == 2) {
-					let receive16 = ab2hex(res.value);
-					let mark = receive16.slice(2, 4)
-					let len = receive16.slice(0, 2)
-					console.log('接收到回复数据:', mark, len)
-					if (mark == '55') {
-						console.log('接收到回复数据', ab2hex(res.value))
-						console.log('校验长度', parseInt('0x' + len))
-						console.log('握手成功可以发送ssid了')
-						this.success = true
-						// blue_class.getInstance().write2tooth(this.characteristicStringId,
-						// 	hexStringToArrayBuffer('jimlee'))
-					} else if (mark == '66') {
-						console.log('握手成功可以发送ssid密码了')
-						// 发送wifi密码
-						// blue_class.getInstance().write2tooth(this.characteristicStringId,
-						// 	hexStringToArrayBuffer('lijiming'))
-					} else if (mark == 'aa') {
-						console.log('发送成功了ssid了')
-					} else if (mark == '33') {
-						console.log('收到成功调整枕头')
-						console.log('8个字节指令的校验和', parseInt('0x' + len))
-						console.log('后四位', receive16, receive16.slice(4, 1), receive16.slice(5, 1))
-					}
+
 				} else {
-					let mark = arrayBuffer[0];
-					let length = arrayBuffer[1];
-					let arrayBuffer_order = new ArrayBuffer(length);
-					let receive_dataView = new DataView(arrayBuffer_order);
-					for (var index = 0; index < arrayBuffer_order.byteLength; index++) {
-						receive_dataView.setUint8(index, arrayBuffer[index + 2])
-					}
-					console.log('handleMessage 接收到数据 mark:', parseInt(mark))
-					switch (parseInt(mark)) {
-						case 1:
-							let result = receive_dataView.getUint8(0)
-							switch (parseInt(result)) {
-								case 0:
-									console.log("[调整模式成功]")
-									break;
-								case 1:
-									console.log("[调整模式参数非法]")
-									break;
-								case 2:
-									console.log("[不支持的指令]")
-									break;
-							}
-							break;
-						case 2:
-							break;
-						case 4:
-							let result4 = receive_dataView.getUint8(0)
-							switch (parseInt(result4)) {
-								case 0:
-									console.log("[调整枕头成功]")
-									break;
-								case 1:
-									console.log("[调整模式参数非法]")
-									break;
-								case 2:
-									console.log("[不支持的指令]")
-									break;
-							}
-							break;
-						case 5:
-							this.parsePillowSleepData(arrayBuffer_order)
-							break;
-						case 6:
-							this.parsePillowStatus(arrayBuffer_order)
-							this.parsePillowSleepData(null)
-							break;
-						case 88:
-							break;
-					}
-					return;
-					//默认是枕头状态 5s收到一次
-					let receive16 = ab2hex(res.value);
-					// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
-					let status = receive16.slice(0, 2);
-					let status1 = '0x' + status;
 
-					let status10 = parseInt(status1);
-					switch (status10) {
-						case 0:
-							console.log('枕头空闲状态')
-							break;
-						case 1:
-							console.log('枕头平躺状态')
-							break;
-						case 2:
-							console.log('枕头侧卧状态')
-							break;
-					}
-					let headHeight = receive16.slice(4, 6);
-					let headHeight10 = parseInt('0x' + headHeight);
-					let neckHeight = receive16.slice(6, 8);
-					let neckHeight10 = parseInt('0x' + neckHeight);
-					let vesrion = receive16.slice(8, 10);
-					let vesrion10 = parseInt('0x' + vesrion);
-					let isright = receive16.slice(10, 12);
-					let isright10 = parseInt('0x' + isright);
-					let press = receive16.slice(12, 14);
-					let press10 = parseInt('0x' + press);
-					//保存版本号
-					blue_class.getInstance().version = vesrion10;
-					// let status1 = '0x' + status;
-
-					console.log('枕头状态=>', status, headHeight, neckHeight, vesrion, isright, press)
-					console.log('枕头状态=>', status10, headHeight10, neckHeight10, vesrion10, isright10, press10)
 				}
 			},
 			parsePillowStatus(arraybuffer) {
@@ -679,10 +561,12 @@
 									if (res.services[i].isPrimary) {
 										// this.addNotify(deviceId, res.services[i]
 										// 	.uuid, '6E400003-B5A3-F393-E0A9-E50E24DCCA9E')
-										this.getBLEDeviceCharacteristics(deviceId, res
-											.services[i]
+										// this.getBLEDeviceCharacteristics(deviceId, res
+										// 	.services[i]
+										// 	.uuid)
+										this.getBLEDeviceCharacteristics(deviceId, res.services[i]
 											.uuid)
-										//这里只取第一个哈！！！！！！！！
+
 										break;
 										// 可根据具体业务需要，选择一个主服务进行通信
 									}
@@ -701,6 +585,30 @@
 					}
 				})
 			},
+
+			sendPlay(deviceId, serverId) {
+				write2toothstr(deviceId, this.playStatusServerUUID, this.playStatusUUID, str2ab('play'))
+				this.readBLECharacteristicValue(deviceId, '0001FFE7-6865-6F6E-652D-7A732D717A60',
+					'0001FFE7-6865-6F6E-652D-7A732D717A61')
+				// write2tooth()
+			},
+			readBLECharacteristicValue(deviceId, serviceId, characteristicId) {
+				console.log('readBLECharacteristicValue:', deviceId, serviceId, characteristicId)
+				uni.readBLECharacteristicValue({
+					// 这里的 deviceId 需要已经通过 createBLEConnection 与对应设备建立链接
+					deviceId,
+					// 这里的 serviceId 需要在 getBLEDeviceServices 接口中获取
+					serviceId,
+					// 这里的 characteristicId 需要在 getBLEDeviceCharacteristics 接口中获取
+					characteristicId,
+					success(res) {
+						console.log('readBLECharacteristicValue:', res.errCode)
+					},
+					fail(res) {
+						console.log('readBLECharacteristicValue fail:', res)
+					}
+				})
+			},
 			// 获取蓝牙设备某个服务中所有特征值(characteristic)。
 			getBLEDeviceCharacteristics(deviceId, serviceId) {
 				let that = this
@@ -713,14 +621,17 @@
 						console.log("%c getBLEDeviceCharacteristics success", "color:red;", res
 							.characteristics);
 						let notify_character = ''
+
 						if (res.characteristics[1]) {
 							// 启用notify
 							notify_character = res.characteristics[1].uuid
-							blue_class.getInstance().startNotice({
-								deviceUUID: deviceId,
-								serviceUUID: serviceId,
-								notifyUUID: notify_character
-							})
+							//这里只取第一个哈！！！！！！！！
+							that.sendPlay(deviceId, res.characteristics[1].uuid)
+							// blue_class.getInstance().startNotice({
+							// 	deviceUUID: deviceId,
+							// 	serviceUUID: serviceId,
+							// 	notifyUUID: notify_character
+							// })
 							// uni.notifyBLECharacteristicValueChange({
 							// 	state: true,
 							// 	deviceId: deviceId,
@@ -780,7 +691,6 @@
 <style lang="scss">
 	.topKV {
 		width: 100%;
-		padding-top: 100rpx;
 	}
 
 	.header {

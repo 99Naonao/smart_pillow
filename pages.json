@@ -77,6 +77,12 @@
 					"navigationStyle": "custom",
 					"navigationBarTitleText": "连接设备"
 				}
+			}, {
+				"path": "yi/yi",
+				"style": {
+					"navigationStyle": "custom",
+					"navigationBarTitleText": "连接设备"
+				}
 			},
 			{
 				"path": "adjust/adjust",

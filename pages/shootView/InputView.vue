@@ -67,9 +67,20 @@
 				sideNeckHeight: '60',
 			}
 		},
+		mounted() {
+			// 因为是组件所以要走这里
+			let params = uni.getStorageSync('hparams')
+			params = params ? params : {}
+			this.headHeight = params.headHeight ? params.headHeight : '60'
+			this.shoulderHeight = params.shoulderHeight ? params.shoulderHeight : '200'
+			this.neckHeight = params.neckHeight ? params.neckHeight : '60'
+			this.sideHeadHeight = params.sideHeadHeight ? params.sideHeadHeight : '60'
+			this.sideShoulderHeight = params.sideShoulderHeight ? params.sideShoulderHeight : '200'
+			this.sideNeckHeight = params.sideNeckHeight ? params.sideNeckHeight : '60'
+		},
 		methods: {
 			getParams() {
-				return {
+				let params = {
 					headHeight: this.headHeight,
 					shoulderHeight: this.shoulderHeight,
 					neckHeight: this.neckHeight,
@@ -77,6 +88,8 @@
 					sideShoulderHeight: this.sideShoulderHeight,
 					sideNeckHeight: this.sideNeckHeight,
 				}
+				uni.setStorageSync('hparams', params)
+				return params
 			},
 			showParams(params) {
 				this.headHeight = params.headHeight;

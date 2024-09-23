@@ -1,10 +1,14 @@
 <template>
 	<view class="main" v-if="hasLogin">
-		<view class="">
-			<image class="backimg" src="../../static/index/SY_00A_001.jpg" mode="widthFix"></image>
+		<view class="bg">
+			<image class="backimg" src="../../static/index/SY_00A_001.jpg"></image>
 		</view>
-		<view class="logoTip">
-			<image class="logoTipImg" src="../../static/index/SY_00A_F01.png" mode="widthFix"></image>
+		<view class="logoleft">
+			<image mode="widthFix" src="../../static/index/SY_00A_LOGO01.png"></image>
+		</view>
+		<view class="rightInfo">
+			<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconCW.png"></image>
+			<label class="desc" for="">未连接</label>
 		</view>
 		<!-- 		<view class="rotateimgblock">
 			<image class="rotateimg" src="../../static/index/SY_00_001.png" mode="widthFix"></image>
@@ -15,48 +19,33 @@
 				<button @click="connectSleepHandler(item)">{{item.deviceId == connectDeviceId ?'已连接':'连接'}}</button>
 			</view>
 		</view>
-		<view class="status-part flex">
-			<view class="item" @click="adjustHandler()">
-				<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
-				<label class="title" for="">调节</label>
-				<image class="icon1" src="../../static/index/SY_00A_IconTJa.png" mode="widthFix"></image>
-				<label class="desc" for="">未连接</label>
-			</view>
-			<view class="item" @click="hotHandler()">
-				<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
-				<label class="title" for="">热敷{{hotLast}}分</label>
-				<image class="icon2" src="../../static/index/SY_00A_IconRFa.png" mode="widthFix"></image>
-				<label class="desc" for="">未开启</label>
-			</view>
-			<view class="item" @click="statusCheck()">
-				<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
-				<label class="title" for="">状态</label>
-				<image class="icon3" src="../../static/index/SY_00A_IconYW.png" mode="widthFix"></image>
-				<label class="desc" for="">仰卧中</label>
-			</view>
-		</view>
-	</view>
-	<view v-else class="main">
 		<view class="">
-			<image class="backimg" src="../../static/index/SY_00_000.jpg" mode="widthFix"></image>
-		</view>
-		<view class="logoTip">
-			<image class="logoTipImg" src="../../static/index/SY_00_F01.png" mode="widthFix"></image>
-		</view>
-		<view class="rotateimgblock">
-			<image class="rotateimg" src="../../static/index/SY_00_001.png" mode="widthFix"></image>
-		</view>
-		<view class="logo">
-			<image src="../../static/index/SY_00_logo.png" mode="aspectFit"></image>
-		</view>
-		<view class="">
-			<view v-for="(item,index) in deviceIdList" :key="index">
-				{{item.name}}
-				<button @click="connectSleepHandler(item)">{{item.deviceId == connectDeviceId ?'已连接':'连接'}}</button>
+			<view class="status-part flex">
+				<view class="item" @click="adjustHandler()">
+					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
+					<label class="title" for="">连接状况</label>
+					<image class="icon1" src="../../static/index/SY_00A_IconLJ.png" mode="widthFix"></image>
+					<label class="desc" for="">未连接</label>
+				</view>
+				<view class="item" @click="adjustHandler()">
+					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
+					<label class="title" for="">AI检测</label>
+					<image class="icon2" src="../../static/index/SY_00A_IconAI.png" mode="widthFix"></image>
+					<!-- <label class="desc" for="">未连接</label> -->
+				</view>
+				<view class="item" @click="hotHandler()">
+					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
+					<label class="title" for="">模式选择</label>
+					<image class="icon3" src="../../static/index/SY_00A_IconRFa.png" mode="widthFix"></image>
+					<!-- <label class="desc" for="">未开启</label> -->
+				</view>
+				<view class="item" @click="statusCheck()">
+					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
+					<label class="title" for="">脊柱微调</label>
+					<image class="icon4" src="../../static/index/SY_00A_IconJZWT.png" mode="widthFix"></image>
+					<!-- <label class="desc" for="">仰卧中</label> -->
+				</view>
 			</view>
-		</view>
-		<view class="connectBtn" @click="connectHandler">
-			<image src="../../static/index/SY_00_button01a.png" mode="aspectFit"></image>
 		</view>
 	</view>
 </template>
@@ -487,7 +476,7 @@
 			},
 			connectHandler() {
 				uni.navigateTo({
-					url: '/page_subject/work/work'
+					url: '/page_subject/yi/yi'
 				})
 				return
 				let that = this;
@@ -735,7 +724,33 @@
 	.main {
 		width: 100%;
 		height: 100%;
-		margin-bottom: 100rpx;
+
+		.logoleft {
+			position: absolute;
+			left: 88rpx;
+			top: 130rpx;
+			width: 161rpx;
+			height: 131rpx;
+
+			image {
+				width: 100%;
+			}
+		}
+	}
+
+	.bg {
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+
+		.backimg {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			// display: block;
+		}
 	}
 
 	.logo {
@@ -762,6 +777,20 @@
 		height: 100%;
 	}
 
+	.rightInfo {
+		position: absolute;
+		top: 268rpx;
+		left: 508rpx;
+		color: white;
+		display: flex;
+		justify-content: center;
+
+		.icon {
+			width: 61rpx;
+			margin-right: 20rpx;
+		}
+	}
+
 	.connectBtn {
 		width: 727rpx;
 		height: 188rpx;
@@ -785,15 +814,17 @@
 		height: 100%;
 	}
 
-	.backimg {
-		width: 100%;
-		display: block;
-	}
+
+
 
 	.status-part {
-
-		padding-top: 200rpx;
+		margin-bottom: env(safe-area-inset-bottom);
+		// padding-top: 200rpx;
 		justify-content: space-around;
+		position: absolute;
+		bottom: 180rpx;
+		left: 0rpx;
+		right: 0rpx;
 
 		.item {
 			position: relative;
@@ -802,8 +833,8 @@
 			align-items: center;
 
 			.item-back {
-				width: 200rpx;
-				height: 200rpx;
+				width: 151rpx;
+				height: 161rpx;
 			}
 
 			.title {
@@ -823,7 +854,8 @@
 				width: 100%;
 				color: white;
 				text-align: center;
-				line-height: 60rpx;
+				line-height: 40rpx;
+				font-size: 29rpx;
 				color: #5B7897;
 			}
 
@@ -833,8 +865,8 @@
 				top: 45%;
 				margin-left: -25rpx;
 				// margin-top: -50%;
-				width: 50rpx;
-				height: 48rpx;
+				width: 41rpx;
+				height: 42rpx;
 				z-index: 100;
 			}
 
@@ -843,8 +875,8 @@
 				left: 50%;
 				top: 45%;
 				margin-left: -22rpx;
-				width: 43rpx;
-				height: 42rpx;
+				width: 41rpx;
+				height: 35rpx;
 			}
 
 			.icon3 {
@@ -852,8 +884,17 @@
 				left: 50%;
 				top: 45%;
 				margin-left: -30rpx;
-				width: 60rpx;
-				height: 37rpx;
+				width: 47rpx;
+				height: 42rpx;
+			}
+
+			.icon4 {
+				position: absolute;
+				left: 50%;
+				top: 45%;
+				margin-left: -30rpx;
+				width: 41rpx;
+				height: 56rpx;
 			}
 		}
 	}
