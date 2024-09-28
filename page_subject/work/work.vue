@@ -25,6 +25,13 @@
 				</image>
 			</view>
 		</view>
+		<view class="spetips">
+			<div class="item" style="margin-left: 42rpx;">特别说明:</div>
+			<div class="item flex align-center">
+				<image class="iconblue" mode="widthFix" src="../static/SY_01_IconLY.png"></image>
+				<div>睡眠枕基本使用功能，需要蓝牙连接</div>
+			</div>
+		</view>
 		<!-- 		<view class="device-item">
 			<image mode="widthFix" :src="'../static/SY_01WIEI_buttonTJa.png'" class="connect-btn"
 				@click="adjustLowSleepHandler(item)">
@@ -794,6 +801,36 @@
 		padding: 20rpx;
 	}
 
+	.spetips {
+		text-align: left;
+		font-size: 32rpx;
+		padding: 30rpx;
+		position: absolute;
+		left: 0;
+		right: 0;
+		background-color: #ffffff;
+		box-shadow: 0rpx 0rpx 20rpx #5B7897;
+		border-top-left-radius: 15rpx;
+		border-top-right-radius: 15rpx;
+		bottom: 0;
+		padding-bottom: env(safe-area-inset-bottom);
+		padding-bottom: constant(safe-area-inset-bottom);
+
+		.item {
+			line-height: 32rpx;
+			padding: 5rpx;
+			letter-spacing: 1rpx;
+			padding-bottom: 20rpx;
+		}
+
+		.iconblue {
+			width: 30rpx;
+			padding: 5rpx;
+			margin-right: 10rpx;
+		}
+
+	}
+
 	.device-item {
 		border: 1px solid #5B7897;
 		border-radius: 20rpx;
@@ -872,7 +909,6 @@
 	}
 
 
-
 	.container {
 		background-color: white;
 		border-radius: 50rpx 50rpx 0rpx 0rpx;
@@ -900,6 +936,8 @@
 			top: 20rpx;
 			position: absolute;
 		}
+
+
 
 		.touch {
 			text-align: center;

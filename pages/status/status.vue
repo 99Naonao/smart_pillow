@@ -476,7 +476,7 @@
 			},
 			connectHandler() {
 				uni.navigateTo({
-					url: '/page_subject/yi/yi'
+					url: '/page_subject/work/work'
 				})
 				return
 				let that = this;
