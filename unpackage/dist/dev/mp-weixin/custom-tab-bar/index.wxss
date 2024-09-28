@@ -30,8 +30,16 @@
 }
 
 .tab-bar-item image {
+	max-width: 99rpx;
+	max-height: 113rpx;
+}
+
+.sicon {
 	width: 99rpx;
-	height: 108rpx;
+}
+
+.icon {
+	width: 45rpx;
 }
 
 

@@ -590,7 +590,6 @@
 				write2toothstr(deviceId, this.playStatusServerUUID, this.playStatusUUID, str2ab('play'))
 				this.readBLECharacteristicValue(deviceId, '0001FFE7-6865-6F6E-652D-7A732D717A60',
 					'0001FFE7-6865-6F6E-652D-7A732D717A61')
-				// write2tooth()
 			},
 			readBLECharacteristicValue(deviceId, serviceId, characteristicId) {
 				console.log('readBLECharacteristicValue:', deviceId, serviceId, characteristicId)
