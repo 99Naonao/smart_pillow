@@ -18,13 +18,14 @@
 				<label class='desc1size'>{{this.selectIndex==1?this.neck:this.sideNeck}}mm</label>
 				<label class='desc2'>头枕部</label>
 				<label class='desc2size'>{{this.selectIndex==1?this.head:this.sideHead}}mm</label>
-				<image class="main-icon" :src="'../static/adjust/SY_11_DITU.png'"></image>
+				<image class="human-icon" :src="'../static/adjust/SY_11_bg01YW.png'"></image>
+				<image class="main-icon" :src="'../static/adjust/SY_11_bg02TZ.png'"></image>
 				<image class="down-icon" :class="touchingDown?['down-icon-effect']:[]"
 					:src="'../static/adjust/SY_11_DOW.png'"></image>
 				<image class="up-icon" :class="touchingUp?['up-icon-effect']:[]" :src="'../static/adjust/SY_11_UP.png'">
 				</image>
-				<image class="bzb-icon" :src="'../static/adjust/SY_11_buttonBZb.png'"></image>
-				<image class="tzb-icon" :src="'../static/adjust/SY_11_buttonTZb.png'"></image>
+				<!-- 				<image class="bzb-icon" :src="'../static/adjust/SY_11_buttonBZb.png'"></image>
+				<image class="tzb-icon" :src="'../static/adjust/SY_11_buttonTZb.png'"></image> -->
 				<view :class="this.selectHead?'bo bo-left':'bo bo-left select'" @click="selectHeadHandler(false)">
 					脖枕
 				</view>
@@ -569,11 +570,12 @@
 	}
 
 	.selected {
-		background-color: #5B7897;
+		background-color: #1c4485;
 	}
 
 	.unselect-btn {
-		background-color: #5B7897 !important;
+		background-color: #d5e0f7 !important;
+		color: #354D5B !important;
 	}
 
 	.version {
@@ -583,7 +585,7 @@
 	}
 
 	.select-btn {
-		background-color: rgb(238, 126, 39);
+		background-color: rgb(28, 68, 133);
 		width: 284rpx;
 		height: 90rpx;
 		border-radius: 20rpx;
@@ -631,7 +633,7 @@
 	}
 
 	.main {
-		background-color: rgb(216, 226, 246);
+		background-color: rgb(197, 208, 230);
 		width: 100%;
 		height: 100%;
 
@@ -646,14 +648,14 @@
 			position: relative;
 			margin: 0 auto;
 			width: 634rpx;
-			height: 197rpx;
+			height: 297rpx;
 			margin-top: 100rpx;
 			color: #5B7897;
 
 			.bo {
 				width: 128rpx;
 				height: 76rpx;
-				background-color: #5B7897;
+				background-color: rgb(77, 127, 201);
 				color: white;
 				text-align: center;
 				line-height: 76rpx;
@@ -662,19 +664,21 @@
 
 			.bo-left {
 				position: absolute;
-				left: 115rpx;
-				top: 108rpx;
+				left: 55rpx;
+				top: 198rpx;
+				z-index: 10;
 			}
 
 			.bo-right {
+				z-index: 10;
 				position: absolute;
-				right: 100rpx;
-				top: 108rpx;
+				right: 130rpx;
+				top: 188rpx;
 			}
 
 			.select {
 				background-color: white;
-				color: #5B7897;
+				color: rgb(28, 68, 133);
 			}
 
 			.bzb-icon {
@@ -693,6 +697,14 @@
 				height: 125rpx;
 			}
 
+			.human-icon {
+				position: absolute;
+				right: -30rpx;
+				top: -30rpx;
+				width: 476rpx;
+				height: 271rpx;
+			}
+
 			.desc1 {
 				font-size: 30rpx;
 				left: 22rpx;
@@ -709,7 +721,7 @@
 
 			.desc2 {
 				position: absolute;
-				color: #5B7897;
+				color: rgb(28, 68, 133);
 				left: 375rpx;
 				top: -35rpx;
 				font-size: 30rpx;
@@ -723,8 +735,10 @@
 			}
 
 			.main-icon {
-				width: 634rpx;
-				height: 197rpx;
+				width: 644rpx;
+				height: 292rpx;
+				position: relative;
+				z-index: 10;
 			}
 
 			.up-icon {
@@ -837,7 +851,7 @@
 				display: flex;
 				justify-content: space-around;
 				align-items: center;
-				background-color: #5B7897;
+				background-color: rgb(28, 68, 133);
 				border-radius: 30rpx;
 				line-height: 56rpx;
 				color: white;
@@ -866,7 +880,7 @@
 		.save {
 			width: 670rpx;
 			height: 102rpx;
-			background-color: #5B7897;
+			background-color: rgb(28, 68, 133);
 			margin: 0 auto;
 			line-height: 102rpx;
 			text-align: center;
