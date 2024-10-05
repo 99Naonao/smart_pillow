@@ -4,30 +4,6 @@
 			title='自定义模式'></z-nav-bar> -->
 		<public-module></public-module>
 		<!-- <view class="title maintitle">自定义模式</view> -->
-		<view class="setting flex">
-			<view class="item flex justify-content-center" @click="sendHandler(1)">
-				<view class="text-align-center">
-					<image class="nan" src="../../static/mode/SY_04_IconMANa.png"></image>
-					<view>成年男性</view>
-				</view>
-			</view>
-			<view class="item flex justify-content-center" @click="sendHandler(1)">
-				<view class="text-align-center">
-					<image class="nv" src="../../static/mode/SY_04_IconWOMANa.png"></image>
-					<view>成年女性</view>
-				</view>
-			</view>
-			<view class="item flex justify-content-center" @click="sendHandler(1)">
-				<view class="text-align-center">
-					<image class='child' src="../../static/mode/SY_04_IconYOUNa.png"></image>
-					<view>10-15岁儿童</view>
-				</view>
-			</view>
-		</view>
-		<view class="kv">
-			<image class="kv-img" mode="widthFix" :src="'../static/mode/SY_04A_bg01.png'"></image>
-			<label class="tips">手动微调</label>
-		</view>
 		<view class="main">
 			<uni-swipe-action ref="swaction">
 				<view v-for="(item,index) in modeList" :key="index">
@@ -48,7 +24,27 @@
 				+
 			</view>
 		</view>
-
+		<view class="title maintitle">预设模式</view>
+		<view class="setting flex">
+			<view class="item flex justify-content-center" @click="sendHandler(1)">
+				<view class="text-align-center">
+					<image class="nan" src="../../static/mode/SY_04_IconMANa.png"></image>
+					<view>成年男性</view>
+				</view>
+			</view>
+			<view class="item flex justify-content-center" @click="sendHandler(1)">
+				<view class="text-align-center">
+					<image class="nv" src="../../static/mode/SY_04_IconWOMANa.png"></image>
+					<view>成年女性</view>
+				</view>
+			</view>
+			<view class="item flex justify-content-center" @click="sendHandler(1)">
+				<view class="text-align-center">
+					<image class='child' src="../../static/mode/SY_04_IconYOUNa.png"></image>
+					<view>10-15岁儿童</view>
+				</view>
+			</view>
+		</view>
 		<!-- <input-view ref="inputView"></input-view> -->
 	</view>
 </template>
@@ -251,9 +247,6 @@
 
 <style lang="scss">
 	.container {
-		background-color: rgb(197, 208, 230);
-		height: 100%;
-
 		.title {
 			margin: 10rpx;
 			text-align: center;
@@ -264,40 +257,9 @@
 			margin-bottom: 30rpx;
 		}
 
-		.kv {
-			margin: 0 auto;
-			margin-top: 52rpx;
-			width: 668rpx;
-			height: 181rpx;
-			border-radius: 28rpx;
-			border: none;
-			position: relative;
-			background-color: rgb(21, 59, 122);
-
-			.tips {
-				position: absolute;
-				right: 50rpx;
-				top: 50rpx;
-				background-color: rgb(77, 128, 195);
-				color: white;
-				font-size: 38rpx;
-				letter-spacing: 10rpx;
-				line-height: 88rpx;
-				border-radius: 28rpx;
-				padding-left: 42rpx;
-				padding-right: 42rpx;
-			}
-
-			.kv-img {
-				width: 417rpx;
-			}
-		}
-
-
 		.setting {
 			justify-content: space-between;
 			align-items: center;
-			padding-top: 31rpx;
 			margin-left: 40rpx;
 			margin-right: 40rpx;
 
@@ -306,8 +268,7 @@
 				align-items: center;
 				width: 212rpx;
 				height: 270rpx;
-				background-color: white;
-				// border: 1px solid #5B7897;
+				border: 1px solid #5B7897;
 				border-radius: 10rpx;
 			}
 
