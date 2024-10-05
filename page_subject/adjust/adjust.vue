@@ -52,7 +52,7 @@
 					<label>降低</label>
 				</view>
 			</view>
-			<view class="opt-part" v-if="true" style="margin-top: 10rpx;">
+			<view class="opt-part" v-if="true">
 				<view class="opt-btn" @click="uploadDataHandle" v-if="false">
 					<label>上报数据</label>
 				</view>
@@ -665,7 +665,7 @@
 			.bo-left {
 				position: absolute;
 				left: 55rpx;
-				top: 198rpx;
+				top: 193rpx;
 				z-index: 10;
 			}
 
@@ -673,7 +673,7 @@
 				z-index: 10;
 				position: absolute;
 				right: 130rpx;
-				top: 188rpx;
+				top: 193rpx;
 			}
 
 			.select {
@@ -700,7 +700,7 @@
 			.human-icon {
 				position: absolute;
 				right: -30rpx;
-				top: -30rpx;
+				top: -60rpx;
 				width: 476rpx;
 				height: 271rpx;
 			}
@@ -708,30 +708,37 @@
 			.desc1 {
 				font-size: 30rpx;
 				left: 22rpx;
-				top: -35rpx;
+				top: 20rpx;
 				position: absolute;
+				color: #354D5B;
+				z-index: 11;
 			}
 
 			.desc1size {
 				font-size: 36rpx;
 				position: absolute;
+				color: #003C71;
 				right: 388rpx;
-				top: -38rpx;
+				top: 18rpx;
+				z-index: 11;
 			}
 
 			.desc2 {
 				position: absolute;
-				color: rgb(28, 68, 133);
-				left: 375rpx;
-				top: -35rpx;
+				color: #354D5B;
+				left: 390rpx;
+				top: 47rpx;
 				font-size: 30rpx;
+				z-index: 11;
 			}
 
 			.desc2size {
 				font-size: 36rpx;
+				color: #003C71;
 				position: absolute;
-				right: 43rpx;
-				top: -38rpx;
+				right: 37rpx;
+				top: 43rpx;
+				z-index: 11;
 			}
 
 			.main-icon {
@@ -745,8 +752,9 @@
 				width: 24rpx;
 				height: 76rpx;
 				position: absolute;
-				left: 30rpx;
-				top: 100rpx;
+				left: 0rpx;
+				top: 190rpx;
+				z-index: 12;
 			}
 
 			.down-icon {
@@ -754,8 +762,9 @@
 				height: 77rpx;
 				position: absolute;
 				right: 27rpx;
-				top: 100rpx;
+				top: 190rpx;
 				display: block;
+				z-index: 12;
 			}
 
 			@-webkit-keyframes downEffect {
@@ -843,7 +852,7 @@
 		.opt-part {
 			display: flex;
 			justify-content: space-around;
-			margin-top: 100rpx;
+			margin-top: 62rpx;
 
 			.opt-btn {
 				width: 284rpx;
