@@ -78,6 +78,12 @@
 					"navigationBarTitleText": "连接设备"
 				}
 			}, {
+				"path": "ano/ano",
+				"style": {
+					"navigationStyle": "custom",
+					"navigationBarTitleText": "脊椎微调"
+				}
+			}, {
 				"path": "yi/yi",
 				"style": {
 					"navigationStyle": "custom",

@@ -37,21 +37,19 @@
 				{{pillowVersion+':'+pillowStatus}}
 			</view>
 			<view class="opt-part">
-				<!-- 				<button class="opt-btn" hover-class="is-hover">
-					<image mode="widthFix" class="icon" style="transform: rotate(-180deg);"
-						:src="'../static/adjust/SY_11_butUP.png'"></image>升高
-				</button> -->
 				<view class="opt-btn opt-btn-top" @touchstart="adjustHighSleepHandler"
 					@touchend="stopAdjustHighHandler">
 					<image mode="widthFix" class="icon" :src="'../static/adjust/SY_11_butUP.png'"></image>
 					<label>升高</label>
 				</view>
+				<view class="opt-tip1">按住升高,放开停止</view>
 				<view class="opt-btn opt-btn-top" @touchstart="adjustLowSleepHandler" @touchend="stopAdjustHighHandler">
 					<image mode="widthFix" class="icon" style="transform: rotate(-180deg);"
 						:src="'../static/adjust/SY_11_butUP.png'">
 					</image>
 					<label>降低</label>
 				</view>
+				<view class="opt-tip2">按住降低,放开停止</view>
 			</view>
 			<view class=" opt-part" v-if="true">
 				<view class="opt-btn" @click="uploadDataHandle" v-if="false">
@@ -854,6 +852,27 @@
 			display: flex;
 			justify-content: space-around;
 			margin-top: 62rpx;
+			position: relative;
+
+			.opt-tips-con {
+				display: flex;
+				justify-content: space-around;
+				position: relative;
+			}
+
+			.opt-tip1 {
+				position: absolute;
+				top: 95rpx;
+				left: 0rpx;
+				color: #676767;
+			}
+
+			.opt-tip2 {
+				position: absolute;
+				top: 95rpx;
+				right: 0rpx;
+				color: #676767;
+			}
 
 			.opt-btn {
 				width: 284rpx;

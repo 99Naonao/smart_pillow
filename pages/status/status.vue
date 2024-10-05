@@ -236,7 +236,9 @@
 				this.connectHandler()
 			},
 			statusCheck() {
-
+				uni.navigateTo({
+					url: "/page_subject/ano/ano"
+				})
 			},
 			hotHandler() {
 
