@@ -41,18 +41,19 @@
 					<image mode="widthFix" class="icon" style="transform: rotate(-180deg);"
 						:src="'../static/adjust/SY_11_butUP.png'"></image>升高
 				</button> -->
-				<view class="opt-btn" @touchstart="adjustHighSleepHandler" @touchend="stopAdjustHighHandler">
-					<image mode="widthFix" class="icon" style="transform: rotate(-180deg);"
-						:src="'../static/adjust/SY_11_butUP.png'"></image>
+				<view class="opt-btn opt-btn-top" @touchstart="adjustHighSleepHandler"
+					@touchend="stopAdjustHighHandler">
+					<image mode="widthFix" class="icon" :src="'../static/adjust/SY_11_butUP.png'"></image>
 					<label>升高</label>
 				</view>
-				<view class="opt-btn" @touchstart="adjustLowSleepHandler" @touchend="stopAdjustHighHandler">
-					<image mode="widthFix" class="icon" :src="'../static/adjust/SY_11_butUP.png'">
+				<view class="opt-btn opt-btn-top" @touchstart="adjustLowSleepHandler" @touchend="stopAdjustHighHandler">
+					<image mode="widthFix" class="icon" style="transform: rotate(-180deg);"
+						:src="'../static/adjust/SY_11_butUP.png'">
 					</image>
 					<label>降低</label>
 				</view>
 			</view>
-			<view class="opt-part" v-if="true">
+			<view class=" opt-part" v-if="true">
 				<view class="opt-btn" @click="uploadDataHandle" v-if="false">
 					<label>上报数据</label>
 				</view>
@@ -869,6 +870,11 @@
 					margin-left: -55rpx;
 				}
 			}
+
+			.opt-btn-top {
+				background-color: rgb(79, 128, 191);
+			}
+
 
 			.icon {
 				width: 56rpx;
