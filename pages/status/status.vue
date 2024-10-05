@@ -241,7 +241,9 @@
 				})
 			},
 			hotHandler() {
-
+				uni.navigateTo({
+					url: "/page_subject/mode/mode"
+				})
 			},
 			change(e) {
 
