@@ -6,7 +6,11 @@
 		<view class="logoleft">
 			<image mode="widthFix" src="../../static/index/SY_00A_LOGO01.png"></image>
 		</view>
-		<view class="rightInfo">
+		<view class="rightBatteryInfo" :style="menuInfo">
+			<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconDLa.png"></image>
+			<label class="desc" for="">80%</label>
+		</view>
+		<view class="rightInfo" :style="menuInfo">
 			<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconCW.png"></image>
 			<label class="desc" for="">未连接</label>
 		</view>
@@ -72,11 +76,17 @@
 	import {
 		createScopedThreejs
 	} from 'threejs-miniprogram'
+	import {
+		nextTick
+	} from 'vue';
 
 
 	export default {
 		data() {
 			return {
+				menuInfo: {
+					'--menuButtonTop': '30px'
+				},
 				hasLogin: true,
 				hotLast: 0, // 热敷持续时间
 				show: false,
@@ -108,6 +118,11 @@
 					onshow: true
 				});
 			}
+
+			let app = getApp();
+			this.$set(this.menuInfo, '--menuButtonTop', (app.globalData.top + 120) + 'px');
+			this.$set(this.menuInfo, '--menuButtonTop1', (app.globalData.top + 62) + 'px');
+			console.log('menui:', (app.globalData.top + 120) + 'px', this.menuInfo)
 
 			// console.log('createScopedThreejs:', createScopedThreejs)
 
@@ -818,11 +833,26 @@
 
 	.rightInfo {
 		position: absolute;
-		top: 268rpx;
+		top: var(--menuButtonTop);
 		left: 508rpx;
 		color: white;
 		display: flex;
 		justify-content: center;
+
+		.icon {
+			width: 61rpx;
+			margin-right: 20rpx;
+		}
+	}
+
+	.rightBatteryInfo {
+		position: absolute;
+		top: var(--menuButtonTop1);
+		left: 508rpx;
+		color: white;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 
 		.icon {
 			width: 61rpx;
