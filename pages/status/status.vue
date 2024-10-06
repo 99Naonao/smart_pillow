@@ -24,7 +24,7 @@
 					<image class="icon1" src="../../static/index/SY_00A_IconLJ.png" mode="widthFix"></image>
 					<label class="desc" for="">未连接</label>
 				</view>
-				<view class="item" @click="adjustHandler()">
+				<view class="item" @click="aiHandler()">
 					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
 					<label class="title" for="">AI检测</label>
 					<image class="icon2" src="../../static/index/SY_00A_IconAI.png" mode="widthFix"></image>
@@ -47,19 +47,15 @@
 		<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" border-radius="40rpx 40rpx 0rpx 0rpx"
 			background-color='white' safe-area="false" class="popup" :mask-click="false" @change="change">
 			<view class="popupcontainer">
-				<image class="close-btn" @click="closePopUpHandle"
-					src="@/page_subject/static/adjust/SY_05_buttonCOLa.png" mode="widthFix">
+				<image class="close-btn" @click="closePopUpHandle" :src="'../../static/adjust/SY_05_buttonCOLa.png'"
+					mode="widthFix">
 				</image>
 				<image class="tip" src="@/static/adjust/SY_05_B001.png" mode="widthFix"></image>
 				<view class="touch">
 					<view class="item" @click="showMineHandler">
-						<!-- <image class="item-btn" src="@/page_subject/static/adjust/SY_02_button01a.png"></image> -->
-						<image class="icon1" src="@/page_subject/static/adjust/SY_02_Icon01.png" mode=""></image>
 						<label>我的数据</label>
 					</view>
 					<view class="item" @click="showDefaultHandler">
-						<!-- <image class="item-btn" src="@/page_subject/static/adjust/SY_02_button01a.png"></image> -->
-						<image class="icon2" src="@/page_subject/static/adjust/SY_02_Icon02.png" mode=""></image>
 						<label>默认数据</label>
 					</view>
 				</view>
@@ -250,6 +246,11 @@
 		},
 
 		methods: {
+			aiHandler() {
+				uni.navigateTo({
+					url: "/page_subject/measure/measure"
+				})
+			},
 
 			closePopUpHandle() {
 				this.$refs.ppp.close()
@@ -939,9 +940,11 @@
 
 
 	.popupcontainer {
-		background-color: white;
+		background-color: #eff2f6;
 		border-radius: 50rpx 50rpx 0rpx 0rpx;
 		position: relative;
+		padding-bottom: env(safe-area-inset-bottom);
+		padding-bottom: constant(safe-area-inset-bottom);
 
 		::after {
 			content: '';
@@ -950,12 +953,12 @@
 		}
 
 		.tip {
-			width: 322rpx;
-			height: 161rpx;
+			width: 106rpx;
+			height: 95rpx;
 			position: absolute;
 			left: 50%;
-			top: -60rpx;
-			margin-left: -161rpx;
+			top: -40rpx;
+			margin-left: -53rpx;
 		}
 
 		.close-btn {
@@ -963,6 +966,7 @@
 			height: 27rpx;
 			right: 30rpx;
 			top: 20rpx;
+			padding: 20rpx;
 			position: absolute;
 		}
 

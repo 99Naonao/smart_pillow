@@ -125,17 +125,41 @@
 </script>
 
 <style lang="scss">
-	.back-img-container {
-		width: 750rpx;
-		height: 1000rpx;
-		overflow: hidden;
+	.main {
+		height: 100%;
+
+		.back-img-container {
+			width: 750rpx;
+			height: 100%;
+			// height: 1000rpx;
+			overflow: hidden;
+
+
+			.backimg {
+				width: 750rpx;
+				object-fit: cover;
+			}
+
+		}
+
+
+		.info {
+			position: absolute;
+			bottom: 100rpx;
+			left: 50%;
+			transform: translateX(-50%);
+		}
+
 	}
+
 
 	.tips-container {
 		background-color: rgba(0, 0, 0, 0.3);
 		width: 100%;
 		position: absolute;
 		top: 750rpx;
+		bottom: 0rpx;
+		right: 0rpx;
 		left: 0rpx;
 
 		.tips {
@@ -146,7 +170,7 @@
 
 
 	.info-btn {
-		background-color: #ff8000;
+		background-color: #4281c1;
 		margin: 0 auto;
 		color: white;
 		width: 400rpx;
@@ -160,22 +184,20 @@
 		margin-top: 50rpx;
 	}
 
-	.backimg {
-		width: 750rpx;
-	}
+
 
 	.container {
-		background-color: white;
+		background-color: #eff2f6;
 		border-radius: 50rpx 50rpx 0rpx 0rpx;
 		position: relative;
 
 		.tip {
-			width: 322rpx;
-			height: 161rpx;
+			width: 106rpx;
+			height: 95rpx;
 			position: absolute;
 			left: 50%;
 			top: -60rpx;
-			margin-left: -161rpx;
+			margin-left: -53rpx;
 		}
 
 		.close-btn {
@@ -231,7 +253,7 @@
 				}
 
 				.select-btn {
-					background-color: rgb(238, 126, 39);
+					background-color: #4281c1;
 					width: 275rpx;
 					height: 71rpx;
 					border-radius: 20rpx;
@@ -260,7 +282,7 @@
 			.save {
 				width: 500rpx;
 				height: 102rpx;
-				background-color: #5B7897;
+				background-color: #003c71;
 				margin: 0 auto;
 				line-height: 102rpx;
 				text-align: center;
@@ -270,6 +292,4 @@
 			}
 		}
 	}
-
-	.info {}
 </style>
