@@ -295,6 +295,9 @@
 
 <style lang="scss">
 	.container {
+		background-color: rgb(197, 208, 230);
+		height: 100%;
+
 		.title {
 			margin: 10rpx;
 			text-align: center;
@@ -333,6 +336,36 @@
 			.child {
 				width: 54rpx;
 				height: 119rpx;
+			}
+		}
+
+
+		.kv {
+			margin: 0 auto;
+			margin-top: 52rpx;
+			width: 668rpx;
+			height: 181rpx;
+			border-radius: 28rpx;
+			border: none;
+			position: relative;
+			background-color: rgb(21, 59, 122);
+
+			.tips {
+				position: absolute;
+				right: 50rpx;
+				top: 50rpx;
+				background-color: rgb(77, 128, 195);
+				color: white;
+				font-size: 38rpx;
+				letter-spacing: 10rpx;
+				line-height: 88rpx;
+				border-radius: 28rpx;
+				padding-left: 42rpx;
+				padding-right: 42rpx;
+			}
+
+			.kv-img {
+				width: 417rpx;
 			}
 		}
 
@@ -506,7 +539,7 @@
 
 			.item {
 				display: flex;
-				background-color: #5B7897;
+				background-color: #1c4485;
 				border-radius: 30rpx;
 				text-align: center;
 				color: white;
@@ -518,13 +551,13 @@
 				}
 
 				.send-btn {
-					background-color: #ff8000;
-					margin: 20rpx;
+					background-color: #4d7fc9;
+					margin: 30rpx;
 					color: white;
-					line-height: 80rpx;
+					line-height: 68rpx;
 					padding-left: 50rpx;
 					padding-right: 50rpx;
-					border-radius: 15rpx;
+					border-radius: 25rpx;
 				}
 			}
 		}
