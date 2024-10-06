@@ -7,7 +7,7 @@
 		<view class="main">
 			<uni-swipe-action ref="swaction">
 				<view v-for="(item,index) in modeList" :key="index">
-					<uni-swipe-action-item :right-options="options1" @click="onButton($event,index)" autoClose=true
+					<uni-swipe-action-item @click="onButton($event,index)" autoClose=true
 						@change='onChange($event,index)'>
 						<view class="item">
 							<view class="title">
@@ -17,6 +17,10 @@
 								发送
 							</view>
 						</view>
+						<template v-slot:right>
+							<view class="slot-button" @click="bindClick({position:'right',content:{text:'删除'}})"><text
+									class="slot-button-text">删除</text></view>
+						</template>
 					</uni-swipe-action-item>
 				</view>
 			</uni-swipe-action>
@@ -159,7 +163,8 @@
 				options1: [{
 					text: '删除',
 					style: {
-						backgroundColor: '#f4220d'
+						backgroundColor: '#f4220d',
+						borderRadius: '20rpx'
 					},
 				}],
 
@@ -526,6 +531,18 @@
 			margin-left: 40rpx;
 			margin-right: 40rpx;
 			margin-top: 6upx;
+
+			.slot-button {
+				margin-top: 20rpx;
+				margin-left: 20rpx;
+				background-color: rgb(195, 90, 90);
+				border-radius: 20rpx;
+				color: white;
+				font-size: 38rpx;
+				padding-left: 20rpx;
+				padding-right: 20rpx;
+				line-height: 120rpx;
+			}
 
 			.item-plus {
 				margin-top: 20rpx;

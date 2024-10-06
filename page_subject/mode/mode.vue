@@ -159,7 +159,8 @@
 				options1: [{
 					text: '删除',
 					style: {
-						backgroundColor: '#f4220d'
+						backgroundColor: '#f4220d',
+						borderRadius: '15rpx'
 					},
 				}],
 

@@ -573,9 +573,20 @@ var object2Query = function(obj) {
 	console.log('object2Query:', obj, result)
 	return result;
 }
-
+// 根据正面拍出来的数据，计算侧卧数据
+var sideParseByShooting = function(obj) {
+	// 头枕:  (肩宽-头宽) / 2
+	// 脖枕: ( 肩宽- 男性 10,女性 8.5) / 2
+}
+// 根据侧面拍出图片来计算仰卧数据
+var frontParseByShooting = function(obj) {
+	// 仰卧高度计算: (侧面图来计算):  
+	//  头枕:(后背点与后脑勺的点距离来计算)  如果低于枕头最低数值就取最低数值
+	//  脖枕: 颈部凹点与后脑勺点的距离来计算
+}
 export {
 	object2Query,
+	sideParseByShooting,
 	parsePillowRealState,
 	handPillowStatus,
 	handPillowSideState,
