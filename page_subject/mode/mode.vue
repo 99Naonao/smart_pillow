@@ -24,7 +24,7 @@
 				</view>
 			</view>
 		</view>
-		<view class="kv">
+		<view class="kv" @click="navHandle">
 			<image class="kv-img" mode="widthFix" :src="'../static/mode/SY_04A_bg01.png'"></image>
 			<label class="tips">手动微调</label>
 		</view>
@@ -287,6 +287,11 @@
 			addModeHandler() {
 				uni.showToast({
 					title: '暂未开放'
+				})
+			},
+			navHandle() {
+				uni.navigateTo({
+					url: "/page_subject/adjust/adjust"
 				})
 			}
 		},

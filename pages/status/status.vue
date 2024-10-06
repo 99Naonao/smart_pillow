@@ -10,9 +10,6 @@
 			<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconCW.png"></image>
 			<label class="desc" for="">未连接</label>
 		</view>
-		<!-- 		<view class="rotateimgblock">
-			<image class="rotateimg" src="../../static/index/SY_00_001.png" mode="widthFix"></image>
-		</view> -->
 		<view class="">
 			<view v-for="(item,index) in deviceIdList" :key="index">
 				{{item.name}}
@@ -47,6 +44,27 @@
 				</view>
 			</view>
 		</view>
+		<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" border-radius="40rpx 40rpx 0rpx 0rpx"
+			background-color='white' safe-area="false" class="popup" :mask-click="false" @change="change">
+			<view class="popupcontainer">
+				<image class="close-btn" @click="closePopUpHandle"
+					src="@/page_subject/static/adjust/SY_05_buttonCOLa.png" mode="widthFix">
+				</image>
+				<image class="tip" src="@/static/adjust/SY_05_B001.png" mode="widthFix"></image>
+				<view class="touch">
+					<view class="item" @click="showMineHandler">
+						<!-- <image class="item-btn" src="@/page_subject/static/adjust/SY_02_button01a.png"></image> -->
+						<image class="icon1" src="@/page_subject/static/adjust/SY_02_Icon01.png" mode=""></image>
+						<label>我的数据</label>
+					</view>
+					<view class="item" @click="showDefaultHandler">
+						<!-- <image class="item-btn" src="@/page_subject/static/adjust/SY_02_button01a.png"></image> -->
+						<image class="icon2" src="@/page_subject/static/adjust/SY_02_Icon02.png" mode=""></image>
+						<label>默认数据</label>
+					</view>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 
@@ -232,6 +250,24 @@
 		},
 
 		methods: {
+
+			closePopUpHandle() {
+				this.$refs.ppp.close()
+			},
+			// 默认数据
+			showDefaultHandler() {
+				this.closePopUpHandle()
+				uni.navigateTo({
+					url: "/page_subject/mode/mode"
+				})
+			},
+			// my数据
+			showMineHandler() {
+				this.closePopUpHandle()
+				uni.navigateTo({
+					url: "/page_subject/mode/setMode"
+				})
+			},
 			adjustHandler(item) {
 				this.connectHandler()
 			},
@@ -241,9 +277,7 @@
 				})
 			},
 			hotHandler() {
-				uni.navigateTo({
-					url: "/page_subject/mode/mode"
-				})
+				this.$refs.ppp.open('bottom')
 			},
 			change(e) {
 
@@ -901,5 +935,102 @@
 				height: 56rpx;
 			}
 		}
+	}
+
+
+	.popupcontainer {
+		background-color: white;
+		border-radius: 50rpx 50rpx 0rpx 0rpx;
+		position: relative;
+
+		::after {
+			content: '';
+			display: block;
+			clear: both;
+		}
+
+		.tip {
+			width: 322rpx;
+			height: 161rpx;
+			position: absolute;
+			left: 50%;
+			top: -60rpx;
+			margin-left: -161rpx;
+		}
+
+		.close-btn {
+			width: 26rpx;
+			height: 27rpx;
+			right: 30rpx;
+			top: 20rpx;
+			position: absolute;
+		}
+
+
+
+		.touch {
+			text-align: center;
+			padding-top: 100rpx;
+
+
+			.item {
+				text-align: center;
+				color: white;
+				background-color: #5B7897;
+				border-radius: 30rpx;
+				margin-top: 10rpx;
+				margin-bottom: 10rpx;
+				margin-left: 35rpx;
+				margin-right: 35rpx;
+				line-height: 100rpx;
+				position: relative;
+
+				.item-btn {
+					width: 713rpx;
+					height: 100rpx;
+					margin: 0 auto;
+				}
+
+				.icon1 {
+					width: 81rpx;
+					height: 81rpx;
+					left: 20rpx;
+					top: 10rpx;
+					position: absolute;
+
+				}
+
+				.icon2 {
+					left: 20rpx;
+					top: 10rpx;
+					width: 81rpx;
+					height: 81rpx;
+					position: absolute;
+				}
+
+				.icon3 {
+					left: 20rpx;
+					top: 10rpx;
+					width: 81rpx;
+					height: 81rpx;
+					position: absolute;
+				}
+
+			}
+
+
+		}
+	}
+
+	.uni-popup__wrapper-box {
+
+		display: block;
+
+		position: relative;
+		/* iphonex 等安全区设置，底部安全区适配 */
+
+		padding-bottom: constant(safe-area-inset-bottom);
+		padding-bottom: env(safe-area-inset-bottom);
+
 	}
 </style>

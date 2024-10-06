@@ -24,24 +24,72 @@
 				+
 			</view>
 		</view>
-		<view class="title maintitle">预设模式</view>
-		<view class="setting flex">
-			<view class="item flex justify-content-center" @click="sendHandler(1)">
-				<view class="text-align-center">
-					<image class="nan" src="../../static/mode/SY_04_IconMANa.png"></image>
-					<view>成年男性</view>
+		<view class="kv" @click="navHandle">
+			<image class="kv-img" mode="widthFix" :src="'../static/mode/SY_04A_bg01.png'"></image>
+			<label class="tips">手动微调</label>
+		</view>
+		<view class="info-part">
+			<view class="info-item">
+				<view class="info-left">
+					<image class="icon1" mode="widthFix" :src="'../static/mode/SY_04A_IconYW.png'"></image>
+					<label>仰卧</label>
+				</view>
+				<view class="info-right">
+					<view>
+						头枕高度{{60}}cm
+					</view>
+					<view>
+						颈枕高度{{60}}cm
+					</view>
 				</view>
 			</view>
-			<view class="item flex justify-content-center" @click="sendHandler(1)">
-				<view class="text-align-center">
-					<image class="nv" src="../../static/mode/SY_04_IconWOMANa.png"></image>
-					<view>成年女性</view>
+			<view class="info-item">
+				<view class="info-left">
+					<image class="icon2" mode="widthFix" :src="'../static/mode/SY_04A_IconCW.png'"></image>
+					<label>侧卧</label>
+				</view>
+				<view class="info-right">
+					<view>
+						头枕高度{{60}}cm
+					</view>
+					<view>
+						颈枕高度{{60}}cm
+					</view>
 				</view>
 			</view>
-			<view class="item flex justify-content-center" @click="sendHandler(1)">
-				<view class="text-align-center">
-					<image class='child' src="../../static/mode/SY_04_IconYOUNa.png"></image>
-					<view>10-15岁儿童</view>
+			<view class="info-item-recommond">
+				<view class="info-left">
+					<image class="icon3" mode="widthFix" :src="'../static/mode/SY_04A_IconAIh.png'"></image>
+					<label>推荐高度</label>
+				</view>
+				<view class="info-right">
+					<view class="info-recommond-right">
+						<view class="info-r1">
+							<image class="sicon1" mode="widthFix" :src="'../static/mode/SY_04A_IconYWs.png'"></image>
+						</view>
+						<view class="info-r2">
+
+							<view>
+								头枕高度{{60}}cm
+							</view>
+							<view>
+								颈枕高度{{60}}cm
+							</view>
+						</view>
+					</view>
+					<view class="info-recommond-right">
+						<view class="info-r1">
+							<image class="sicon2" mode="widthFix" :src="'../static/mode/SY_04A_IconCWs.png'"></image>
+						</view>
+						<view class="info-r2">
+							<view>
+								头枕高度{{60}}cm
+							</view>
+							<view>
+								颈枕高度{{60}}cm
+							</view>
+						</view>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -285,6 +333,158 @@
 			.child {
 				width: 54rpx;
 				height: 119rpx;
+			}
+		}
+
+
+
+		.info-part {
+			margin-left: 40rpx;
+			margin-right: 40rpx;
+			font-size: 24rpx;
+			color: #354D5B;
+
+			.info-item-recommond {
+				display: flex;
+				align-items: center;
+				height: 142rpx;
+				margin-top: 13rpx;
+
+				.sicon1 {
+					width: 41rpx;
+					display: block;
+					margin-left: 20rpx;
+					margin-right: 20rpx;
+				}
+
+				.sicon2 {
+					width: 41rpx;
+					display: block;
+					margin-left: 20rpx;
+					margin-right: 20rpx;
+				}
+
+
+
+				.info-left {
+					background-color: rgb(213, 224, 247);
+					border-top-left-radius: 15rpx;
+					border-bottom-left-radius: 15rpx;
+					border-right: rgb(197, 208, 230) 5rpx solid;
+					width: 133rpx;
+					height: 142rpx;
+					text-align: center;
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					justify-content: center;
+				}
+
+				.info-r1 {}
+
+				.info-r2 {
+					flex: 1;
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					justify-content: space-between;
+					padding-left: 0rpx;
+					padding-right: 20rpx;
+				}
+
+				.info-recommond-right {
+					display: flex;
+					align-items: center;
+					justify-content: space-around;
+					width: 100%;
+					padding-left: 20rpx;
+					padding-right: 20rpx;
+				}
+
+				.info-right {
+					display: flex;
+					align-items: center;
+					justify-content: space-around;
+					flex-direction: column;
+					flex: 1;
+					height: 142rpx;
+					background-color: white;
+					border-top-right-radius: 15rpx;
+					border-bottom-right-radius: 15rpx;
+					background-color: rgb(213, 224, 247);
+				}
+
+				.icon1 {
+					width: 60rpx;
+					display: block;
+					margin: 0 auto;
+				}
+
+				.icon2 {
+					width: 61rpx;
+					display: block;
+					margin: 0 auto;
+				}
+
+				.icon3 {
+					width: 53rpx;
+					display: block;
+					margin: 0 auto;
+				}
+			}
+
+			.info-item {
+				display: flex;
+				align-items: center;
+				height: 101rpx;
+				margin-top: 13rpx;
+
+				// justify-content: space-around;
+
+				.info-left {
+					background-color: white;
+					border-top-left-radius: 15rpx;
+					border-bottom-left-radius: 15rpx;
+					border-right: rgb(197, 208, 230) 5rpx solid;
+					width: 133rpx;
+					height: 101rpx;
+					text-align: center;
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					justify-content: center;
+				}
+
+				.info-right {
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					flex: 1;
+					height: 101rpx;
+					padding-left: 20rpx;
+					padding-right: 20rpx;
+					background-color: white;
+					border-top-right-radius: 15rpx;
+					border-bottom-right-radius: 15rpx;
+				}
+
+				.icon1 {
+					width: 60rpx;
+					display: block;
+					margin: 0 auto;
+				}
+
+				.icon2 {
+					width: 61rpx;
+					display: block;
+					margin: 0 auto;
+				}
+
+				.icon3 {
+					width: 53rpx;
+					display: block;
+					margin: 0 auto;
+				}
 			}
 		}
 
