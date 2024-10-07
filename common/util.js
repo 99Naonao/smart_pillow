@@ -600,8 +600,29 @@ var frontParseByShooting = function(obj) {
 	params.neck = obj.neck
 	return params;
 }
+
+var saveRandomMode = function(obj) {
+	let params = {
+		name: 'mode',
+		headHeight: obj.headHeight,
+		neckHeight: obj.neckHeight,
+		sideHeadHeight: obj.sideHeadHeight,
+		sideNeckHeight: obj.sideNeckHeight,
+	}
+	let storageObj = uni.getStorageSync('myMode');
+	if (!storageObj) {
+		storageObj = []
+	} else {
+		storageObj = JSON.parse(storageObj)
+	}
+	params.name = 'mode_' + Math.floor(Math.random() * 1000) / 1000
+	// 存储数据
+	storageObj.push(params)
+	uni.setStorageSync('myMode', JSON.stringify(storageObj));
+}
 export {
 	object2Query,
+	saveRandomMode,
 	sideParseByShooting,
 	parsePillowRealState,
 	handPillowStatus,

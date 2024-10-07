@@ -91,7 +91,8 @@
 		changeSaveAdjustMode,
 		hand1Shake,
 		write2tooth,
-		parsePillowState
+		parsePillowState,
+		saveRandomMode
 	} from '@/common/util.js'
 	import {
 		version
@@ -120,10 +121,10 @@
 				pillowName: '',
 				selectIndex: 1,
 				selectHead: true, // 是否选中调整头枕，否则是脖枕
-				head: 0,
-				sideHead: 0,
-				neck: 0,
-				sideNeck: 0,
+				head: 0, // 仰卧头部高度
+				sideHead: 0, // 侧卧头部高度
+				neck: 0, // 仰卧颈部高度
+				sideNeck: 0, // 侧卧颈部高度
 				initHeadHeight: 0,
 				initNeckHeight: 0,
 				initWidthHeight: 0,
@@ -212,6 +213,13 @@
 				blue_class.getInstance().write2tooth(changeAdjust);
 				uni.switchTab({
 					url: '/pages/status/status'
+				})
+
+				saveRandomMode({
+					headHeight: this.head,
+					neckHeight: this.neck,
+					sideHeadHeight: this.sideHead,
+					sideNeckHeight: this.sideNeck,
 				})
 				// uni.navigateBack()
 			},

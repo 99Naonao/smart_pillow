@@ -448,6 +448,7 @@
 				let storageObj = uni.getStorageSync('myMode');
 				console.log('mode:', this.inputName, storageObj)
 				let params = {
+					name: this.inputName,
 					headHeight: this.sideLittleBlockBack,
 					neckHeight: this.sideLittleNeckBack,
 					sideHeadHeight: this.frontLeftPart + this.frontRightPart,
@@ -463,10 +464,7 @@
 					storageObj = JSON.parse(storageObj)
 				}
 				// 存储数据
-				storageObj.push({
-					name: this.inputName,
-					data: params
-				})
+				storageObj.push(params)
 				uni.setStorageSync('myMode', JSON.stringify(storageObj));
 				uni.showToast({
 					title: '发送中',
