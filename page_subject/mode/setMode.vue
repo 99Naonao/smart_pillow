@@ -7,9 +7,8 @@
 		<view class="main">
 			<uni-swipe-action ref="swaction">
 				<view v-for="(item,index) in modeList" :key="index">
-					<uni-swipe-action-item @click="onButton($event,index)" autoClose=true
-						@change='onChange($event,index)'>
-						<view class="item">
+					<uni-swipe-action-item autoClose=true @change='onChange($event,index)'>
+						<view class="item" @click="onButton($event,index)">
 							<view class="title">
 								{{item.name}}
 							</view>
@@ -40,10 +39,10 @@
 				</view>
 				<view class="info-right">
 					<view>
-						头枕高度{{60}}cm
+						头枕高度{{selectItem.headHeight}}mm
 					</view>
 					<view>
-						颈枕高度{{60}}cm
+						颈枕高度{{selectItem.neckHeight}}mm
 					</view>
 				</view>
 			</view>
@@ -54,10 +53,10 @@
 				</view>
 				<view class="info-right">
 					<view>
-						头枕高度{{60}}cm
+						头枕高度{{selectItem.sideHeadHeight}}mm
 					</view>
 					<view>
-						颈枕高度{{60}}cm
+						颈枕高度{{selectItem.sideNeckHeight}}mm
 					</view>
 				</view>
 			</view>
@@ -171,48 +170,25 @@
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 				deviceId: '',
 				serviceId: '',
-				modeList: [],
-				tempmodeList: [{
+				selectItem: {},
+				modeList1: [],
+				modeList: [{
 					name: '我的模式1',
-					head: 1,
-					neck: 1,
-					sideHead: 1,
-					sideNeck: 1,
+					headHeight: 10,
+					neckHeight: 10,
+					sideHeadHeight: 10,
+					sideNeckHeight: 10,
 				}, {
 					name: '我的模式2',
-					head: 1,
-					neck: 1,
-					sideHead: 1,
-					sideNeck: 1,
+					headHeight: 12,
+					neckHeight: 12,
+					sideHeadHeight: 12,
+					sideNeckHeight: 12,
 				}]
 			}
 		},
 		methods: {
-			onChange(e, indexxx) {
-				console.log(">>>>onChange>>>", indexxx)
-			},
-			/**
-			 * 列表 左滑按钮点击
-			 * 
-			 * @param {Object} e
-			 * content: "点击按钮的options参数",
-			 * index: "循环的时候的索引值",
-			 * buttonIndex: "点击按钮的索引值"
-			 */
-			async onButton(e, indexxx) {
-				// uni.showToast({
-				// 	title: '您点击了滑动列表' + (e.index + 1) + '的第' + (e.buttonIndex + 1) + '个按钮，按钮为‘' + e.content.text + '’',
-				// 	icon: 'none'
-				// });
-
-				// let indexx;
-				// this.modeList.map((item, index) => {
-				// 	if (index == indexxx) {
-				// 		indexx = index
-				// 	}
-				// })
-				console.log(">>>>删除>>>", indexxx)
-
+			bindClick() {
 				uni.showModal({
 					title: '提示',
 					content: '确定删除当前模式么?',
@@ -227,6 +203,22 @@
 						}
 					}
 				})
+			},
+			onChange(e, indexxx) {
+				console.log(">>>>onChange>>>", indexxx)
+			},
+			/**
+			 * 列表 左滑按钮点击
+			 * 
+			 * @param {Object} e
+			 * content: "点击按钮的options参数",
+			 * index: "循环的时候的索引值",
+			 * buttonIndex: "点击按钮的索引值"
+			 */
+			async onButton(e, indexxx) {
+				this.selectItem = this.modeList[indexxx]
+				console.log('选中!!!', this.selectItem, indexxx)
+
 				// if (this.$refs.swaction)
 				// 	this.$refs.swaction.closeAll()
 				// console.log(">>>>删除>>>",shopData) 

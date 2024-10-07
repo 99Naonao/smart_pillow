@@ -191,8 +191,6 @@
 	import InputView from './InputView.vue'
 	import {
 		object2Query,
-		sideParseByShooting,
-		frontParseByShooting
 	} from '@/common/util.js'
 	export default {
 		components: {
@@ -449,12 +447,12 @@
 				// let params = this.$refs.inputView.getParams();
 				let storageObj = uni.getStorageSync('myMode');
 				console.log('mode:', this.inputName, storageObj)
-				let params = frontParseByShooting({
+				let params = {
 					headHeight: this.sideLittleBlockBack,
 					neckHeight: this.sideLittleNeckBack,
 					sideHeadHeight: this.frontLeftPart + this.frontRightPart,
 					sideNeckHeight: (this.shoulderSpace - 10) * 0.5
-				})
+				}
 
 				console.log('params:', params)
 				//
