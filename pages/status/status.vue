@@ -14,6 +14,14 @@
 			<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconCW.png"></image>
 			<label class="desc" for="">未连接</label>
 		</view>
+		<view class="headInfo" :style="menuInfo">
+			<view>颈枕高度</view>
+			<view>60mm</view>
+		</view>
+		<view class="neckInfo" :style="menuInfo">
+			<view>头枕高度</view>
+			<view>80mm</view>
+		</view>
 		<view class="">
 			<view v-for="(item,index) in deviceIdList" :key="index">
 				{{item.name}}
@@ -122,6 +130,8 @@
 			let app = getApp();
 			this.$set(this.menuInfo, '--menuButtonTop', (app.globalData.top + 120) + 'px');
 			this.$set(this.menuInfo, '--menuButtonTop1', (app.globalData.top + 62) + 'px');
+			this.$set(this.menuInfo, '--menuHead', (app.globalData.top + 332) + 'px');
+			this.$set(this.menuInfo, '--menuNeck', (app.globalData.top + 362) + 'px');
 			console.log('menui:', (app.globalData.top + 120) + 'px', this.menuInfo)
 
 			// console.log('createScopedThreejs:', createScopedThreejs)
@@ -829,6 +839,34 @@
 	.logoTip image {
 		width: 100%;
 		height: 100%;
+	}
+
+	.headInfo {
+		position: absolute;
+		top: var(--menuHead);
+		left: 45rpx;
+		color: white;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: #a79f8a;
+		border-radius: 20rpx;
+		width: 300rpx;
+		height: 68rpx;
+	}
+
+	.neckInfo {
+		position: absolute;
+		top: var(--menuNeck);
+		right: 45rpx;
+		color: white;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: #a79f8a;
+		border-radius: 20rpx;
+		width: 300rpx;
+		height: 68rpx;
 	}
 
 	.rightInfo {
