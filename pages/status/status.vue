@@ -844,7 +844,7 @@
 
 	.headInfo {
 		position: absolute;
-		top: var(--menuHead);
+		top: 680rpx;
 		left: 45rpx;
 		color: white;
 		display: flex;
@@ -858,7 +858,7 @@
 
 	.neckInfo {
 		position: absolute;
-		top: var(--menuNeck);
+		top: 745rpx;
 		right: 45rpx;
 		color: white;
 		display: flex;
@@ -872,7 +872,7 @@
 
 	.rightInfo {
 		position: absolute;
-		top: var(--menuButtonTop);
+		top: 270rpx;
 		left: 508rpx;
 		color: white;
 		display: flex;
@@ -886,7 +886,7 @@
 
 	.rightBatteryInfo {
 		position: absolute;
-		top: var(--menuButtonTop1);
+		top: 166rpx;
 		left: 508rpx;
 		color: white;
 		display: flex;
