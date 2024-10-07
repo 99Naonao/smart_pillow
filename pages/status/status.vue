@@ -1000,7 +1000,7 @@
 				position: absolute;
 				left: 50%;
 				top: 45%;
-				margin-left: -30rpx;
+				margin-left: -20rpx;
 				width: 41rpx;
 				height: 56rpx;
 			}
