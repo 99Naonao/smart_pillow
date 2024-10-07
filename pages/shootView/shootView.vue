@@ -3,6 +3,9 @@
 		<z-nav-bar :bgColor="bgColorList" backState=1000 home='false'>检测</z-nav-bar>
 		<!-- 		<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
 			title='检测'></z-nav-bar> -->
+		<view class="back">
+			<image class="back-img" mode="widthFix" :src="'../../static/SY_09A_Mas.jpg'"></image>
+		</view>
 		<view class="main" v-if="showFront">
 			<view class="frontPic" :style="frontImageStyle">
 				<image v-if="bodyImgUrl!=''" :src="bodyImgUrl" mode="widthFix"></image>
@@ -167,7 +170,20 @@
 			</view>
 
 		</uni-popup>
-		<input-view ref="inputView"></input-view>
+		<!-- 结果提示界面 -->
+		<uni-popup ref="popupTips" type="bottom" style="z-index: 10000; position: absolute;"
+			border-radius="40rpx 40rpx 40rpx 40rpx" background-color='white' :mask-click="false" @change="change">
+			<view class="popup-tips">
+				<view class="send-btn" @click="closeAndSave">AI测量完成，请分别仰卧和侧卧进行体验，
+					如有不适请点击手动微调进行调整
+				</view>
+				<image class="titleimg" src="../../static/adjust/SY_05_B001.png"></image>
+				<image class="close-btn" src="../../static/adjust/SY_05_buttonCOLa.png" mode="widthFix"
+					@click="closeSave">
+				</image>
+			</view>
+		</uni-popup>
+		<input-view v-if="false" ref="inputView"></input-view>
 	</view>
 </template>
 
@@ -189,6 +205,7 @@
 		onShow() {
 			this.createMaker()
 			this.checkBodyUrl()
+			this.$refs.popupTips.open('center')
 		},
 		onShareAppMessage() {
 

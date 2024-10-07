@@ -1,6 +1,21 @@
 .main {
 		margin-left: 30rpx;
 		margin-right: 30rpx;
+		position: relative;
+		top: 0;
+		z-index: 10;
+	}
+	
+	.back{
+		position: absolute;
+		z-index: 2;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		.back-img{
+			width: 100%;
+		}
 	}
 	
 	.btn-cnt{
@@ -77,7 +92,7 @@
 		height: var(--imgHeight);
 		margin: 0 auto;
 		position: relative;
-		background-color: #5B7897;
+		// background-color: #5B7897;
 	}
 
 	.shoulderWrap {
@@ -278,19 +293,70 @@
 		color: white;
 		border-radius: 20rpx;
 	}
+	
+	.popup-tips{
+		position: relative;
+		margin: 20rpx;
+		
+		.titleimg {
+			width: 106rpx;
+			height: 95rpx;
+			position: absolute;
+			left: 50%;
+			top: -50rpx;
+			margin-left: -53rpx;
+		}
+		
+		.send-btn {
+			background-color: #fff;
+			margin: 20rpx;
+			color: #354D5B;
+			line-height: 80rpx;
+			padding-left: 50rpx;
+			padding-right: 50rpx;
+			border-radius: 15rpx;
+			text-align: center;
+		}
+		
+		.close-btn {
+			width: 26rpx;
+			height: 27rpx;
+			right: 30rpx;
+			top: 20rpx;
+			position: absolute;
+		}
+		
+		.icon {
+			width: 42rpx;
+			height: 42rpx;
+		}
+		
+		.input-area {
+			margin-left: 20rpx;
+			letter-spacing: 2rpx;
+			background-color: #DEDEDE;
+			padding: 20rpx;
+			color: rgba(91, 120, 151, 1)
+		}
+		
+		.icon-text {
+			// line-height: 42rpx;
+			margin-left: 20rpx;
+			letter-spacing: 5rpx;
+		}
+	}
 
 	.popup-container {
 		position: relative;
 		margin: 20rpx;
 
 		.titleimg {
-			width: 322rpx;
-			height: 161rpx;
-			margin: 0 auto;
+			width: 106rpx;
+			height: 95rpx;
 			position: absolute;
-			top: -80rpx;
 			left: 50%;
-			margin-left: -161rpx;
+			top: -50rpx;
+			margin-left: -53rpx;
 		}
 
 		.send-btn {
