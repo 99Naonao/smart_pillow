@@ -172,14 +172,14 @@
 		</uni-popup>
 		<!-- 结果提示界面 -->
 		<uni-popup ref="popupTips" type="bottom" style="z-index: 10000; position: absolute;"
-			border-radius="40rpx 40rpx 40rpx 40rpx" background-color='white' :mask-click="false" @change="change">
+			border-radius="40rpx 40rpx 40rpx 40rpx" background-color='white' :mask-click="true">
 			<view class="popup-tips">
 				<view class="send-btn" @click="closeAndSave">AI测量完成，请分别仰卧和侧卧进行体验，
 					如有不适请点击手动微调进行调整
 				</view>
 				<image class="titleimg" src="../../static/adjust/SY_05_B001.png"></image>
 				<image class="close-btn" src="../../static/adjust/SY_05_buttonCOLa.png" mode="widthFix"
-					@click="closeSave">
+					@click="closeTipsSave">
 				</image>
 			</view>
 		</uni-popup>
@@ -190,7 +190,9 @@
 <script>
 	import InputView from './InputView.vue'
 	import {
-		object2Query
+		object2Query,
+		sideParseByShooting,
+		frontParseByShooting
 	} from '@/common/util.js'
 	export default {
 		components: {
@@ -444,34 +446,59 @@
 			},
 			closeAndSave() {
 				this.$refs.popup.close()
-				let params = this.$refs.inputView.getParams();
-				console.log('params:', params)
+				// let params = this.$refs.inputView.getParams();
 				let storageObj = uni.getStorageSync('myMode');
 				console.log('mode:', this.inputName, storageObj)
+				let params = frontParseByShooting({
+					headHeight: this.sideLittleBlockBack,
+					neckHeight: this.sideLittleNeckBack,
+					sideHeadHeight: this.frontLeftPart + this.frontRightPart,
+					sideNeckHeight: (this.shoulderSpace - 10) * 0.5
+				})
+
+				console.log('params:', params)
+				//
+
 				if (!storageObj) {
 					storageObj = []
 				} else {
 					storageObj = JSON.parse(storageObj)
 				}
+				// 存储数据
 				storageObj.push({
-					name: this.inputName
+					name: this.inputName,
+					data: params
 				})
 				uni.setStorageSync('myMode', JSON.stringify(storageObj));
 				uni.showToast({
 					title: '发送中',
 					success() {
-						uni.switchTab({
-							url: '/pages/status/status' + object2Query(params)
+						uni.navigateTo({
+							url: "/page_subject/mode/setMode" + object2Query(params)
 						})
+						// uni.switchTab({
+						// 	url: '/pages/status/status' + object2Query(params)
+						// })
 					}
 				})
 			},
 			closeSave() {
 				this.$refs.popup.close()
 			},
+			closeTipsSave() {
+				this.$refs.popupTips.close()
+			},
 			// 手动测量
 			handleClick() {
-				let params = this.$refs.inputView.getParams();
+				let params = frontParseByShooting({
+					headHeight: this.sideLittleBlockBack,
+					neckHeight: this.sideLittleNeckBack,
+					sideHeadHeight: this.frontLeftPart + this.frontRightPart,
+					sideNeckHeight: (this.shoulderSpace - 10) * 0.5
+				})
+
+
+				// let params = this.$refs.inputView.getParams();
 				console.log('params:', params)
 				uni.redirectTo({
 					url: '/page_subject/adjust/adjust' + object2Query(params)
