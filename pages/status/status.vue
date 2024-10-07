@@ -804,6 +804,7 @@
 
 	.bg {
 		position: absolute;
+		background-color: #1c344c;
 		left: 0;
 		top: 0;
 		right: 0;

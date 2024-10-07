@@ -67,7 +67,7 @@
 				<view class="save" @click="saveHandler">保存</view>
 			</view>
 		</view>
-		<input-view ref="inputView" class="input-part" v-if="showMeasure"></input-view>
+		<input-view ref="inputView" class="input-part" v-if="showMeasure&&false"></input-view>
 	</view>
 
 </template>
@@ -210,9 +210,9 @@
 			saveHandler() {
 				let changeAdjust = changeSaveAdjustMode();
 				blue_class.getInstance().write2tooth(changeAdjust);
-				// uni.switchTab({
-				// 	url: '/pages/status/status'
-				// })
+				uni.switchTab({
+					url: '/pages/status/status'
+				})
 				// uni.navigateBack()
 			},
 			handleMessage(res) {
@@ -868,14 +868,16 @@
 			.opt-tip1 {
 				position: absolute;
 				top: 95rpx;
-				left: 0rpx;
+				left: 50rpx;
+				text-align: center;
 				color: #676767;
 			}
 
 			.opt-tip2 {
 				position: absolute;
 				top: 95rpx;
-				right: 0rpx;
+				right: 50rpx;
+				text-align: center;
 				color: #676767;
 			}
 
