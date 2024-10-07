@@ -1,7 +1,7 @@
 <template>
 	<view class="main" v-if="hasLogin">
 		<view class="bg">
-			<image class="backimg" src="../../static/index/SY_00A_001.jpg"></image>
+			<image mode="widthFix" class="backimg" src="../../static/index/SY_00A_001.jpg"></image>
 		</view>
 		<view class="logoleft">
 			<image mode="widthFix" src="../../static/index/SY_00A_LOGO01.png"></image>

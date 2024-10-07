@@ -163,6 +163,11 @@
 				// // let app = getApp()
 				// blue_class.getInstance().write2tooth(init_arraybuffer);
 				this.showMeasure = true;
+				// 如果有数据，默认调整枕头
+				let init_arraybuffer = initPillow(this.initHeadHeight, this.initNeckHeight, 200, this
+					.initSideHeadHeight, this.initSideNeckHeight, 200);
+				// let app = getApp()
+				blue_class.getInstance().write2tooth(init_arraybuffer);
 				// this.$refs.inputView.showParams(this.saveOptions);
 			} else {
 				this.showMeasure = false;

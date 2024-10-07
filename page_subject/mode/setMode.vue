@@ -12,7 +12,7 @@
 							<view class="title">
 								{{item.name}}
 							</view>
-							<view class="send-btn" @click="sendHandler(item)">
+							<view v-if="selectItem == item" class="send-btn" @click="sendHandler(item)">
 								发送
 							</view>
 						</view>
@@ -153,7 +153,7 @@
 			if (mode) {
 				this.modeList = JSON.parse(mode)
 			} else {
-				this.modeList = []
+				// this.modeList = []
 			}
 		},
 		data() {
@@ -188,6 +188,18 @@
 			}
 		},
 		methods: {
+			navHandle() {
+				if (!this.selectItem.headHeight && !this.selectItem.neckHeight) {
+					uni.showToast({
+						title: '未选择模式数据！'
+					})
+					return;
+				}
+
+				uni.navigateTo({
+					url: "/page_subject/adjust/adjust" + object2Query(this.selectItem)
+				})
+			},
 			bindClick() {
 				uni.showModal({
 					title: '提示',
@@ -244,14 +256,15 @@
 				// uni.switchTab({
 				// 	url: '/pages/status/status'
 				// })
-				let params = this.$refs.inputView.getParams();
+				let params = this.selectItem
 				console.log('params:', params)
+				this.navHandle()
 
 
-				let init_arraybuffer = initPillow(params.headHeight, params.neckHeight, params.shoulderHeight, params
-					.sideHeadHeight, params.sideNeckHeight, params.sideShoulderHeight);
-				// let app = getApp()
-				blue_class.getInstance().write2tooth(init_arraybuffer);
+				// let init_arraybuffer = initPillow(params.headHeight, params.neckHeight, params.shoulderHeight, params
+				// 	.sideHeadHeight, params.sideNeckHeight, params.sideShoulderHeight);
+				// // let app = getApp()
+				// blue_class.getInstance().write2tooth(init_arraybuffer);
 
 				return;
 				uni.showLoading({

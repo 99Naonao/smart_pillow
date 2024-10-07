@@ -5,7 +5,7 @@
 		<public-module></public-module>
 		<!-- <view class="title maintitle">自定义模式</view> -->
 		<view class="setting flex">
-			<view class="item flex justify-content-center" @click="sendHandler(1)">
+			<view class="item flex justify-content-center" @click="sendHandler(0)">
 				<view class="text-align-center">
 					<image class="nan" src="../../static/mode/SY_04_IconMANa.png"></image>
 					<view>成年男性</view>
@@ -17,17 +17,17 @@
 					<view>成年女性</view>
 				</view>
 			</view>
-			<view class="item flex justify-content-center" @click="sendHandler(1)">
+			<view class="item flex justify-content-center" @click="sendHandler(2)">
 				<view class="text-align-center">
 					<image class='child' src="../../static/mode/SY_04_IconYOUNa.png"></image>
 					<view>10-15岁儿童</view>
 				</view>
 			</view>
 		</view>
-		<view class="kv" @click="navHandle">
+		<!-- 		<view class="kv" @click="navHandle">
 			<image class="kv-img" mode="widthFix" :src="'../static/mode/SY_04A_bg01.png'"></image>
 			<label class="tips">手动微调</label>
-		</view>
+		</view> -->
 		<view class="info-part">
 			<view class="info-item">
 				<view class="info-left">
@@ -155,6 +155,7 @@
 		},
 		data() {
 			return {
+				selectItem: {},
 				pillowName: '',
 				options1: [{
 					text: '删除',
@@ -169,16 +170,22 @@
 				serviceId: '',
 				modeList: [{
 					name: '我的模式1',
-					head: 1,
-					neck: 1,
-					sideHead: 1,
-					sideNeck: 1,
+					headHeight: 80,
+					neckHeight: 80,
+					sideHeadHeight: 80,
+					sideNeckHeight: 80,
 				}, {
 					name: '我的模式2',
-					head: 1,
-					neck: 1,
-					sideHead: 1,
-					sideNeck: 1,
+					headHeight: 60,
+					neckHeight: 60,
+					sideHeadHeight: 60,
+					sideNeckHeight: 60,
+				}, {
+					name: '我的模式3',
+					headHeight: 36,
+					neckHeight: 36,
+					sideHeadHeight: 36,
+					sideNeckHeight: 36,
 				}]
 			}
 		},
@@ -247,14 +254,16 @@
 				// uni.switchTab({
 				// 	url: '/pages/status/status'
 				// })
-				let params = this.$refs.inputView.getParams();
+				let params = this.modeList[item];
 				console.log('params:', params)
+				uni.navigateTo({
+					url: "/page_subject/adjust/adjust" + object2Query(params)
+				})
 
-
-				let init_arraybuffer = initPillow(params.headHeight, params.neckHeight, params.shoulderHeight, params
-					.sideHeadHeight, params.sideNeckHeight, params.sideShoulderHeight);
-				// let app = getApp()
-				blue_class.getInstance().write2tooth(init_arraybuffer);
+				// let init_arraybuffer = initPillow(params.headHeight, params.neckHeight, params.shoulderHeight, params
+				// 	.sideHeadHeight, params.sideNeckHeight, params.sideShoulderHeight);
+				// // let app = getApp()
+				// blue_class.getInstance().write2tooth(init_arraybuffer);
 
 				return;
 				uni.showLoading({
@@ -291,10 +300,17 @@
 				})
 			},
 			navHandle() {
+				if (!this.selectItem.headHeight && !this.selectItem.neckHeight) {
+					uni.showToast({
+						title: '未选择模式数据！'
+					})
+					return;
+				}
+
 				uni.navigateTo({
-					url: "/page_subject/adjust/adjust"
+					url: "/page_subject/adjust/adjust" + object2Query(this.selectItem)
 				})
-			}
+			},
 		},
 	}
 </script>
