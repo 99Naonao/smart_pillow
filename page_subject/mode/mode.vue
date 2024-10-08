@@ -143,15 +143,9 @@
 			uni.setNavigationBarTitle({
 				title: this.pillowName
 			})
-			this.findStore()
 		},
 		onShow() {
-			let mode = uni.getStorageSync('myMode');
-			if (mode) {
-				this.modeList = JSON.parse(mode)
-			} else {
-				this.modeList = []
-			}
+
 		},
 		data() {
 			return {
@@ -213,22 +207,6 @@
 				// 		indexx = index
 				// 	}
 				// })
-				console.log(">>>>删除>>>", indexxx)
-
-				uni.showModal({
-					title: '提示',
-					content: '确定删除当前模式么?',
-					success: (res) => {
-						if (res.confirm) {
-							this.modeList.splice(indexxx, 1)
-							uni.showToast({
-								title: '删除成功'
-							})
-
-							this.saveMode()
-						}
-					}
-				})
 				// if (this.$refs.swaction)
 				// 	this.$refs.swaction.closeAll()
 				// console.log(">>>>删除>>>",shopData) 
@@ -241,21 +219,13 @@
 				// 	this.dataList.splice(e.index, 1) //删除值
 				// }
 			},
-			saveMode() {
-				uni.setStorageSync('myMode', JSON.stringify(this.modeList));
-			},
-			findStore() {
-				let modeList = uni.getStorageInfoSync({
-					key: 'mode'
-				})
-			},
 			// 发送模式设置
 			sendHandler(item) {
 				// uni.switchTab({
 				// 	url: '/pages/status/status'
 				// })
 				let params = this.modeList[item];
-				console.log('params:', params)
+				console.log('params:', item, params)
 				uni.navigateTo({
 					url: "/page_subject/adjust/adjust" + object2Query(params)
 				})
