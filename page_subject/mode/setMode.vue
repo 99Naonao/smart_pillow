@@ -17,10 +17,14 @@
 							</view>
 						</view>
 						<template v-slot:right>
-							<view class="slot-button" @click="bindClick({position:'right',content:{text:'删除'}})"><text
+							<view class="slot-button"
+								@click="bindClick({index:index,position:'right',content:{text:'删除'}})"><text
 									class="slot-button-text">删除</text></view>
 						</template>
 					</uni-swipe-action-item>
+				</view>
+				<view v-if="modeList.length == 0" style="text-align: center;padding-top: 20rpx;">
+					暂无数据
 				</view>
 			</uni-swipe-action>
 		</view>
@@ -236,13 +240,13 @@
 					url: "/page_subject/adjust/adjust" + object2Query(this.selectItem)
 				})
 			},
-			bindClick() {
+			bindClick(params) {
 				uni.showModal({
 					title: '提示',
 					content: '确定删除当前模式么?',
 					success: (res) => {
 						if (res.confirm) {
-							this.modeList.splice(indexxx, 1)
+							this.modeList.splice(params.index, 1)
 							uni.showToast({
 								title: '删除成功'
 							})

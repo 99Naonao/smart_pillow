@@ -169,19 +169,19 @@
 				deviceId: '',
 				serviceId: '',
 				modeList: [{
-					name: '我的模式1',
+					name: '成年男性',
 					headHeight: 80,
 					neckHeight: 80,
 					sideHeadHeight: 80,
 					sideNeckHeight: 80,
 				}, {
-					name: '我的模式2',
+					name: '成年女性',
 					headHeight: 60,
 					neckHeight: 60,
 					sideHeadHeight: 60,
 					sideNeckHeight: 60,
 				}, {
-					name: '我的模式3',
+					name: '10-15岁儿童',
 					headHeight: 36,
 					neckHeight: 36,
 					sideHeadHeight: 36,

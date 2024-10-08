@@ -199,7 +199,10 @@
 		onLoad(options) {
 			this.sideBodyImgUrl = decodeURIComponent(options.sideImage)
 			this.bodyImgUrl = decodeURIComponent(options.frontImage)
+			this.bodyImgUrl = 'https://pc-cdn.pupupal.com/pupu-pc/50_20240322124756.jpg'
+			this.sideBodyImgUrl = 'https://pc-cdn.pupupal.com/pupu-pc/50_20240322124808.jpg'
 			console.log('options:', this.sideBodyImgUrl, this.bodyImgUrl)
+
 
 		},
 		onShow() {
@@ -365,10 +368,7 @@
 			}
 		},
 		methods: {
-			checkBodyUrl() {
-				uni.showLoading({
-					title: '检测中'
-				})
+			uploadBodyImage() {
 				wx.getImageInfo({
 					src: this.bodyImgUrl,
 					success: res => {
@@ -398,10 +398,25 @@
 					}
 				})
 			},
-			checkSideUrl() {
+			checkBodyUrl() {
+				let that = this;
 				uni.showLoading({
-					title: '侧面检测中'
+					title: '正面检测中'
 				})
+				wx.downloadFile({
+					url: this.bodyImgUrl, //仅为示例，并非真实的资源
+					success(res) {
+						// 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
+						if (res.statusCode === 200) {
+							that.bodyImgUrl = res.tempFilePath;
+							console.log('bodytemp url:', that.bodyImgUrl)
+							that.uploadBodyImage()
+						}
+					}
+				})
+
+			},
+			uploadSideImg() {
 				wx.getImageInfo({
 					src: this.sideBodyImgUrl,
 					success: res => {
@@ -431,6 +446,23 @@
 					},
 					fail: res => {
 						console.error(res)
+					}
+				})
+			},
+			checkSideUrl() {
+				let that = this;
+				uni.showLoading({
+					title: '侧面检测中'
+				})
+				wx.downloadFile({
+					url: this.sideBodyImgUrl, //仅为示例，并非真实的资源
+					success(res) {
+						// 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
+						if (res.statusCode === 200) {
+							that.sideBodyImgUrl = res.tempFilePath;
+							console.log('sidetemp url:', that.sideBodyImgUrl)
+							that.uploadSideImg()
+						}
 					}
 				})
 			},

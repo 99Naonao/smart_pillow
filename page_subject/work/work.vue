@@ -351,7 +351,7 @@
 							break;
 						case 6:
 							this.parsePillowStatus(arrayBuffer_order)
-							this.parsePillowSleepData(null)
+							// this.parsePillowSleepData(null)
 							break;
 						case 88:
 							break;
