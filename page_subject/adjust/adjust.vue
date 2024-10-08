@@ -108,7 +108,7 @@
 		data() {
 			return {
 				pillowVersion: '固件版本:0.1',
-				pillowStatus: '',
+				pillowStatus: '未连接',
 				pillowStatusNum: 0, // 枕头状态
 				saveOptions: {},
 				showMeasure: false, // 是否显示信息

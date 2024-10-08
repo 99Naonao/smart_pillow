@@ -20,8 +20,7 @@
 					<image mode="widthFix" :src="(checkWifiConnectList(item))" @click="connectWifiSleepHandler(item)">
 					</image>
 				</view>
-				<image :src="'../static/SY_01WIEI_buttonTJa.png'" class="connect-btn"
-					@click="connectSleepHandler(item)">
+				<image :src="'../static/SY_01WIEI_buttonTJa.png'" class="connect-btn">
 				</image>
 			</view>
 		</view>
@@ -89,6 +88,9 @@
 		appAnswer,
 		parseTime
 	} from '../../common/util';
+	import {
+		nextTick
+	} from 'vue';
 	export default {
 		components: {
 
@@ -278,6 +280,9 @@
 					console.log("total:", total, shake1)
 					if (this.success) {
 						console.log('已经握手成功了!')
+
+
+						// this.showAdjustHandler()
 						return;
 					}
 					blue_class.getInstance().write2tooth(shake1)
@@ -292,6 +297,11 @@
 						console.log('校验长度', parseInt('0x' + len))
 						console.log('握手成功可以发送ssid了')
 						this.success = true
+
+						// 连接成功，跳转调整界面
+						nextTick(() => {
+							this.showAdjustHandler()
+						})
 						// blue_class.getInstance().write2tooth(this.characteristicStringId,
 						// 	hexStringToArrayBuffer('jimlee'))
 					} else if (mark == '66') {
@@ -694,6 +704,7 @@
 										// 可根据具体业务需要，选择一个主服务进行通信
 									}
 								}
+
 							},
 							fail: (res) => {
 								console.log('getBLEDeviceServices fail:', res)
@@ -813,8 +824,8 @@
 		border-top-left-radius: 15rpx;
 		border-top-right-radius: 15rpx;
 		bottom: 0;
-		padding-bottom: env(safe-area-inset-bottom);
 		padding-bottom: constant(safe-area-inset-bottom);
+		padding-bottom: env(safe-area-inset-bottom);
 
 		.item {
 			line-height: 32rpx;
