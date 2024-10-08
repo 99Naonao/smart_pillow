@@ -23,9 +23,9 @@
 					</uni-swipe-action-item>
 				</view>
 			</uni-swipe-action>
-			<view class="item-plus" @click="addModeHandler">
-				+
-			</view>
+		</view>
+		<view class="item-plus" @click="addModeHandler">
+			+
 		</view>
 		<view class="kv" @click="navHandle">
 			<image class="kv-img" mode="widthFix" :src="'../static/mode/SY_04A_bg01.png'"></image>
@@ -184,6 +184,42 @@
 					neckHeight: 12,
 					sideHeadHeight: 12,
 					sideNeckHeight: 12,
+				}, {
+					name: '我的模式1',
+					headHeight: 10,
+					neckHeight: 10,
+					sideHeadHeight: 10,
+					sideNeckHeight: 10,
+				}, {
+					name: '我的模式2',
+					headHeight: 12,
+					neckHeight: 12,
+					sideHeadHeight: 12,
+					sideNeckHeight: 12,
+				}, {
+					name: '我的模式1',
+					headHeight: 10,
+					neckHeight: 10,
+					sideHeadHeight: 10,
+					sideNeckHeight: 10,
+				}, {
+					name: '我的模式2',
+					headHeight: 12,
+					neckHeight: 12,
+					sideHeadHeight: 12,
+					sideNeckHeight: 12,
+				}, {
+					name: '我的模式1',
+					headHeight: 10,
+					neckHeight: 10,
+					sideHeadHeight: 10,
+					sideNeckHeight: 10,
+				}, {
+					name: '我的模式2',
+					headHeight: 12,
+					neckHeight: 12,
+					sideHeadHeight: 12,
+					sideNeckHeight: 12,
 				}]
 			}
 		},
@@ -317,6 +353,8 @@
 		.maintitle {
 			margin-top: 50rpx;
 			margin-bottom: 30rpx;
+			overflow: scroll;
+			height: 300rpx;
 		}
 
 		.setting {
@@ -532,11 +570,23 @@
 			}
 		}
 
+		.item-plus {
+			margin-top: 20rpx;
+			border: #999 1px solid;
+			height: 100rpx;
+			border-radius: 30rpx;
+			font-size: 50rpx;
+			text-align: center;
+			line-height: 100rpx;
+		}
+
 		.main {
 			// background-color: rgb(216, 226, 246);
 			margin-left: 40rpx;
 			margin-right: 40rpx;
 			margin-top: 6upx;
+			height: 320rpx;
+			overflow: scroll;
 
 			.slot-button {
 				margin-top: 20rpx;
@@ -550,15 +600,7 @@
 				line-height: 120rpx;
 			}
 
-			.item-plus {
-				margin-top: 20rpx;
-				border: #999 1px solid;
-				height: 100rpx;
-				border-radius: 30rpx;
-				font-size: 50rpx;
-				text-align: center;
-				line-height: 100rpx;
-			}
+
 
 			.item {
 				display: flex;
