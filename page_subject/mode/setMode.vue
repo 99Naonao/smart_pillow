@@ -153,7 +153,7 @@
 			if (mode) {
 				this.modeList = JSON.parse(mode)
 			} else {
-				// this.modeList = []
+				this.modeList = []
 			}
 		},
 		data() {
