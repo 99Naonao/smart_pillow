@@ -7,7 +7,15 @@
 			<cover-image class="shootBtn" @click="shootBtnHandler" aria-role="button"
 				src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
 			<cover-image class="chooseBtn" @click="chooseBtnHandler" aria-role="button"
-				src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
+				src="/static/adjust/SY_07_button01a.png"></cover-image>
+			<cover-image class="ruler" :style="backBtnStyle" aria-role="button"
+				src="/static/adjust/SY_07_Cam00.png"></cover-image>
+			<cover-view class="tips" :style="backBtnStyle">80cm</cover-view>
+			<cover-view class="tips2" :style="backBtnStyle">1.请将摄像机画面的左右边缘对准80cm的拍摄顶点</cover-view>
+			<cover-view class="tips2 tips3" :style="backBtnStyle">
+				2.如果您个人不方便自拍，可请他人使用后置摄像</cover-view>
+			<cover-view class="tips2 tips4" :style="backBtnStyle">
+				头协助拍摄，以获得准确数据</cover-view>
 		</cover-view>
 		<!-- 		<cover-view class="cover" v-else>
 			<cover-image @click="backBtn_callback" aria-role="button" src="/static/camera/back.png" class="back-btn"
@@ -38,6 +46,8 @@
 				backBtnStyle: {
 					'--menuButtonTop': '30px',
 					'--menuButtonHeight': '30px',
+					'--menuButtonTop2': '30px',
+					'--menuButtonTop3': '30px',
 				},
 				frameStyle: {
 					'--frameTop': '10px',
@@ -56,6 +66,8 @@
 			// 获取小程序右上角胶囊按钮的坐标，用作自定义导航栏。
 			const menuButton = wx.getMenuButtonBoundingClientRect()
 			this.$set(this.backBtnStyle, '--menuButtonTop', menuButton.top + 'px')
+			this.$set(this.backBtnStyle, '--menuButtonTop2', (menuButton.top + 50) + 'px')
+			this.$set(this.backBtnStyle, '--menuButtonTop3', (menuButton.top + 20) + 'px')
 			this.$set(this.backBtnStyle, '--menuButtonHeight', menuButton.height + 'px')
 			this.$set(this.frameStyle, '--frameTop', (menuButton.top + menuButton.height + 100) + 'px')
 			// 胶囊按钮与手机屏幕顶端的间距
@@ -92,27 +104,27 @@
 			chooseBtnHandler() {
 
 			},
-			shootSideBtnHandler() {
-				console.log('this.canvasInstance1:', this.canvasInstance, this.canvasInstance.id)
-				wx.getSystemInfo({
-					success: (res) => {
-						let pixel = res.pixelRatio
-						wx.canvasToTempFilePath({
-							x: 0,
-							y: 0,
-							width: this.canvasWidth,
-							height: this.canvasHeight,
-							destWidth: pixel * this.canvasWidth,
-							destHeight: pixel * this.canvasHeight,
-							canvasId: this.canvasInstance.id,
-							success(res) {
-								console.log('12345678', res.tempFilePath)
-
-							}
-						})
-					}
-				})
-			},
+			// shootSideBtnHandler() {
+			// 	console.log('this.canvasInstance1:', this.canvasInstance, this.canvasInstance.id)
+			// 	wx.getSystemInfo({
+			// 		success: (res) => {
+			// 			let pixel = res.pixelRatio
+			// 			wx.canvasToTempFilePath({
+			// 				x: 0,
+			// 				y: 0,
+			// 				width: this.canvasWidth,
+			// 				height: this.canvasHeight,
+			// 				destWidth: pixel * this.canvasWidth,
+			// 				destHeight: pixel * this.canvasHeight,
+			// 				canvasId: this.canvasInstance.id,
+			// 				success(res) {
+			// 					console.log('12345678', res.tempFilePath)
+			// 					this.sideImage = res.tempFilePath;
+			// 				}
+			// 			})
+			// 		}
+			// 	})
+			// },
 			shootBtnHandler() {
 				// console.log('this.canvasInstance1:', this.canvasInstance, this.canvasInstance.id)
 				wx.getSystemInfo({
@@ -221,10 +233,31 @@
 		position: absolute;
 		text-align: center;
 		left: 20rpx;
-		bottom: 50px;
-		margin-left: -71rpx;
-		width: 142rpx;
-		height: 143rpx;
+		bottom: 60px;
+		// margin-left: -52rpx;
+		width: 104rpx;
+		height: 103rpx;
+	}
+
+	.tips2 {
+		color: #fff;
+		position: absolute;
+		text-align: left;
+		width: 100%;
+		bottom: 180px;
+		font-size: 30rpx;
+		line-height: 40rpx;
+		margin-left: 20rpx;
+
+		white-space: pre-wrap;
+	}
+
+	.tips3 {
+		bottom: 160px;
+	}
+
+	.tips4 {
+		bottom: 140px;
 	}
 
 	.shootBtn {
@@ -238,5 +271,23 @@
 		margin-left: -71rpx;
 		width: 142rpx;
 		height: 143rpx;
+	}
+
+	.ruler {
+		position: absolute;
+		left: 0;
+		right: 0;
+		width: 750rpx;
+		height: 76rpx;
+		top: var(--menuButtonTop2);
+	}
+
+	.tips {
+		position: absolute;
+		left: 0;
+		right: 0;
+		font-size: 40rpx;
+		text-align: center;
+		top: var(--menuButtonTop3);
 	}
 </style>

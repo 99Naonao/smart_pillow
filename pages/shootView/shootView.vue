@@ -202,13 +202,11 @@
 			this.bodyImgUrl = 'https://pc-cdn.pupupal.com/pupu-pc/50_20240322124756.jpg'
 			this.sideBodyImgUrl = 'https://pc-cdn.pupupal.com/pupu-pc/50_20240322124808.jpg'
 			console.log('options:', this.sideBodyImgUrl, this.bodyImgUrl)
-
-
 		},
 		onShow() {
 			this.createMaker()
 			this.checkBodyUrl()
-			this.$refs.popupTips.open('center')
+
 		},
 		onShareAppMessage() {
 
@@ -675,6 +673,8 @@
 						// 如果是侧面图
 						if (isSide) {
 							this.handleSideData(obj, base64)
+
+							// this.$refs.popupTips.open('center')
 						} else {
 							this.handleFrontData(obj)
 						}
@@ -898,6 +898,8 @@
 
 						// let block = [points[2], point[3]]
 						console.log('points:', points)
+
+						this.$refs.popupTips.open('center')
 					},
 					fail: (res) => {
 						uni.hideLoading()
