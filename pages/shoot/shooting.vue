@@ -6,6 +6,8 @@
 			</cover-image>
 			<cover-image class="shootBtn" @click="shootBtnHandler" aria-role="button"
 				src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
+			<cover-image class="chooseBtn" @click="chooseBtnHandler" aria-role="button"
+				src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
 		</cover-view>
 		<!-- 		<cover-view class="cover" v-else>
 			<cover-image @click="backBtn_callback" aria-role="button" src="/static/camera/back.png" class="back-btn"
@@ -86,6 +88,9 @@
 			},
 			bindtouchend_callback() {
 				console.log('bindtouchend_callback')
+			},
+			chooseBtnHandler() {
+
 			},
 			shootSideBtnHandler() {
 				console.log('this.canvasInstance1:', this.canvasInstance, this.canvasInstance.id)
@@ -207,6 +212,19 @@
 		position: absolute;
 		right: 20rpx;
 		top: var(--frameTop);
+	}
+
+	.chooseBtn {
+		color: #ffffff;
+		opacity: 1;
+		// padding: 15px;
+		position: absolute;
+		text-align: center;
+		left: 20rpx;
+		bottom: 50px;
+		margin-left: -71rpx;
+		width: 142rpx;
+		height: 143rpx;
 	}
 
 	.shootBtn {

@@ -30,7 +30,7 @@ class blue_class {
 		console.log('fuck setPillowHeight:', this.pillowHeight)
 	}
 
-	getPillowHeight(value) {
+	getPillowHeight() {
 		console.log('fuck getPillowHeight:', this.pillowHeight)
 		return this.pillowHeight;
 	}
@@ -39,15 +39,15 @@ class blue_class {
 		this.pillowSideHeight = value;
 	}
 
-	getPillowSideHeight(value) {
+	getPillowSideHeight() {
 		return this.pillowSideHeight;
 	}
 	setPillowPower(value) {
-		this.setPillowPower = value;
+		this.pillowPower = value;
 	}
 
-	getPillowPower(value) {
-		return this.setPillowPower;
+	getPillowPower() {
+		return this.pillowPower;
 	}
 
 	// 初始化蓝牙适配器  

@@ -8,7 +8,7 @@
 		</view>
 		<view class="rightBatteryInfo" :style="menuInfo">
 			<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconDLa.png"></image>
-			<label class="desc" for="">80%</label>
+			<label class="desc" for="">{{getPillowPower}}%</label>
 		</view>
 		<view class="rightInfo" :style="menuInfo">
 			<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconCW.png"></image>
@@ -100,6 +100,9 @@
 			pillowSideHeight() {
 				return this.pillowSideHeight;
 			},
+			getPillowPower() {
+				return this.pillowPower > 100 ? 100 : this.pillowPower
+			}
 		},
 		data() {
 			return {
