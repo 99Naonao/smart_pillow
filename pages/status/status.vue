@@ -12,15 +12,15 @@
 		</view>
 		<view class="rightInfo" :style="menuInfo">
 			<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconCW.png"></image>
-			<label class="desc" for="">未连接</label>
+			<label class="desc" for="">{{login?'已连接':'未连接'}}</label>
 		</view>
 		<view class="headInfo" :style="menuInfo">
 			<view>颈枕高度</view>
-			<view>60mm</view>
+			<view>{{pillowSideHeight}}mm</view>
 		</view>
 		<view class="neckInfo" :style="menuInfo">
 			<view>头枕高度</view>
-			<view>80mm</view>
+			<view>{{pillowHeight}}mm</view>
 		</view>
 		<view class="">
 			<view v-for="(item,index) in deviceIdList" :key="index">
@@ -34,7 +34,7 @@
 					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
 					<label class="title" for="">连接状况</label>
 					<image class="icon1" src="../../static/index/SY_00A_IconLJ.png" mode="widthFix"></image>
-					<label class="desc" for="">未连接</label>
+					<label class="desc" for="">{{login?'已连接':'未连接'}}</label>
 				</view>
 				<view class="item" @click="aiHandler()">
 					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
@@ -87,9 +87,20 @@
 	import {
 		nextTick
 	} from 'vue';
-
+	import blue_class from '../../utils/BlueManager';
 
 	export default {
+		computed: {
+			login() {
+				return this.loginStatus;
+			},
+			pillowHeight() {
+				return pillowHeight;
+			},
+			pillowSideHeight() {
+				return this.pillowSideHeight;
+			},
+		},
 		data() {
 			return {
 				menuInfo: {
@@ -115,6 +126,10 @@
 				deviceIdList: [], //
 				searching: false, // 搜索中
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
+				loginStatus: false,
+				pillowHeight: 1,
+				pillowSideHeight: 1,
+				pillowPower: 1,
 			}
 		},
 		// behaviors: [getBehavior(), yuvBehavior],
@@ -134,6 +149,10 @@
 			this.$set(this.menuInfo, '--menuNeck', (app.globalData.top + 362) + 'px');
 			console.log('menui:', (app.globalData.top + 120) + 'px', this.menuInfo)
 
+			this.loginStatus = blue_class.getInstance().loginSuccess;
+			this.pillowHeight = blue_class.getInstance().pillowHeight
+			this.pillowSideHeight = blue_class.getInstance().pillowSideHeight
+			this.pillowPower = blue_class.getInstance().getPillowPower()
 			// console.log('createScopedThreejs:', createScopedThreejs)
 
 			// // 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。

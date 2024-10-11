@@ -278,7 +278,7 @@
 					let shake1 = hand1Shake(Number(
 						total), arrayBuffer)
 					console.log("total:", total, shake1)
-					if (this.success) {
+					if (blue_class.getInstance().loginSuccess) {
 						console.log('已经握手成功了!')
 
 
@@ -296,7 +296,7 @@
 						console.log('接收到回复数据', ab2hex(res.value))
 						console.log('校验长度', parseInt('0x' + len))
 						console.log('握手成功可以发送ssid了')
-						this.success = true
+						blue_class.getInstance().loginSuccess = true
 
 						// 连接成功，跳转调整界面
 						nextTick(() => {
@@ -466,6 +466,9 @@
 				// 		2020) <<
 				// 	26))
 
+				blue_class.getInstance().setPillowHeight(headHeight10)
+				blue_class.getInstance().setPillowSideHeight(neckHeight10)
+				blue_class.getInstance().setPillowPower(press10)
 				// work 枕头状态 mm=> 1 height:151mm neckheight:13mm version:3 校准:1 电池:1
 				// console.log('work 枕头状态 =>', 'height:' + headHeight, 'neckheight:' + neckHeight, vesrion, isright, press)
 				console.log('work 枕头状态 mm=>', status10, 'height:' + headHeight10 + 'mm', 'neckheight:' + neckHeight10 +

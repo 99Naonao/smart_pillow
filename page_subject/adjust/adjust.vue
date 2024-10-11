@@ -428,7 +428,9 @@
 				this.pillowVersion = '固件版本:' + vesrion10;
 
 
-
+				blue_class.getInstance().setPillowHeight(headHeight10)
+				blue_class.getInstance().setPillowSideHeight(neckHeight10)
+				blue_class.getInstance().setPillowPower(press10)
 				console.log('adjust12 =>', status, headHeight, neckHeight, vesrion, isright, press)
 				console.log('adjust12 mm=>', status10, headHeight10 + 'mm', neckHeight10 + 'mm', 'v:' + vesrion10,
 					isright10,

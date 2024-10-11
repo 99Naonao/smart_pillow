@@ -1,6 +1,9 @@
 class blue_class {
 	static instance = null; // 静态属性，用于存储单例  
 	// 私有构造函数，防止外部通过 new 关键字创建实例  
+	pillowHeight = 1;
+	pillowSideHeight = 2;
+	pillowPower = 0;
 	constructor() {
 		// 初始化蓝牙相关的状态或变量  
 		this.bluetoothStatus = null; // 蓝牙状态  
@@ -11,6 +14,7 @@ class blue_class {
 		this.version = 0; // 版本号
 		this.characteristicId = '6E400004-B5A3-F393-E0A9-E50E24DCCA9E';
 		this.deviceId = ''; // 连接的蓝牙id
+		this.loginSuccess = false; // 连接成功
 	}
 	// 静态方法，用于获取蓝牙管理器的实例  
 	static getInstance() {
@@ -19,6 +23,31 @@ class blue_class {
 			blue_class.instance = new blue_class(); // 注意这里使用了 private constructor  
 		}
 		return blue_class.instance;
+	}
+
+	setPillowHeight(value) {
+		this.pillowHeight = value;
+		console.log('fuck setPillowHeight:', this.pillowHeight)
+	}
+
+	getPillowHeight(value) {
+		console.log('fuck getPillowHeight:', this.pillowHeight)
+		return this.pillowHeight;
+	}
+
+	setPillowSideHeight(value) {
+		this.pillowSideHeight = value;
+	}
+
+	getPillowSideHeight(value) {
+		return this.pillowSideHeight;
+	}
+	setPillowPower(value) {
+		this.setPillowPower = value;
+	}
+
+	getPillowPower(value) {
+		return this.setPillowPower;
 	}
 
 	// 初始化蓝牙适配器  
