@@ -13,15 +13,16 @@
 					{{item.name}}
 				</view>
 				<view class="blue-tooth">
-					<image mode="widthFix" :src="checkConnectList(item)" @click="connectBlueToothSleepHandler(item)">
+					<image mode="widthFix" :src="checkConnectList(item)">
 					</image>
 				</view>
-				<view class="wifi" v-if="false">
+				<!-- 				<view class="wifi" v-if="false">
 					<image mode="widthFix" :src="(checkWifiConnectList(item))" @click="connectWifiSleepHandler(item)">
 					</image>
-				</view>
-				<image :src="'../static/SY_01WIEI_buttonTJa.png'" class="connect-btn">
-				</image>
+				</view> -->
+				<view class="connect-btn" @click="connectBlueToothSleepHandler(item)">连接</view>
+				<!-- 				<image :src="'../static/SY_01WIEI_buttonTJa.png'" class="connect-btn">
+				</image> -->
 			</view>
 		</view>
 		<view class="spetips">
@@ -566,11 +567,7 @@
 				// blue_class.getInstance().write2tooth(arraybuffer)
 				// return;
 				this.closePopUpHandle()
-				var url_ = '/page_subject/adjust/adjust' + object2Query({
-					pillowName: this.currentItem.name,
-					deviceId: this.deviceId,
-					serviceId: this.serviceId
-				})
+				var url_ = '/pages/status/status';
 				console.log('url:', url_)
 				uni.navigateTo({
 					url: url_
@@ -856,9 +853,14 @@
 		align-items: center;
 
 		.connect-btn {
-			width: 285rpx;
-			height: 174rpx;
-			margin-top: 20rpx;
+			width: 225rpx;
+			height: 78rpx;
+			text-align: center;
+			background-color: #5B7897;
+			line-height: 78rpx;
+			color: white;
+			margin: 20rpx;
+			border-radius: 25rpx;
 		}
 
 		.item-name {
