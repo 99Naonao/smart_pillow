@@ -485,6 +485,32 @@
 					sideNeckHeight: (this.shoulderSpace - 10) * 0.5
 				}
 
+				let form = {
+					age: 20,
+					weight: 50,
+					tall: 168,
+					sexIndex: 2
+				}
+				let obj = uni.getStorageSync('user_measure');
+				if (obj) {
+					form = JSON.parse(obj);
+				} else {
+					form = {
+						age: 20,
+						weight: 50,
+						tall: 168,
+						sexIndex: 2,
+					}
+				}
+
+
+				// 判断是否女的
+				if (form && from.sexIndex) {
+					if (form.sexIndex == 2) {
+						params.sideNeckHeight = (this.shoulderSpace - 8.5) * 0.5
+					}
+				}
+
 				console.log('params:', params)
 				//
 
@@ -496,12 +522,16 @@
 				// 存储数据
 				storageObj.push(params)
 				uni.setStorageSync('myMode', JSON.stringify(storageObj));
+
 				uni.showToast({
 					title: '发送中',
 					success() {
-						uni.navigateTo({
-							url: "/page_subject/mode/setMode" + object2Query(params)
+						uni.switchTab({
+							url: "/pages/status/status"
 						})
+						// uni.navigateTo({
+						// 	url: "/page_subject/mode/setMode" + object2Query(params)
+						// })
 						// uni.switchTab({
 						// 	url: '/pages/status/status' + object2Query(params)
 						// })
@@ -516,13 +546,37 @@
 			},
 			// 手动测量
 			handleClick() {
-				let params = frontParseByShooting({
+				let form = {
+					age: 20,
+					weight: 50,
+					tall: 168,
+					sexIndex: 2
+				}
+				let obj = uni.getStorageSync('user_measure');
+				if (obj) {
+					form = JSON.parse(obj);
+				} else {
+					form = {
+						age: 20,
+						weight: 50,
+						tall: 168,
+						sexIndex: 2,
+					}
+				}
+
+				let orginfo = {
 					headHeight: this.sideLittleBlockBack,
 					neckHeight: this.sideLittleNeckBack,
 					sideHeadHeight: this.frontLeftPart + this.frontRightPart,
 					sideNeckHeight: (this.shoulderSpace - 10) * 0.5
-				})
-
+				}
+				// 判断是否女的
+				if (form && from.sexIndex) {
+					if (form.sexIndex == 2) {
+						orginfo.sideNeckHeight = (this.shoulderSpace - 8.5) * 0.5
+					}
+				}
+				let params = frontParseByShooting(orginfo)
 
 				// let params = this.$refs.inputView.getParams();
 				console.log('params:', params)

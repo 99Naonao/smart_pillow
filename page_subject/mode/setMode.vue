@@ -28,72 +28,76 @@
 				</view>
 			</uni-swipe-action>
 		</view>
-		<view class="item-plus" @click="addModeHandler">
-			+
-		</view>
-		<view class="kv" @click="navHandle">
-			<image class="kv-img" mode="widthFix" :src="'../static/mode/SY_04A_bg01.png'"></image>
-			<label class="tips">手动微调</label>
-		</view>
-		<view class="info-part">
-			<view class="info-item">
-				<view class="info-left">
-					<image class="icon1" mode="widthFix" :src="'../static/mode/SY_04A_IconYW.png'"></image>
-					<label>仰卧</label>
-				</view>
-				<view class="info-right">
-					<view>
-						头枕高度{{selectItem.headHeight}}mm
-					</view>
-					<view>
-						颈枕高度{{selectItem.neckHeight}}mm
-					</view>
-				</view>
+		<view class="bottom-part">
+			<view class="item-plus" @click="addModeHandler">
+				+
 			</view>
-			<view class="info-item">
-				<view class="info-left">
-					<image class="icon2" mode="widthFix" :src="'../static/mode/SY_04A_IconCW.png'"></image>
-					<label>侧卧</label>
-				</view>
-				<view class="info-right">
-					<view>
-						头枕高度{{selectItem.sideHeadHeight}}mm
-					</view>
-					<view>
-						颈枕高度{{selectItem.sideNeckHeight}}mm
-					</view>
-				</view>
+			<view class="kv" @click="navHandle">
+				<image class="kv-img" mode="widthFix" :src="'../static/mode/SY_04A_bg01.png'"></image>
+				<label class="tips">手动微调</label>
 			</view>
-			<view class="info-item-recommond">
-				<view class="info-left">
-					<image class="icon3" mode="widthFix" :src="'../static/mode/SY_04A_IconAIh.png'"></image>
-					<label>推荐高度</label>
-				</view>
-				<view class="info-right">
-					<view class="info-recommond-right">
-						<view class="info-r1">
-							<image class="sicon1" mode="widthFix" :src="'../static/mode/SY_04A_IconYWs.png'"></image>
+			<view class="info-part">
+				<view class="info-item">
+					<view class="info-left">
+						<image class="icon1" mode="widthFix" :src="'../static/mode/SY_04A_IconYW.png'"></image>
+						<label>仰卧</label>
+					</view>
+					<view class="info-right">
+						<view>
+							头枕高度{{selectItem.headHeight}}mm
 						</view>
-						<view class="info-r2">
+						<view>
+							颈枕高度{{selectItem.neckHeight}}mm
+						</view>
+					</view>
+				</view>
+				<view class="info-item">
+					<view class="info-left">
+						<image class="icon2" mode="widthFix" :src="'../static/mode/SY_04A_IconCW.png'"></image>
+						<label>侧卧</label>
+					</view>
+					<view class="info-right">
+						<view>
+							头枕高度{{selectItem.sideHeadHeight}}mm
+						</view>
+						<view>
+							颈枕高度{{selectItem.sideNeckHeight}}mm
+						</view>
+					</view>
+				</view>
+				<view class="info-item-recommond">
+					<view class="info-left">
+						<image class="icon3" mode="widthFix" :src="'../static/mode/SY_04A_IconAIh.png'"></image>
+						<label>推荐高度</label>
+					</view>
+					<view class="info-right">
+						<view class="info-recommond-right">
+							<view class="info-r1">
+								<image class="sicon1" mode="widthFix" :src="'../static/mode/SY_04A_IconYWs.png'">
+								</image>
+							</view>
+							<view class="info-r2">
 
-							<view>
-								头枕高度{{60}}cm
-							</view>
-							<view>
-								颈枕高度{{60}}cm
+								<view>
+									头枕高度{{60}}cm
+								</view>
+								<view>
+									颈枕高度{{60}}cm
+								</view>
 							</view>
 						</view>
-					</view>
-					<view class="info-recommond-right">
-						<view class="info-r1">
-							<image class="sicon2" mode="widthFix" :src="'../static/mode/SY_04A_IconCWs.png'"></image>
-						</view>
-						<view class="info-r2">
-							<view>
-								头枕高度{{60}}cm
+						<view class="info-recommond-right">
+							<view class="info-r1">
+								<image class="sicon2" mode="widthFix" :src="'../static/mode/SY_04A_IconCWs.png'">
+								</image>
 							</view>
-							<view>
-								颈枕高度{{60}}cm
+							<view class="info-r2">
+								<view>
+									头枕高度{{60}}cm
+								</view>
+								<view>
+									颈枕高度{{60}}cm
+								</view>
 							</view>
 						</view>
 					</view>
@@ -348,6 +352,8 @@
 	.container {
 		background-color: rgb(197, 208, 230);
 		height: 100%;
+		display: flex;
+		flex-direction: column;
 
 		.title {
 			margin: 10rpx;
@@ -395,7 +401,7 @@
 
 		.kv {
 			margin: 0 auto;
-			margin-top: 52rpx;
+			margin-top: 22rpx;
 			width: 668rpx;
 			height: 181rpx;
 			border-radius: 28rpx;
@@ -579,9 +585,15 @@
 			border: #999 1px solid;
 			height: 100rpx;
 			border-radius: 30rpx;
+			width: 668rpx;
+			margin: 0 auto;
 			font-size: 50rpx;
 			text-align: center;
 			line-height: 100rpx;
+		}
+
+		.bottom-part {
+			height: 800rpx;
 		}
 
 		.main {
@@ -589,8 +601,9 @@
 			margin-left: 40rpx;
 			margin-right: 40rpx;
 			margin-top: 6upx;
-			height: 320rpx;
+			min-height: 320rpx;
 			overflow: scroll;
+			flex: 1;
 
 			.slot-button {
 				margin-top: 20rpx;
