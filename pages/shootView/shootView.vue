@@ -522,6 +522,7 @@
 				// 存储数据
 				storageObj.push(params)
 				uni.setStorageSync('myMode', JSON.stringify(storageObj));
+				uni.setStorageSync('standard', JSON.stringify(params));
 
 				uni.showToast({
 					title: '发送中',
@@ -576,9 +577,8 @@
 						orginfo.sideNeckHeight = (this.shoulderSpace - 8.5) * 0.5
 					}
 				}
-				let params = frontParseByShooting(orginfo)
-
-				// let params = this.$refs.inputView.getParams();
+				let params = (orginfo)
+				uni.setStorageSync('standard', JSON.stringify(params));
 				console.log('params:', params)
 				uni.redirectTo({
 					url: '/page_subject/adjust/adjust' + object2Query(params)

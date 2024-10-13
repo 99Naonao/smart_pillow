@@ -9,6 +9,7 @@
 				<view v-for="(item,index) in modeList" :key="index">
 					<uni-swipe-action-item autoClose=true @change='onChange($event,index)'>
 						<view class="item" @click="onButton($event,index)">
+							<view class="last-send" v-if="lastSend && lastSend.name==item.name">上次使用</view>
 							<view class="title">
 								{{item.name}}
 							</view>
@@ -79,10 +80,10 @@
 							<view class="info-r2">
 
 								<view>
-									头枕高度{{60}}cm
+									头枕高度{{standard.headHeight}}cm
 								</view>
 								<view>
-									颈枕高度{{60}}cm
+									颈枕高度{{standard.neckHeight}}cm
 								</view>
 							</view>
 						</view>
@@ -93,10 +94,10 @@
 							</view>
 							<view class="info-r2">
 								<view>
-									头枕高度{{60}}cm
+									头枕高度{{standard.sideHeadHeight}}cm
 								</view>
 								<view>
-									颈枕高度{{60}}cm
+									颈枕高度{{standard.sideNeckHeight}}cm
 								</view>
 							</view>
 						</view>
@@ -163,9 +164,32 @@
 			} else {
 				this.modeList = []
 			}
+
+			let standard = uni.getStorageSync('standard');
+			if (standard) {
+				this.standard = JSON.parse(standard)
+			} else {
+				this.standard = {
+					headHeight: 60,
+					neckHeight: 60,
+					sideHeadHeight: 60,
+					sideNeckHeight: 60,
+				}
+			}
+
+			this.lastSend = uni.getStorageSync('lastMode');
 		},
 		data() {
 			return {
+				standard: {
+					headHeight: 1,
+					neckHeight: 1,
+					sideHeadHeight: 1,
+					sideNeckHeight: 1,
+				},
+				lastSend: {
+
+				},
 				pillowName: '',
 				options1: [{
 					text: '删除',
@@ -302,9 +326,9 @@
 				// })
 				let params = this.selectItem
 				console.log('params:', params)
+
+				uni.setStorageSync('lastMode', params);
 				this.navHandle()
-
-
 				// let init_arraybuffer = initPillow(params.headHeight, params.neckHeight, params.shoulderHeight, params
 				// 	.sideHeadHeight, params.sideNeckHeight, params.sideShoulderHeight);
 				// // let app = getApp()
@@ -365,6 +389,12 @@
 			margin-bottom: 30rpx;
 			overflow: scroll;
 			height: 300rpx;
+		}
+
+		.last-send {
+			font-size: 20rpx;
+			line-height: 100rpx;
+			margin: 10rpx;
 		}
 
 		.setting {
