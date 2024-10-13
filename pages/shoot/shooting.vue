@@ -107,8 +107,46 @@
 			bindtouchend_callback() {
 				console.log('bindtouchend_callback')
 			},
+			// 相册选择图片
 			chooseBtnHandler() {
+				uni.chooseImage({
+					count: 1,
+					sourceType: ['album'],
+					success: (res) => {
+						console.log('path:', res.tempFilePaths[0])
+						let img_url = res.tempFilePaths[0]
+						console.log('this.frontImage123:', img_url, this.frontImage)
+						if (this.frontImage) {
+							this.sideImage = img_url;
+							var url_ = '/pages/shootView/shootView' + object2Query({
+								sideImage: this.sideImage,
+								frontImage: this.frontImage
+							})
 
+							uni.redirectTo({
+								url: url_
+							})
+						} else {
+							this.frontImage = img_url;
+							this.shootingTips = "请拍摄侧面照片"
+							// uni.showToast({
+							// 	title: '请拍摄侧面照片',
+							// 	duration: 3000
+							// })
+
+							// wx.previewImage({
+							// 	urls: [this.frontImage],
+							// 	current: this.frontImage
+							// })
+						}
+
+					},
+					fail: () => {
+						uni.showToast({
+							title: '上传失败'
+						})
+					}
+				})
 			},
 			// shootSideBtnHandler() {
 			// 	console.log('this.canvasInstance1:', this.canvasInstance, this.canvasInstance.id)
