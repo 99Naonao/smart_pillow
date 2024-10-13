@@ -48,10 +48,10 @@
 							<view>正面数据</view>
 						</view>
 						<view class="right-info-part">
-							<view class="impress"><label class="title">右耳朵到右肩:</label><label
+							<view class="impress"><label class="title">●右耳到右肩:</label><label
 									class="sizeImpress">{{frontRightPart}}{{unitDesc}}</label></view>
-							<view><label class="title">肩宽:</label>{{shoulderSpace}}{{unitDesc}}</view>
-							<view><label class="title">左耳朵到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view>
+							<view><label class="title">●肩宽:</label>{{shoulderSpace}}{{unitDesc}}</view>
+							<view><label class="title">●左耳到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view>
 						</view>
 					</view>
 				</view>
@@ -1026,7 +1026,8 @@
 				space = space * this.unit / this.factor
 				space = space + 1
 				space = space.toFixed(3)
-				this.shoulderSpace = space + 1
+
+				this.shoulderSpace = Math.floor(space) + 10
 				// console.log('this.shoulderSpace:', this.shoulderSpace, space, 1, space + 1)
 				// 左肩
 				this.$set(this.shoulderLeftWrapStyle, '--left', (300 * rightShoulder / this.bodyImgOriginWidth) +

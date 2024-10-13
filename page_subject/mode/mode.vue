@@ -76,10 +76,10 @@
 						<view class="info-r2">
 
 							<view>
-								头枕高度{{standard.headHeight}}cm
+								头枕高度{{standard.headHeight}}mm
 							</view>
 							<view>
-								颈枕高度{{standard.neckHeight}}cm
+								颈枕高度{{standard.neckHeight}}mm
 							</view>
 						</view>
 					</view>
@@ -89,10 +89,10 @@
 						</view>
 						<view class="info-r2">
 							<view>
-								头枕高度{{standard.sideHeadHeight}}cm
+								头枕高度{{standard.sideHeadHeight}}mm
 							</view>
 							<view>
-								颈枕高度{{standard.sideNeckHeight}}cm
+								颈枕高度{{standard.sideNeckHeight}}mm
 							</view>
 						</view>
 					</view>
