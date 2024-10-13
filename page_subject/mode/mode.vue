@@ -5,29 +5,35 @@
 		<public-module></public-module>
 		<!-- <view class="title maintitle">自定义模式</view> -->
 		<view class="setting flex">
-			<view class="item flex justify-content-center" @click="sendHandler(0)">
+			<view class="item flex justify-content-center" :class="selectItem == modeList[0]?['selected']:[]"
+				@click="sendHandler(0)">
 				<view class="text-align-center">
 					<image class="nan" src="../../static/mode/SY_04_IconMANa.png"></image>
 					<view>成年男性</view>
 				</view>
 			</view>
-			<view class="item flex justify-content-center" @click="sendHandler(1)">
+			<view class="item flex justify-content-center" :class="selectItem == modeList[1]?['selected']:[]"
+				@click="sendHandler(1)">
 				<view class="text-align-center">
 					<image class="nv" src="../../static/mode/SY_04_IconWOMANa.png"></image>
 					<view>成年女性</view>
 				</view>
 			</view>
-			<view class="item flex justify-content-center" @click="sendHandler(2)">
+			<view class="item flex justify-content-center" :class="selectItem == modeList[2]?['selected']:[]"
+				@click="sendHandler(2)">
 				<view class="text-align-center">
 					<image class='child' src="../../static/mode/SY_04_IconYOUNa.png"></image>
 					<view>10-15岁儿童</view>
 				</view>
 			</view>
 		</view>
-		<!-- 		<view class="kv" @click="navHandle">
+		<view v-if="selectItem.headHeight" class="send-btn" @click="sendItemHandler()">
+			发送
+		</view>
+		<view class="kv" @click="navHandle">
 			<image class="kv-img" mode="widthFix" :src="'../static/mode/SY_04A_bg01.png'"></image>
 			<label class="tips">手动微调</label>
-		</view> -->
+		</view>
 		<view class="info-part">
 			<view class="info-item">
 				<view class="info-left">
@@ -230,12 +236,21 @@
 				// 	this.dataList.splice(e.index, 1) //删除值
 				// }
 			},
+			sendItemHandler() {
+				let params = this.selectItem;
+				console.log('params:', params)
+				uni.navigateTo({
+					url: "/page_subject/adjust/adjust" + object2Query(params)
+				})
+			},
 			// 发送模式设置
 			sendHandler(item) {
 				// uni.switchTab({
 				// 	url: '/pages/status/status'
 				// })
 				let params = this.modeList[item];
+				this.selectItem = params;
+				return;
 				console.log('params:', item, params)
 				uni.navigateTo({
 					url: "/page_subject/adjust/adjust" + object2Query(params)
@@ -311,6 +326,17 @@
 			margin-bottom: 30rpx;
 		}
 
+		.send-btn {
+			background-color: #4d7fc9;
+			margin: 40rpx;
+			color: white;
+			text-align: center;
+			line-height: 88rpx;
+			padding-left: 50rpx;
+			padding-right: 50rpx;
+			border-radius: 25rpx;
+		}
+
 		.kv {
 			margin: 0 auto;
 			margin-top: 52rpx;
@@ -356,6 +382,10 @@
 				background-color: white;
 				// border: 1px solid #5B7897;
 				border-radius: 10rpx;
+			}
+
+			.selected {
+				background-color: #d8d8d8;
 			}
 
 			.nan {
