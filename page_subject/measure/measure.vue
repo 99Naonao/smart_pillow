@@ -218,7 +218,7 @@
 			height: 95rpx;
 			position: absolute;
 			left: 50%;
-			top: -60rpx;
+			top: -45rpx;
 			margin-left: -53rpx;
 		}
 

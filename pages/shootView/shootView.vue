@@ -39,13 +39,16 @@
 			<view class="uni-common-mt">
 				<view class="datainfo flex" v-if="showFront">
 					<view class="back1" @click="handleSideClick">
-						<image class="side1Img" src="../static/adjust/Side01.png" mode="widthFix"></image>
-						<view>侧面数据</view>
+						<image class="side1Img" src="../static/camera/SY_09_ButCMSJ01.png" mode="widthFix"></image>
+						<view v-if="false">侧面数据</view>
 					</view>
 					<view class="back2 flex1 flex">
+						<image mode="widthFix" class="img2back" src="../../static/camera/SY_09_ButZMSJ02.png">
+						</image>
 						<view class="left-part">
-							<image class="front1Img" src="../static/adjust/face02.png" mode="widthFix"></image>
-							<view>正面数据</view>
+							<image class="front1Img" v-if="false" src="../static/adjust/face02.png" mode="widthFix">
+							</image>
+							<view v-if="false">正面数据</view>
 						</view>
 						<view class="right-info-part">
 							<view class="impress"><label class="title">●右耳到右肩:</label><label
@@ -103,13 +106,16 @@
 			<view class="uni-common-mt">
 				<view class="datainfo flex">
 					<view class="back1" @click="handleFrontClick()">
-						<image class="front2Img" src="../static/adjust/face01.png" mode="widthFix"></image>
-						<view>正面数据</view>
+						<image class="front2Img" src="../static/camera/SY_09_ButCMSJ01.png" mode="widthFix"></image>
+						<view v-if="false">正面数据</view>
 					</view>
 					<view class="back2 flex1 flex align-center">
+						<image mode="widthFix" class="img2back" src="../../static/camera/SY_09_ButZMSJ02.png">
+						</image>
 						<view class="left-part">
-							<image class="side2Img" src="../static/adjust/Side02.png" mode="widthFix"></image>
-							<view>侧面数据</view>
+							<image v-if="false" class="side2Img" src="../static/adjust/Side02.png" mode="widthFix">
+							</image>
+							<view v-if="false">侧面数据</view>
 						</view>
 						<view class="right-info-part">
 							<view class="impress"><label class="title">●后背与颈部:</label><label
@@ -199,8 +205,8 @@
 		onLoad(options) {
 			this.sideBodyImgUrl = decodeURIComponent(options.sideImage)
 			this.bodyImgUrl = decodeURIComponent(options.frontImage)
-			this.bodyImgUrl = 'https://pc-cdn.pupupal.com/pupu-pc/50_20240322124756.jpg'
-			this.sideBodyImgUrl = 'https://pc-cdn.pupupal.com/pupu-pc/50_20240322124808.jpg'
+			// this.bodyImgUrl = 'https://pc-cdn.pupupal.com/pupu-pc/50_20240322124756.jpg'
+			// this.sideBodyImgUrl = 'https://pc-cdn.pupupal.com/pupu-pc/50_20240322124808.jpg'
 			console.log('options:', this.sideBodyImgUrl, this.bodyImgUrl)
 		},
 		onShow() {
@@ -412,17 +418,21 @@
 				uni.showLoading({
 					title: '正面检测中'
 				})
-				wx.downloadFile({
-					url: this.bodyImgUrl, //仅为示例，并非真实的资源
-					success(res) {
-						// 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
-						if (res.statusCode === 200) {
-							that.bodyImgUrl = res.tempFilePath;
-							console.log('bodytemp url:', that.bodyImgUrl)
-							that.uploadBodyImage()
+				if (this.bodyImgUrl.indexOf('wxfile:') > -1) {
+					that.uploadBodyImage()
+				} else {
+					wx.downloadFile({
+						url: this.bodyImgUrl, //仅为示例，并非真实的资源
+						success(res) {
+							// 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
+							if (res.statusCode === 200) {
+								that.bodyImgUrl = res.tempFilePath;
+								console.log('bodytemp url:', that.bodyImgUrl)
+								that.uploadBodyImage()
+							}
 						}
-					}
-				})
+					})
+				}
 
 			},
 			uploadSideImg() {
@@ -463,17 +473,21 @@
 				uni.showLoading({
 					title: '侧面检测中'
 				})
-				wx.downloadFile({
-					url: this.sideBodyImgUrl, //仅为示例，并非真实的资源
-					success(res) {
-						// 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
-						if (res.statusCode === 200) {
-							that.sideBodyImgUrl = res.tempFilePath;
-							console.log('sidetemp url:', that.sideBodyImgUrl)
-							that.uploadSideImg()
+				if (this.sideBodyImgUrl.indexOf('wxfile:') > -1) {
+					that.uploadSideImg()
+				} else {
+					wx.downloadFile({
+						url: this.sideBodyImgUrl, //仅为示例，并非真实的资源
+						success(res) {
+							// 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
+							if (res.statusCode === 200) {
+								that.sideBodyImgUrl = res.tempFilePath;
+								console.log('sidetemp url:', that.sideBodyImgUrl)
+								that.uploadSideImg()
+							}
 						}
-					}
-				})
+					})
+				}
 			},
 			// 显示侧面数据
 			handleSideClick() {
