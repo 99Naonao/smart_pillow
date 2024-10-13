@@ -1,6 +1,6 @@
 <template>
 	<view class="">
-		<image class="topKV" mode="widthFix" src="/static/SY_01_000.png"></image>
+		<image class="topKV" :style="menuStyle" mode="widthFix" src="/static/SY_01_000.png"></image>
 		<uni-popup ref="ppp" style="z-index: 10; position: absolute;" border-radius="40rpx 40rpx 0rpx 0rpx"
 			background-color='white' safe-area="true" class="popup" :mask-click="false" @change="change">
 			<view class="container">
@@ -31,6 +31,9 @@
 	export default {
 		data() {
 			return {
+				menuStyle: {
+					'--menuButtonTop': '0'
+				},
 				title: 'Hello112123',
 				value: [],
 				accordionVal: '1',
@@ -50,6 +53,9 @@
 				});
 			}
 			this.$refs.ppp.open('bottom')
+
+			let app = getApp();
+			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 80) + 'px');
 		},
 		onLoad() {
 
@@ -65,6 +71,7 @@
 <style lang="scss">
 	.topKV {
 		width: 100%;
+		padding-top: var(--menuButtonTop);
 	}
 
 	.uni-collapse-item__title-text {
@@ -112,8 +119,8 @@
 		padding-bottom: env(safe-area-inset-bottom);
 
 		.tip {
-			width: 322rpx;
-			height: 161rpx;
+			width: 106rpx;
+			height: 95rpx;
 
 			margin: 0 auto;
 			margin-top: -50rpx;
