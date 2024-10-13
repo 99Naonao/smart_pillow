@@ -174,7 +174,7 @@
 		<uni-popup ref="popupTips" type="bottom" style="z-index: 10000; position: absolute;"
 			border-radius="40rpx 40rpx 40rpx 40rpx" background-color='white' :mask-click="true">
 			<view class="popup-tips">
-				<view class="send-btn" @click="closeAndSave">AI测量完成，请分别仰卧和侧卧进行体验，
+				<view class="send-btn">AI测量完成，请分别仰卧和侧卧进行体验，
 					如有不适请点击手动微调进行调整
 				</view>
 				<image class="titleimg" src="../../static/adjust/SY_05_B001.png"></image>
@@ -265,9 +265,9 @@
 					'--imgHeight': '140rpx',
 				},
 				factor: 1,
-				unit: 100, // 100是cm
-				unitDesc: 'cm', // cm
-				toFixed: 2, // 精度
+				unit: 1000, // 100是cm 1000是mm
+				unitDesc: 'mm', // cm
+				toFixed: 0, // 精度
 				bodyImgUrl: '',
 				sideBodyImgUrl: '',
 				bodyImgWidth: 0,
@@ -299,66 +299,77 @@
 				let space = Math.abs(this.frontLeftEarX - this.frontLeftShoulder);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
+				space = Math.floor(space)
 				return space
 			},
 			frontRightPart() {
 				let space = Math.abs(this.frontRightEarX - this.frontRightShoulder);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
+				space = Math.floor(space)
 				return space
 			},
 			frontLeftNeckPart() {
 				let space = Math.abs(this.frontNeck - this.frontRightShoulder);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
+				space = Math.floor(space)
 				return space
 			},
 			frontRightNeckPart() {
 				let space = Math.abs(this.frontNeck - this.frontRightShoulder);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
+				space = Math.floor(space)
 				return space
 			},
 			sideEarEye() {
 				let space = Math.abs(this.sideEar - this.sideEye);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
+				space = Math.floor(space)
 				return space
 			},
 			sideEarNose() {
 				let space = Math.abs(this.sideEar - this.sideNose);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
+				space = Math.floor(space)
 				return space
 			},
 			sideEarMouth() {
 				let space = Math.abs(this.sideEar - this.sideMouth);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
+				space = Math.floor(space)
 				return space
 			},
 			sideEarBack() {
 				let space = Math.abs(this.sideEar - this.sideBack);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
+				space = Math.floor(space)
 				return space
 			},
 			sideNeckBack() {
 				let space = Math.abs(this.sideNeck - this.sideBack);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
+				space = Math.floor(space)
 				return space
 			},
 			sideLittleNeckBack() {
 				let space = Math.abs(this.sideLower - this.sideBack);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
+				space = Math.floor(space)
 				return space
 			},
 			sideLittleBlockBack() {
 				let space = Math.abs(this.sideBack - this.sideBlock);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
+				space = Math.floor(space)
 				return space
 			},
 			shoulderPart() {
@@ -505,7 +516,7 @@
 
 
 				// 判断是否女的
-				if (form && from.sexIndex) {
+				if (form && form.sexIndex) {
 					if (form.sexIndex == 2) {
 						params.sideNeckHeight = (this.shoulderSpace - 8.5) * 0.5
 					}
@@ -572,7 +583,7 @@
 					sideNeckHeight: (this.shoulderSpace - 10) * 0.5
 				}
 				// 判断是否女的
-				if (form && from.sexIndex) {
+				if (form && form.sexIndex) {
 					if (form.sexIndex == 2) {
 						orginfo.sideNeckHeight = (this.shoulderSpace - 8.5) * 0.5
 					}
