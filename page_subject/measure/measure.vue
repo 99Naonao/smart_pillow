@@ -275,7 +275,7 @@
 				}
 
 				.select-btn {
-					background-color: #4281c1;
+					background-color: #ed6546;
 					width: 275rpx;
 					height: 71rpx;
 					border-radius: 20rpx;
