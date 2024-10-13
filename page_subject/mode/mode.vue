@@ -70,10 +70,10 @@
 						<view class="info-r2">
 
 							<view>
-								头枕高度{{60}}cm
+								头枕高度{{standard.headHeight}}cm
 							</view>
 							<view>
-								颈枕高度{{60}}cm
+								颈枕高度{{standard.neckHeight}}cm
 							</view>
 						</view>
 					</view>
@@ -83,10 +83,10 @@
 						</view>
 						<view class="info-r2">
 							<view>
-								头枕高度{{60}}cm
+								头枕高度{{standard.sideHeadHeight}}cm
 							</view>
 							<view>
-								颈枕高度{{60}}cm
+								颈枕高度{{standard.sideNeckHeight}}cm
 							</view>
 						</view>
 					</view>
@@ -145,10 +145,21 @@
 			})
 		},
 		onShow() {
-
+			let standard = uni.getStorageSync('standard');
+			if (standard) {
+				this.standard = JSON.parse(standard)
+			} else {
+				this.standard = {
+					headHeight: 60,
+					neckHeight: 60,
+					sideHeadHeight: 60,
+					sideNeckHeight: 60,
+				}
+			}
 		},
 		data() {
 			return {
+				standard: {},
 				selectItem: {},
 				pillowName: '',
 				options1: [{
