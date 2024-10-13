@@ -25,32 +25,32 @@
 					<form @submit="formSubmit" @reset="formReset">
 						<view class="uni-form-item flex">
 							<view class="title">年龄</view>
-							<input class="uni-input" name="age" placeholder="请输入" />
+							<input class="uni-input" v-model="form.age" name="age" placeholder="请输入" />
 						</view>
 						<view class="uni-form-item">
 							<view class="title">体重</view>
 							<view class="input-part">
-								<input class="uni-input" name="weight" placeholder="请输入" />
+								<input class="uni-input" name="weight" v-model="form.weight" placeholder="请输入" />
 								<view class="unit-tips">kg</view>
 							</view>
 						</view>
 						<view class="uni-form-item">
 							<view class="title">身高</view>
 							<view class="input-part">
-								<input class="uni-input" name="tall" placeholder="请输入" />
+								<input class="uni-input" name="tall" v-model="form.tall" placeholder="请输入" />
 								<view class="unit-tips">cm</view>
 							</view>
 						</view>
 						<view class="uni-form-item">
 							<view class="title">性别</view>
 							<view class="select-part flex flex1">
-								<view :class="this.sexIndex==1?'select-btn':'select-btn unselect-btn'"
+								<view :class="form.sexIndex==1?'select-btn':'select-btn unselect-btn'"
 									@click="selectHandler(1)">
 									<image mode="widthFix" class="icon1" :src="'../static/SY_05_butIconManB.png'">
 									</image>
 									<label>男</label>
 								</view>
-								<view :class="this.sexIndex==2?'select-btn':'select-btn unselect-btn'"
+								<view :class="form.sexIndex==2?'select-btn':'select-btn unselect-btn'"
 									@click="selectHandler(2)">
 									<image mode="widthFix" class="icon2" :src="'../static/SY_05_butIconManB.png'">
 									</image>
@@ -86,15 +86,35 @@
 		components: {},
 		data() {
 			return {
-				sexIndex: 1
+				form: {
+					age: 20,
+					weight: 50,
+					tall: 168,
+					sexIndex: 2,
+				}
 			}
+		},
+		onShow() {
+			let obj = uni.getStorageSync('user_measure');
+			if (obj) {
+				console.log('obj:', obj)
+				this.form = JSON.parse(obj);
+			} else {
+				this.form = {
+					age: 20,
+					weight: 50,
+					tall: 168,
+					sexIndex: 2,
+				}
+			}
+			console.log("this.form", this.form)
 		},
 		methods: {
 			sliderChange(e) {
 				console.log('value 发生变化：' + e.detail.value)
 			},
 			selectHandler(index) {
-				this.sexIndex = index
+				this.form.sexIndex = index
 			},
 			formSubmit: function(e) {
 				console.log('form发生了submit事件，携带数据为：' + JSON.stringify(e.detail.value))
@@ -103,6 +123,8 @@
 				// 	content: '表单数据内容：' + JSON.stringify(formdata),
 				// 	showCancel: false
 				// });
+
+				uni.setStorageSync('user_measure', JSON.stringify(this.form))
 
 				uni.navigateTo({
 					url: '/pages/shoot/shooting'

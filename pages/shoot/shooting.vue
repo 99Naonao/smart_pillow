@@ -4,6 +4,7 @@
 			<cover-image @click="backBtn_callback" aria-role="button" src="/static/camera/back.png" class="back-btn"
 				:style="backBtnStyle">
 			</cover-image>
+			<cover-view class="shooting-tips">{{shootingTips}}</cover-view>
 			<cover-image class="shootBtn" @click="shootBtnHandler" aria-role="button"
 				src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
 			<cover-image class="chooseBtn" @click="chooseBtnHandler" aria-role="button"
@@ -38,6 +39,7 @@
 	export default {
 		data() {
 			return {
+				shootingTips: '请拍摄正面照片',
 				frontImage: '',
 				sideImage: "",
 				canvasInstance: '',
@@ -57,10 +59,12 @@
 			}
 		},
 		onShow() {
-			uni.showToast({
-				title: '请拍摄正面照片',
-				duration: 3000
-			})
+			// uni.showToast({
+			// 	title: '请拍摄正面照片',
+			// 	duration: 3000
+			// })
+
+			this.shootingTips = "请拍摄正面照片"
 		},
 		onReady() {
 			// 获取小程序右上角胶囊按钮的坐标，用作自定义导航栏。
@@ -153,10 +157,11 @@
 								} else {
 									this.frontImage = res.tempFilePath;
 									console.log('1234', res.tempFilePath, this.frontImage)
-									uni.showToast({
-										title: '请拍摄侧面照片',
-										duration: 3000
-									})
+									this.shootingTips = "请拍摄侧面照片"
+									// uni.showToast({
+									// 	title: '请拍摄侧面照片',
+									// 	duration: 3000
+									// })
 
 									// wx.previewImage({
 									// 	urls: [this.frontImage],
@@ -279,6 +284,16 @@
 		right: 0;
 		width: 750rpx;
 		height: 76rpx;
+		top: var(--menuButtonTop2);
+	}
+
+	.shooting-tips {
+		position: absolute;
+		left: 0;
+		right: 0;
+		width: 100%;
+		text-align: center;
+		color: white;
 		top: var(--menuButtonTop2);
 	}
 
