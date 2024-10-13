@@ -567,11 +567,14 @@
 				// blue_class.getInstance().write2tooth(arraybuffer)
 				// return;
 				this.closePopUpHandle()
-				var url_ = '/pages/status/status';
-				console.log('url:', url_)
-				uni.navigateTo({
-					url: url_
+				uni.switchTab({
+					url: "/pages/status/status"
 				})
+				// var url_ = '/pages/status/status';
+				// console.log('url:', url_)
+				// uni.navigateTo({
+				// 	url: url_
+				// })
 			},
 			// 调低枕头
 			adjustLowSleepHandler() {

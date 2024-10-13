@@ -44,6 +44,7 @@ class blue_class {
 	}
 	setPillowPower(value) {
 		this.pillowPower = value;
+		uni.$emit('update_pillow_info')
 	}
 
 	getPillowPower() {

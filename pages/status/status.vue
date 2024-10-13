@@ -1,31 +1,31 @@
 <template>
 	<view class="main" v-if="hasLogin">
-		<view class="bg">
+		<view class="bg" :style="menuInfo">
 			<image mode="widthFix" class="backimg" src="../../static/index/SY_00A_001.jpg"></image>
-		</view>
-		<view class="logoleft">
-			<image mode="widthFix" src="../../static/index/SY_00A_LOGO01.png"></image>
-		</view>
-		<view class="rightBatteryInfo" :style="menuInfo">
-			<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconDLa.png"></image>
-			<label class="desc" for="">{{getPillowPower}}%</label>
-		</view>
-		<view class="rightInfo" :style="menuInfo">
-			<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconCW.png"></image>
-			<label class="desc" for="">{{login?'已连接':'未连接'}}</label>
-		</view>
-		<view class="headInfo" :style="menuInfo">
-			<view>颈枕高度</view>
-			<view>{{pillowSideHeight}}mm</view>
-		</view>
-		<view class="neckInfo" :style="menuInfo">
-			<view>头枕高度</view>
-			<view>{{pillowHeight}}mm</view>
-		</view>
-		<view class="">
-			<view v-for="(item,index) in deviceIdList" :key="index">
-				{{item.name}}
-				<button @click="connectSleepHandler(item)">{{item.deviceId == connectDeviceId ?'已连接':'连接'}}</button>
+			<view class="logoleft">
+				<image mode="widthFix" src="../../static/index/SY_00A_LOGO01.png"></image>
+			</view>
+			<view class="rightBatteryInfo" :style="menuInfo">
+				<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconDLa.png"></image>
+				<label class="desc" for="">{{getPillowPower}}%</label>
+			</view>
+			<view class="rightInfo" :style="menuInfo">
+				<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconCW.png"></image>
+				<label class="desc" for="">{{login?'已连接':'未连接'}}</label>
+			</view>
+			<view class="headInfo" :style="menuInfo">
+				<view>颈枕高度</view>
+				<view>{{pillowSideHeight}}mm</view>
+			</view>
+			<view class="neckInfo" :style="menuInfo">
+				<view>头枕高度</view>
+				<view>{{pillowHeight}}mm</view>
+			</view>
+			<view class="">
+				<view v-for="(item,index) in deviceIdList" :key="index">
+					{{item.name}}
+					<button @click="connectSleepHandler(item)">{{item.deviceId == connectDeviceId ?'已连接':'连接'}}</button>
+				</view>
 			</view>
 		</view>
 		<view class="">
@@ -104,6 +104,9 @@
 				return this.pillowPower > 100 ? 100 : this.pillowPower
 			}
 		},
+		watch: {
+
+		},
 		data() {
 			return {
 				menuInfo: {
@@ -145,17 +148,27 @@
 				});
 			}
 
+			uni.$on('update_pillow_info', this.updateInfo);
+			this.updateInfo()
+
 			let app = getApp();
 			this.$set(this.menuInfo, '--menuButtonTop', (app.globalData.top + 120) + 'px');
-			this.$set(this.menuInfo, '--menuButtonTop1', (app.globalData.top + 62) + 'px');
+			this.$set(this.menuInfo, '--menuButtonTop1', (app.globalData.top + 12) + 'px');
 			this.$set(this.menuInfo, '--menuHead', (app.globalData.top + 332) + 'px');
 			this.$set(this.menuInfo, '--menuNeck', (app.globalData.top + 362) + 'px');
 			console.log('menui:', (app.globalData.top + 120) + 'px', this.menuInfo)
 
+			// this.$set(this, 'pillowHeight', blue_class.getInstance().pillowHeight);
+			// this.$set(this, 'pillowSideHeight', blue_class.getInstance().pillowSideHeight);
+			// this.$set(this, 'pillowPower', blue_class.getInstance().pillowPower);
+			// console.log('menui11111:', this.pillowHeight)
+			// console.log('menui1111122:', this.pillowSideHeight)
+			// console.log('menui1111122333:', this.pillowPower)
+
 			this.loginStatus = blue_class.getInstance().loginSuccess;
-			this.pillowHeight = blue_class.getInstance().pillowHeight
-			this.pillowSideHeight = blue_class.getInstance().pillowSideHeight
-			this.pillowPower = blue_class.getInstance().getPillowPower()
+			// this.pillowHeight = blue_class.getInstance().pillowHeight
+			// this.pillowSideHeight = blue_class.getInstance().pillowSideHeight
+			// this.pillowPower = blue_class.getInstance().getPillowPower()
 			// console.log('createScopedThreejs:', createScopedThreejs)
 
 			// // 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
@@ -224,6 +237,8 @@
 					}
 				})
 			}
+
+			uni.$off('update_pillow_info', this.updateInfo);
 		},
 		onLoad() {
 			// 监听设备发现
@@ -293,6 +308,15 @@
 		},
 
 		methods: {
+			updateInfo() {
+				this.$set(this, 'pillowHeight', blue_class.getInstance().pillowHeight);
+				this.$set(this, 'pillowSideHeight', blue_class.getInstance().pillowSideHeight);
+				this.$set(this, 'pillowPower', blue_class.getInstance().pillowPower);
+
+				console.log('menui11111:', this.pillowHeight)
+				console.log('menui1111122:', this.pillowSideHeight)
+				console.log('menui1111122333:', this.pillowPower)
+			},
 			aiHandler() {
 				uni.navigateTo({
 					url: "/page_subject/measure/measure"
@@ -810,6 +834,7 @@
 	.main {
 		width: 100%;
 		height: 100%;
+		background-color: #0b2853;
 
 		.logoleft {
 			position: absolute;
@@ -825,10 +850,10 @@
 	}
 
 	.bg {
-		position: absolute;
-		background-color: #1c344c;
+		position: relative;
+		background-color: #0b2853;
 		left: 0;
-		top: 0;
+		top: var(--menuButtonTop1);
 		right: 0;
 		bottom: 0;
 
@@ -952,7 +977,7 @@
 		// padding-top: 200rpx;
 		justify-content: space-around;
 		position: absolute;
-		bottom: 180rpx;
+		bottom: 200rpx;
 		left: 0rpx;
 		right: 0rpx;
 
