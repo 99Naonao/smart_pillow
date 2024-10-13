@@ -4,7 +4,7 @@
 			<cover-image @click="backBtn_callback" aria-role="button" src="/static/camera/back.png" class="back-btn"
 				:style="backBtnStyle">
 			</cover-image>
-			<cover-view class="shooting-tips">{{shootingTips}}</cover-view>
+			<cover-view class="shooting-tips" :style="backBtnStyle">{{shootingTips}}</cover-view>
 			<cover-image class="shootBtn" @click="shootBtnHandler" aria-role="button"
 				src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
 			<cover-image class="chooseBtn" @click="chooseBtnHandler" aria-role="button"
@@ -50,6 +50,7 @@
 					'--menuButtonHeight': '30px',
 					'--menuButtonTop2': '30px',
 					'--menuButtonTop3': '30px',
+					'--menuButtonTop4': '30px',
 				},
 				frameStyle: {
 					'--frameTop': '10px',
@@ -72,6 +73,7 @@
 			this.$set(this.backBtnStyle, '--menuButtonTop', menuButton.top + 'px')
 			this.$set(this.backBtnStyle, '--menuButtonTop2', (menuButton.top + 50) + 'px')
 			this.$set(this.backBtnStyle, '--menuButtonTop3', (menuButton.top + 20) + 'px')
+			this.$set(this.backBtnStyle, '--menuButtonTop4', (menuButton.top + 100) + 'px')
 			this.$set(this.backBtnStyle, '--menuButtonHeight', menuButton.height + 'px')
 			this.$set(this.frameStyle, '--frameTop', (menuButton.top + menuButton.height + 100) + 'px')
 			// 胶囊按钮与手机屏幕顶端的间距
@@ -294,7 +296,7 @@
 		width: 100%;
 		text-align: center;
 		color: white;
-		top: var(--menuButtonTop2);
+		top: var(--menuButtonTop4);
 	}
 
 	.tips {
