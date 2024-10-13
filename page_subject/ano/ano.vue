@@ -30,7 +30,9 @@
 
 			},
 			nav2() {
-
+				uni.navigateTo({
+					url: "/page_subject/anoMoving/anoMoving"
+				})
 			}
 		}
 	}

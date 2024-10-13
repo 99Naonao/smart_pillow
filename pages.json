@@ -79,6 +79,12 @@
 					"navigationBarTitleText": "脊椎微调"
 				}
 			}, {
+				"path": "anoMoving/anoMoving",
+				"style": {
+					"navigationStyle": "custom",
+					"navigationBarTitleText": "脊椎微调"
+				}
+			}, {
 				"path": "yi/yi",
 				"style": {
 					"navigationStyle": "custom",
