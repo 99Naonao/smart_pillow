@@ -363,9 +363,10 @@
 			back() {
 				uni.navigateBack()
 			},
+			// 跳转增加
 			addModeHandler() {
-				uni.showToast({
-					title: '暂未开放'
+				uni.navigateTo({
+					url: "/page_subject/measure/measure"
 				})
 			}
 		},
