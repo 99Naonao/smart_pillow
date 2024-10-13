@@ -4,7 +4,7 @@
 	<public-module></public-module>
 	<!-- <page-meta :page-style="'overflow:'+(show?'hidden':'visible')"></page-meta> -->
 	<view class="">
-		<image class="topKV" mode="widthFix" src="@/static/SY_01_000.png"></image>
+		<image class="topKV" :style="menuStyle" mode="widthFix" src="@/static/SY_01_000.png"></image>
 		<view class="tips" for="">监测到以下设备</view>
 		<view class="tips" v-if="deviceIdList.length == 0">暂无设备</view>
 		<view v-for="(item,index) in deviceIdList" :key="index">
@@ -27,7 +27,7 @@
 		</view>
 		<view class="spetips">
 			<div class="item" style="margin-left: 42rpx;">特别说明:</div>
-			<div class="item flex align-center">
+			<div class="item flex align-center" style="padding-bottom: 60rpx;">
 				<image class="iconblue" mode="widthFix" src="../static/SY_01_IconLY.png"></image>
 				<div>睡眠枕基本使用功能，需要蓝牙连接</div>
 			</div>
@@ -98,6 +98,8 @@
 		},
 		onShow() {
 			this.onShowing = true;
+			let app = getApp();
+			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 80) + 'px');
 			// let app = getApp();
 			// this.deviceId = app.globalData.deviceId;
 			// this.characteristicId = app.globalData.characteristicId;
@@ -239,6 +241,9 @@
 		},
 		data() {
 			return {
+				menuStyle: {
+					'--menuButtonTop': "0",
+				},
 				currentItem: {},
 				onShowing: false, //页面是否显示
 				show: false,
@@ -801,7 +806,7 @@
 <style lang="scss">
 	.topKV {
 		width: 100%;
-		padding-top: 100rpx;
+		padding-top: var(--menuButtonTop);
 	}
 
 	.header {
@@ -819,6 +824,7 @@
 		text-align: left;
 		font-size: 32rpx;
 		padding: 30rpx;
+
 		position: absolute;
 		left: 0;
 		right: 0;
@@ -826,7 +832,7 @@
 		box-shadow: 0rpx 0rpx 20rpx #5B7897;
 		border-top-left-radius: 15rpx;
 		border-top-right-radius: 15rpx;
-		bottom: 0;
+		bottom: 0rpx;
 		padding-bottom: constant(safe-area-inset-bottom);
 		padding-bottom: env(safe-area-inset-bottom);
 
