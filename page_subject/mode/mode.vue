@@ -346,6 +346,7 @@
 			border: none;
 			position: relative;
 			background-color: rgb(21, 59, 122);
+			overflow: hidden;
 
 			.tips {
 				position: absolute;

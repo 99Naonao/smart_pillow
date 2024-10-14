@@ -440,6 +440,7 @@
 			border: none;
 			position: relative;
 			background-color: rgb(21, 59, 122);
+			overflow: hidden;
 
 			.tips {
 				position: absolute;
@@ -614,7 +615,7 @@
 
 		.item-plus {
 			margin-top: 20rpx;
-			border: #999 1px solid;
+			border: #1c4485 1px solid;
 			height: 100rpx;
 			border-radius: 30rpx;
 			width: 668rpx;
@@ -622,6 +623,7 @@
 			font-size: 50rpx;
 			text-align: center;
 			line-height: 100rpx;
+			color: #1c4485;
 		}
 
 		.bottom-part {
