@@ -30,6 +30,7 @@
 			</uni-swipe-action>
 		</view>
 		<view class="bottom-part">
+			<view class="removetips">提示:往左滑动可以删除已有模式</view>
 			<view class="item-plus" @click="addModeHandler">
 				+
 			</view>
@@ -625,6 +626,14 @@
 
 		.bottom-part {
 			height: 800rpx;
+
+			.removetips {
+				text-align: center;
+				font-size: 26rpx;
+				font-weight: bold;
+				color: rgb(153, 134, 191);
+				margin-bottom: 10rpx;
+			}
 		}
 
 		.main {

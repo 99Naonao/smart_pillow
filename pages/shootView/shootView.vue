@@ -51,8 +51,8 @@
 							<view v-if="false">正面数据</view>
 						</view>
 						<view class="right-info-part">
-							<view class="impress"><label class="title">●右耳到右肩:</label><label
-									class="sizeImpress">{{frontRightPart}}{{unitDesc}}</label></view>
+							<view class=""><label class="title">●右耳到右肩:</label><label
+									class="">{{frontRightPart}}{{unitDesc}}</label></view>
 							<view><label class="title">●肩宽:</label>{{shoulderSpace}}{{unitDesc}}</view>
 							<view><label class="title">●左耳到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view>
 						</view>
@@ -65,8 +65,8 @@
 					</view>
 					<block></block>
 					<view>
-						<view class="impress"><label class="title">●右耳朵到右肩:</label><label
-								class="sizeImpress">{{frontRightPart}}{{unitDesc}}</label></view>
+						<view class=""><label class="title">●右耳朵到右肩:</label><label
+								class="">{{frontRightPart}}{{unitDesc}}</label></view>
 						<view><label class="title">●肩宽:</label>{{shoulderSpace}}{{unitDesc}}</view>
 						<view><label class="title">●左耳朵到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view>
 						<!-- 					<view><label class="title">脖子中心到左肩:</label>{{frontLeftNeckPart}}{{unitDesc}}</view>
@@ -118,14 +118,14 @@
 							<view v-if="false">侧面数据</view>
 						</view>
 						<view class="right-info-part">
-							<view class="impress"><label class="title">●后背与颈部:</label><label
-									class="sizeImpress">{{sideLittleNeckBack}}{{unitDesc}}</label>
+							<view class=""><label class="title">●后背与颈部:</label><label
+									class="">{{sideLittleNeckBack}}{{unitDesc}}</label>
 							</view>
-							<view class="impress"><label class="title">●后背与后脑:</label><label
-									class="sizeImpress">{{sideLittleBlockBack}}{{unitDesc}}</label>
+							<view class=""><label class="title">●后背与后脑:</label><label
+									class="">{{sideLittleBlockBack}}{{unitDesc}}</label>
 							</view>
 							<view><label class="title">●后背与脖子:</label>{{sideNeckBack}}{{unitDesc}}</view>
-							<view><label class="title">●后背与耳朵:</label>{{sideEarBack}}{{unitDesc}}</view>
+							<!-- <view><label class="title">●后背与耳朵:</label>{{sideEarBack}}{{unitDesc}}</view> -->
 						</view>
 					</view>
 				</view>
@@ -135,10 +135,10 @@
 					</view>
 					<view>
 						<view class="impress"><label class="title">后背凸点与颈部凹点之间:</label><label
-								class="sizeImpress">{{sideLittleNeckBack}}{{unitDesc}}</label>
+								class="">{{sideLittleNeckBack}}{{unitDesc}}</label>
 						</view>
 						<view class="impress"><label class="title">后背凸点与后脑勺之间:</label><label
-								class="sizeImpress">{{sideLittleBlockBack}}{{unitDesc}}</label>
+								class="">{{sideLittleBlockBack}}{{unitDesc}}</label>
 						</view>
 						<view><label class="title">后背凸点与脖子中点之间:</label>{{sideNeckBack}}{{unitDesc}}</view>
 						<view><label class="title">后背凸点与耳朵之间:</label>{{sideEarBack}}{{unitDesc}}</view>
