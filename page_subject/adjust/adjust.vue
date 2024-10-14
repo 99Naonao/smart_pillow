@@ -64,10 +64,31 @@
 				</view>
 			</view>
 			<view class="bottom-part">
-				<view class="save" @click="saveHandler">保存</view>
+				<view class="save" @click="saveModeHandler">保存</view>
 			</view>
 		</view>
 		<input-view ref="inputView" class="input-part" v-if="showMeasure&&false"></input-view>
+
+
+		<uni-popup ref="popupSave" type="bottom" background-color="#fff" border-radius="10px 10px 0 0"
+			:mask-click="false">
+			<view class="popup-container">
+				<view class="flex align-center" style="padding: 30rpx;padding-top: 90rpx;">
+					<image class='icon' src="../../static/adjust/sicon.png" mode="widthFix"></image>
+					<text class="icon-text">储存设定</text>
+				</view>
+				<view class="flex align-center" style="padding: 30rpx;">
+					<text class="">名称</text>
+					<input v-model="inputName" class="flex1 input-area" placeholder="输入我的模式" />
+				</view>
+				<view class="send-btn" @click="saveHandler">保存当前模式</view>
+				<image class="titleimg" src="../../static/adjust/SY_05_B001.png"></image>
+				<image class="close-btn" src="../../static/adjust/SY_05_buttonCOLa.png" mode="widthFix"
+					@click="closeSave">
+				</image>
+			</view>
+
+		</uni-popup>
 	</view>
 
 </template>
@@ -107,6 +128,7 @@
 		},
 		data() {
 			return {
+				inputName: '模式',
 				pillowVersion: '固件版本:0.1',
 				pillowStatus: '未连接',
 				pillowStatusNum: 0, // 枕头状态
@@ -208,18 +230,31 @@
 				let shake1 = handPillowStatus()
 				blue_class.getInstance().write2tooth(shake1)
 			},
+			saveModeHandler() {
+				this.$refs.popupSave.open('bottom');
+			},
+			// 关闭
+			closeSave() {
+				this.$refs.popupSave.close();
+			},
 			saveHandler() {
-				let changeAdjust = changeSaveAdjustMode();
-				blue_class.getInstance().write2tooth(changeAdjust);
-				uni.switchTab({
-					url: '/pages/status/status'
-				})
-
 				saveRandomMode({
+					name: this.inputName,
 					headHeight: this.head,
 					neckHeight: this.neck,
 					sideHeadHeight: this.sideHead,
 					sideNeckHeight: this.sideNeck,
+				})
+
+				let changeAdjust = changeSaveAdjustMode();
+				blue_class.getInstance().write2tooth(changeAdjust);
+				uni.showToast({
+					title: '保存中',
+					success() {
+						uni.switchTab({
+							url: '/pages/status/status'
+						})
+					}
 				})
 				// uni.navigateBack()
 			},
@@ -916,6 +951,58 @@
 				width: 56rpx;
 				height: 56rpx;
 			}
+		}
+	}
+
+	.popup-container {
+		position: relative;
+		margin: 20rpx;
+
+		.titleimg {
+			width: 106rpx;
+			height: 95rpx;
+			position: absolute;
+			left: 50%;
+			top: -50rpx;
+			margin-left: -53rpx;
+		}
+
+		.send-btn {
+			background-color: #ff8000;
+			margin: 20rpx;
+			color: white;
+			line-height: 80rpx;
+			padding-left: 50rpx;
+			padding-right: 50rpx;
+			border-radius: 15rpx;
+			text-align: center;
+		}
+
+		.close-btn {
+			width: 26rpx;
+			height: 27rpx;
+			right: 30rpx;
+			top: 20rpx;
+			position: absolute;
+		}
+
+		.icon {
+			width: 42rpx;
+			height: 42rpx;
+		}
+
+		.input-area {
+			margin-left: 20rpx;
+			letter-spacing: 2rpx;
+			background-color: #DEDEDE;
+			padding: 20rpx;
+			color: rgba(91, 120, 151, 1)
+		}
+
+		.icon-text {
+			// line-height: 42rpx;
+			margin-left: 20rpx;
+			letter-spacing: 5rpx;
 		}
 	}
 
