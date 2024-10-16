@@ -19,6 +19,16 @@
 					2.如果您个人不方便自拍，可请他人使用后置摄像</cover-view>
 				<cover-view class="tips2 tips4" :style="backBtnStyle">
 					头协助拍摄，以获得准确数据</cover-view>
+				<cover-view class="popuptips" v-if="showTips">
+					<cover-view class="popup-tips">
+						<cover-view class="modal-tips">
+							<cover-view class="send-btn">正面已拍摄, 请拍摄侧面照片
+							</cover-view>
+							<cover-view class="sure-btn" @click="closeTipsSave">确定</cover-view>
+						</cover-view>
+						<cover-image class="titleimg" src="../../static/adjust/SY_05_B001.png"></cover-image>
+					</cover-view>
+				</cover-view>
 			</cover-view>
 			<!-- 		<cover-view class="cover" v-else>
 				<cover-image @click="backBtn_callback" aria-role="button" src="/static/camera/back.png" class="back-btn"
@@ -28,18 +38,7 @@
 					src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
 			</cover-view> -->
 		</canvas>
-		<!-- 结果提示界面 -->
-		<uni-popup ref="popupTips" type="bottom" style="z-index: 10000; position: absolute;"
-			border-radius="40rpx 40rpx 40rpx 40rpx" background-color='white' :mask-click="true">
-			<view class="popup-tips">
-				<view class="send-btn">正面已拍摄, 请拍摄侧面照片
-				</view>
-				<view class="sure-btn" @click="closeTipsSave">确定</view>
-				<image class="titleimg" src="../../static/adjust/SY_05_B001.png"></image>
-				<!-- 				<image class="close-btn" src="../../static/adjust/SY_05_buttonCOLa.png" mode="widthFix">
-				</image> -->
-			</view>
-		</uni-popup>
+
 	</view>
 </template>
 
@@ -54,6 +53,7 @@
 	export default {
 		data() {
 			return {
+				showTips: false, // 显示提示
 				shootingTips: '请拍摄正面照片',
 				frontImage: '',
 				sideImage: "",
@@ -80,6 +80,7 @@
 			// 	duration: 3000
 			// })
 			// this.$refs.popupTips.open('center')
+
 			this.shootingTips = "请拍摄正面照片"
 		},
 		onReady() {
@@ -135,7 +136,8 @@
 				console.log('bindtouchend_callback')
 			},
 			closeTipsSave() {
-				this.$refs.popupTips.close()
+				this.showTips = false;
+				// this.$refs.popupTips.close()
 			},
 			// 相册选择图片
 			chooseBtnHandler() {
@@ -161,7 +163,7 @@
 							this.playAudioEffect()
 							this.frontImage = img_url;
 							this.shootingTips = "请拍摄侧面照片"
-							this.$refs.popupTips.open("center")
+							this.showTips = true;
 							// uni.showToast({
 							// 	title: '请拍摄侧面照片',
 							// 	duration: 3000
@@ -233,7 +235,7 @@
 									this.frontImage = res.tempFilePath;
 									console.log('1234', res.tempFilePath, this.frontImage)
 									this.shootingTips = "请拍摄侧面照片"
-									this.$refs.popupTips.open('center')
+									this.showTips = true;
 									// uni.showToast({
 									// 	title: '请拍摄侧面照片',
 									// 	duration: 3000
@@ -382,16 +384,35 @@
 		top: var(--menuButtonTop3);
 	}
 
+	.popuptips {
+		position: relative;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.8);
+	}
+
 	.popup-tips {
 		position: relative;
-		margin: 20rpx;
+		padding: 20rpx;
+		top: 35%;
+		// background-color: rgba(255, 255, 255, 0.1);
+		// border-radius: 40rpx;
+
+		.modal-tips {
+			margin-top: 25rpx;
+			background-color: white;
+			border-radius: 40rpx;
+		}
 
 		.titleimg {
 			width: 106rpx;
 			height: 95rpx;
 			position: absolute;
 			left: 50%;
-			top: -90rpx;
+			top: 0rpx;
 			margin-left: -53rpx;
 		}
 

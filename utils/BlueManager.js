@@ -4,6 +4,7 @@ class blue_class {
 	pillowHeight = 1;
 	pillowSideHeight = 2;
 	pillowPower = 0;
+	chargingStatus = 0; // 0--空闲，1--充电中，2--充电完成
 	constructor() {
 		// 初始化蓝牙相关的状态或变量  
 		this.bluetoothStatus = null; // 蓝牙状态  
@@ -25,13 +26,23 @@ class blue_class {
 		return blue_class.instance;
 	}
 
+
+	setPillowCharging(value) {
+		this.chargingStatus = value;
+		console.log('PillowCharging:', this.chargingStatus)
+	}
+
+	getPillowCharging() {
+		return this.chargingStatus
+	}
+
 	setPillowHeight(value) {
 		this.pillowHeight = value;
-		console.log('fuck setPillowHeight:', this.pillowHeight)
+		console.log('setPillowHeight:', this.pillowHeight)
 	}
 
 	getPillowHeight() {
-		console.log('fuck getPillowHeight:', this.pillowHeight)
+		console.log('getPillowHeight:', this.pillowHeight)
 		return this.pillowHeight;
 	}
 

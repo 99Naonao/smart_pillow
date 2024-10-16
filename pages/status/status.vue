@@ -6,8 +6,13 @@
 				<image mode="widthFix" src="../../static/index/SY_00A_LOGO01.png"></image>
 			</view>
 			<view class="rightBatteryInfo" :style="menuInfo">
+				<view class="fillprogress" :style="menuInfo"></view>
 				<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconDLa.png"></image>
-				<label class="desc" for="">{{getPillowPower}}%</label>
+				<image class="icon" v-if="pillowPowerCharging==1" mode="widthFix"
+					src="../../static/index/SY_00A_IconDLa.png"></image>
+				<image class="icon" v-if="pillowPowerCharging==2" mode="widthFix"
+					src="../../static/index/SY_00A_IconDLa.png"></image>
+				<label class="batedesc" for="">{{getPillowPower}}%</label>
 			</view>
 			<view class="rightInfo" :style="menuInfo">
 				<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconCW.png"></image>
@@ -101,7 +106,7 @@
 				return this.pillowSideHeight;
 			},
 			getPillowPower() {
-				return this.pillowPower > 100 ? 100 : this.pillowPower
+				return Math.floor((this.pillowPower * 100) / 100) / 10
 			}
 		},
 		watch: {
@@ -136,6 +141,7 @@
 				pillowHeight: 1,
 				pillowSideHeight: 1,
 				pillowPower: 1,
+				pillowPowerCharging: 0, // 充电状态
 			}
 		},
 		// behaviors: [getBehavior(), yuvBehavior],
@@ -156,6 +162,7 @@
 			this.$set(this.menuInfo, '--menuButtonTop1', (app.globalData.top + 12) + 'px');
 			this.$set(this.menuInfo, '--menuHead', (app.globalData.top + 332) + 'px');
 			this.$set(this.menuInfo, '--menuNeck', (app.globalData.top + 362) + 'px');
+
 			console.log('menui:', (app.globalData.top + 120) + 'px', this.menuInfo)
 
 			// this.$set(this, 'pillowHeight', blue_class.getInstance().pillowHeight);
@@ -312,10 +319,14 @@
 				this.$set(this, 'pillowHeight', blue_class.getInstance().pillowHeight);
 				this.$set(this, 'pillowSideHeight', blue_class.getInstance().pillowSideHeight);
 				this.$set(this, 'pillowPower', blue_class.getInstance().pillowPower);
+				this.$set(this, 'pillowPowerCharging', blue_class.getInstance().chargingStatus);
+
+				this.$set(this.menuInfo, '--bateryWidth', (blue_class.getInstance().pillowPower * 50 / 1000) + 'rpx');
 
 				console.log('menui11111:', this.pillowHeight)
 				console.log('menui1111122:', this.pillowSideHeight)
 				console.log('menui1111122333:', this.pillowPower)
+				console.log('--bateryWidth:', (blue_class.getInstance().pillowPower * 50 / 1000) + 'rpx')
 			},
 			aiHandler() {
 				uni.navigateTo({
@@ -865,6 +876,8 @@
 		}
 	}
 
+
+
 	.logo {
 		width: 256rpx;
 		height: 101rpx;
@@ -941,8 +954,30 @@
 		align-items: center;
 
 		.icon {
+			position: absolute;
 			width: 61rpx;
-			margin-right: 20rpx;
+			left: 10rpx;
+			margin-left: 2rpx;
+			top: 5rpx;
+			// margin-right: 20rpx;
+		}
+
+
+		.batedesc {
+			position: absolute;
+			left: 90rpx;
+			top: 0rpx;
+		}
+
+
+		.fillprogress {
+			position: absolute;
+			width: 50rpx;
+			height: 30rpx;
+			top: 5rpx;
+			left: 13rpx;
+			width: var(--bateryWidth);
+			background-color: green;
 		}
 	}
 

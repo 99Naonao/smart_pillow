@@ -472,6 +472,7 @@
 				// 		2020) <<
 				// 	26))
 
+				blue_class.getInstance().setPillowCharging(n1)
 				blue_class.getInstance().setPillowHeight(headHeight10)
 				blue_class.getInstance().setPillowSideHeight(neckHeight10)
 				blue_class.getInstance().setPillowPower(press10)
