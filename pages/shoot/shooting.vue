@@ -1,31 +1,46 @@
 <template>
-	<canvas id="canvas1" class="canvas1" type="webgl" disable-scroll="true" @touchend="bindtouchend_callback">
-		<cover-view class="cover">
-			<cover-image @click="backBtn_callback" aria-role="button" src="/static/camera/back.png" class="back-btn"
-				:style="backBtnStyle">
-			</cover-image>
-			<cover-view class="shooting-tips" :style="backBtnStyle">{{shootingTips}}</cover-view>
-			<cover-image class="shootBtn" @click="shootBtnHandler" aria-role="button"
-				src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
-			<cover-image class="chooseBtn" @click="chooseBtnHandler" aria-role="button"
-				src="/static/adjust/SY_07_button01a.png"></cover-image>
-			<cover-image class="ruler" :style="backBtnStyle" aria-role="button"
-				src="/static/adjust/SY_07_Cam00.png"></cover-image>
-			<cover-view class="tips" :style="backBtnStyle">80cm</cover-view>
-			<cover-view class="tips2" :style="backBtnStyle">1.请将摄像机画面的左右边缘对准80cm的拍摄顶点</cover-view>
-			<cover-view class="tips2 tips3" :style="backBtnStyle">
-				2.如果您个人不方便自拍，可请他人使用后置摄像</cover-view>
-			<cover-view class="tips2 tips4" :style="backBtnStyle">
-				头协助拍摄，以获得准确数据</cover-view>
-		</cover-view>
-		<!-- 		<cover-view class="cover" v-else>
-			<cover-image @click="backBtn_callback" aria-role="button" src="/static/camera/back.png" class="back-btn"
-				:style="backBtnStyle">
-			</cover-image>
-			<cover-image class="shootBtn" @click="shootSideBtnHandler" aria-role="button"
-				src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
-		</cover-view> -->
-	</canvas>
+	<view>
+
+		<canvas id="canvas1" class="canvas1" type="webgl" disable-scroll="true" @touchend="bindtouchend_callback">
+			<cover-view class="cover">
+				<cover-image @click="backBtn_callback" aria-role="button" src="/static/camera/back.png" class="back-btn"
+					:style="backBtnStyle">
+				</cover-image>
+				<cover-view class="shooting-tips" :style="backBtnStyle">{{shootingTips}}</cover-view>
+				<cover-image class="shootBtn" @click="shootBtnHandler" aria-role="button"
+					src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
+				<cover-image class="chooseBtn" @click="chooseBtnHandler" aria-role="button"
+					src="/static/adjust/SY_07_button01a.png"></cover-image>
+				<cover-image class="ruler" :style="backBtnStyle" aria-role="button"
+					src="/static/adjust/SY_07_Cam00.png"></cover-image>
+				<cover-view class="tips" :style="backBtnStyle">80cm</cover-view>
+				<cover-view class="tips2" :style="backBtnStyle">1.请将摄像机画面的左右边缘对准80cm的拍摄顶点</cover-view>
+				<cover-view class="tips2 tips3" :style="backBtnStyle">
+					2.如果您个人不方便自拍，可请他人使用后置摄像</cover-view>
+				<cover-view class="tips2 tips4" :style="backBtnStyle">
+					头协助拍摄，以获得准确数据</cover-view>
+			</cover-view>
+			<!-- 		<cover-view class="cover" v-else>
+				<cover-image @click="backBtn_callback" aria-role="button" src="/static/camera/back.png" class="back-btn"
+					:style="backBtnStyle">
+				</cover-image>
+				<cover-image class="shootBtn" @click="shootSideBtnHandler" aria-role="button"
+					src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
+			</cover-view> -->
+		</canvas>
+		<!-- 结果提示界面 -->
+		<uni-popup ref="popupTips" type="bottom" style="z-index: 10000; position: absolute;"
+			border-radius="40rpx 40rpx 40rpx 40rpx" background-color='white' :mask-click="true">
+			<view class="popup-tips">
+				<view class="send-btn">正面已拍摄, 请拍摄侧面照片
+				</view>
+				<view class="sure-btn" @click="closeTipsSave">确定</view>
+				<image class="titleimg" src="../../static/adjust/SY_05_B001.png"></image>
+				<!-- 				<image class="close-btn" src="../../static/adjust/SY_05_buttonCOLa.png" mode="widthFix">
+				</image> -->
+			</view>
+		</uni-popup>
+	</view>
 </template>
 
 <script>
@@ -64,7 +79,7 @@
 			// 	title: '请拍摄正面照片',
 			// 	duration: 3000
 			// })
-
+			// this.$refs.popupTips.open('center')
 			this.shootingTips = "请拍摄正面照片"
 		},
 		onReady() {
@@ -100,12 +115,27 @@
 				})
 		},
 		methods: {
+			playAudioEffect() {
+				const innerAudioContext = uni.createInnerAudioContext();
+				innerAudioContext.autoplay = true;
+				innerAudioContext.src = 'static/ding.mp3';
+				innerAudioContext.onPlay(() => {
+					console.log('开始播放');
+				});
+				innerAudioContext.onError((res) => {
+					console.log(res.errMsg);
+					console.log(res.errCode);
+				});
+			},
 			backBtn_callback() {
 				console.log('backBtn_callback')
 				uni.navigateBack()
 			},
 			bindtouchend_callback() {
 				console.log('bindtouchend_callback')
+			},
+			closeTipsSave() {
+				this.$refs.popupTips.close()
 			},
 			// 相册选择图片
 			chooseBtnHandler() {
@@ -117,6 +147,7 @@
 						let img_url = res.tempFilePaths[0]
 						console.log('this.frontImage123:', img_url, this.frontImage)
 						if (this.frontImage) {
+							this.playAudioEffect()
 							this.sideImage = img_url;
 							var url_ = '/pages/shootView/shootView' + object2Query({
 								sideImage: this.sideImage,
@@ -127,8 +158,10 @@
 								url: url_
 							})
 						} else {
+							this.playAudioEffect()
 							this.frontImage = img_url;
 							this.shootingTips = "请拍摄侧面照片"
+							this.$refs.popupTips.open("center")
 							// uni.showToast({
 							// 	title: '请拍摄侧面照片',
 							// 	duration: 3000
@@ -185,6 +218,7 @@
 							success: (res) => {
 								console.log('this.frontImage:', this.frontImage)
 								if (this.frontImage) {
+									this.playAudioEffect()
 									this.sideImage = res.tempFilePath;
 									var url_ = '/pages/shootView/shootView' + object2Query({
 										sideImage: this.sideImage,
@@ -195,9 +229,11 @@
 										url: url_
 									})
 								} else {
+									this.playAudioEffect()
 									this.frontImage = res.tempFilePath;
 									console.log('1234', res.tempFilePath, this.frontImage)
 									this.shootingTips = "请拍摄侧面照片"
+									this.$refs.popupTips.open('center')
 									// uni.showToast({
 									// 	title: '请拍摄侧面照片',
 									// 	duration: 3000
@@ -344,5 +380,70 @@
 		font-size: 40rpx;
 		text-align: center;
 		top: var(--menuButtonTop3);
+	}
+
+	.popup-tips {
+		position: relative;
+		margin: 20rpx;
+
+		.titleimg {
+			width: 106rpx;
+			height: 95rpx;
+			position: absolute;
+			left: 50%;
+			top: -90rpx;
+			margin-left: -53rpx;
+		}
+
+		.send-btn {
+			background-color: #fff;
+			margin: 20rpx;
+			margin-top: 50rpx;
+			color: #354D5B;
+			line-height: 80rpx;
+			padding-left: 50rpx;
+			padding-right: 50rpx;
+			border-radius: 15rpx;
+			text-align: center;
+		}
+
+		.sure-btn {
+			background-color: #4d7fc9;
+			margin: 30rpx;
+			color: white;
+			font-size: 28rpx;
+			line-height: 68rpx;
+			padding-left: 50rpx;
+			padding-right: 50rpx;
+			border-radius: 25rpx;
+			text-align: center;
+		}
+
+		.close-btn {
+			width: 26rpx;
+			height: 27rpx;
+			right: 30rpx;
+			top: 20rpx;
+			position: absolute;
+		}
+
+		.icon {
+			width: 42rpx;
+			height: 42rpx;
+		}
+
+		.input-area {
+			margin-left: 20rpx;
+			letter-spacing: 2rpx;
+			background-color: #DEDEDE;
+			padding: 20rpx;
+			color: rgba(91, 120, 151, 1)
+		}
+
+		.icon-text {
+			// line-height: 42rpx;
+			margin-left: 20rpx;
+			letter-spacing: 5rpx;
+		}
 	}
 </style>
