@@ -271,6 +271,8 @@
 					'--imgHeight': '140rpx',
 				},
 				factor: 1,
+				manFactor: 130, // 单位是mm
+				womenFactor: 100, // 单位是mm
 				unit: 1000, // 100是cm 1000是mm
 				unitDesc: 'mm', // cm
 				toFixed: 0, // 精度
@@ -507,7 +509,7 @@
 					headHeight: this.sideLittleBlockBack,
 					neckHeight: this.sideLittleNeckBack,
 					sideHeadHeight: this.frontLeftPart + this.frontRightPart,
-					sideNeckHeight: (this.shoulderSpace - 10) * 0.5
+					sideNeckHeight: (this.shoulderSpace - this.manFactor) * 0.5
 				}
 
 				let form = {
@@ -532,7 +534,7 @@
 				// 判断是否女的
 				if (form && form.sexIndex) {
 					if (form.sexIndex == 2) {
-						params.sideNeckHeight = (this.shoulderSpace - 8.5) * 0.5
+						params.sideNeckHeight = (this.shoulderSpace - this.womenFactor) * 0.5
 					}
 				}
 
@@ -594,12 +596,12 @@
 					headHeight: this.sideLittleBlockBack,
 					neckHeight: this.sideLittleNeckBack,
 					sideHeadHeight: this.frontLeftPart + this.frontRightPart,
-					sideNeckHeight: (this.shoulderSpace - 10) * 0.5
+					sideNeckHeight: (this.shoulderSpace - this.manFactor) * 0.5
 				}
 				// 判断是否女的
 				if (form && form.sexIndex) {
 					if (form.sexIndex == 2) {
-						orginfo.sideNeckHeight = (this.shoulderSpace - 8.5) * 0.5
+						orginfo.sideNeckHeight = (this.shoulderSpace - this.womenFactor) * 0.5
 					}
 				}
 				let params = (orginfo)
