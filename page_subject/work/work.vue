@@ -268,6 +268,7 @@
 				}
 				console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
 				let arrayBuffer = new Uint8Array(res.value);
+				let mark = arrayBuffer[0];
 				console.log('接收到数据', ab2hex(res.value), arrayBuffer.length)
 				// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
 				if (arrayBuffer.length == 4) {
@@ -294,13 +295,10 @@
 					blue_class.getInstance().write2tooth(shake1)
 					console.log('第一次握手', ab2hex(shake1))
 				} else if (arrayBuffer.length == 2) {
-					let receive16 = ab2hex(res.value);
-					let mark = receive16.slice(2, 4)
-					let len = receive16.slice(0, 2)
-					console.log('接收到回复数据:', mark, len)
-					if (mark == '55') {
+					console.log('接收到回复数据2:', ab2hex(res.value))
+					if (ab2hex(res.value).indexOf('55') > -1) {
 						console.log('接收到回复数据', ab2hex(res.value))
-						console.log('校验长度', parseInt('0x' + len))
+						// console.log('校验长度', parseInt('0x' + len))
 						console.log('握手成功可以发送ssid了')
 						blue_class.getInstance().loginSuccess = true
 
@@ -323,7 +321,7 @@
 						console.log('后四位', receive16, receive16.slice(4, 1), receive16.slice(5, 1))
 					}
 				} else {
-					let mark = arrayBuffer[0];
+					mark = arrayBuffer[0];
 					let length = arrayBuffer[1];
 					let arrayBuffer_order = new ArrayBuffer(length);
 					let receive_dataView = new DataView(arrayBuffer_order);
@@ -363,7 +361,7 @@
 							}
 							break;
 						case 5:
-							this.parsePillowSleepData(arrayBuffer_order)
+							this.parsePillowSleepData(receive_dataView)
 							break;
 						case 6:
 							this.parsePillowStatus(arrayBuffer_order)
@@ -410,6 +408,8 @@
 				}
 			},
 			parsePillowStatus(arraybuffer) {
+				blue_class.getInstance().parsePillowStatus(arraybuffer)
+				return;
 				// //默认是枕头状态 5s收到一次
 				let receive16 = ab2hex(arraybuffer);
 				// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
@@ -430,7 +430,7 @@
 				}
 				let detail_status_16 = receive16.slice(2, 4);
 				let detail_status = '0x' + detail_status_16;
-				let n1 = (detail_status & 0x03);
+				let n1 = (detail_status & 0x01);
 				// 0--空闲，1--充电中，2--充电完成
 				switch (n1) {
 					case 0:
@@ -474,6 +474,7 @@
 
 				blue_class.getInstance().setPillowCharging(n1)
 				blue_class.getInstance().setPillowHeight(headHeight10)
+				blue_class.getInstance().setPillowStatus(status10)
 				blue_class.getInstance().setPillowSideHeight(neckHeight10)
 				blue_class.getInstance().setPillowPower(press10)
 				// work 枕头状态 mm=> 1 height:151mm neckheight:13mm version:3 校准:1 电池:1
@@ -484,10 +485,11 @@
 					'校准:' + isright10,
 					'电池:' + press10)
 			},
-			parsePillowSleepData(array_buffer) {
+			parsePillowSleepData(receive_dataView) {
 
 				blue_class.getInstance().write2tooth(appAnswer(5))
 				//02123c2356123c2363
+				// 05090212ab60f012ab60fb 
 				// let temp = new ArrayBuffer(9)
 				// let dataView2 = new DataView(temp);
 				// dataView2.setUint8(8, 0x63)
@@ -509,8 +511,8 @@
 				// return;
 				//解析枕头睡眠阶段状态	
 				// 数据1-姿态（U8）(1--平躺，2--侧卧) + 数据2开始时间（T4）+数据3结束时间（T4）+ 数据4-姿态（U8）(1--平躺，2--侧卧) + 数据5开始时间（T4）+数据6结束时间（T4）+ ... ,关于该指令的说明，是多个姿态+开始时间和结束时间的条目的组合，根据数据长度计算一条指令中包含多少组数据
-				let receive8 = new ArrayBuffer(array_buffer);
-				let dataView = new DataView(receive8)
+				// let receive8 = new ArrayBuffer(array_buffer);
+				let dataView = receive_dataView
 				console.log('姿态:', dataView.getUint8(0));
 				let uint32_s = dataView.getUint32(1);
 				let unit32_e = dataView.getUint32(5);

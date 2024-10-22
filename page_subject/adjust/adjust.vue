@@ -126,12 +126,25 @@
 		components: {
 			InputView
 		},
+		computed: {
+			pillowStatusDesc() {
+
+				if (this.pillowPressStatus == 0) {
+					return '空闲'
+				} else if (this.pillowPressStatus == 1) {
+					return '平躺中'
+				} else if (this.pillowPressStatus == 2) {
+					return '侧卧中'
+				}
+			}
+		},
 		data() {
 			return {
 				inputName: '模式',
 				pillowVersion: '固件版本:0.1',
 				pillowStatus: '未连接',
 				pillowStatusNum: 0, // 枕头状态
+				pillowPressStatus: 0,
 				saveOptions: {},
 				showMeasure: false, // 是否显示信息
 				touchingDown: false,
@@ -175,10 +188,13 @@
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
 			// uni.onBLECharacteristicValueChange(this.handleMessage)
 			uni.$on('xx', this.handleMessage);
+			uni.$on('update_pillow_info', this.updateInfo);
 			// this.requestStatus()
 			let arraybuffer = changeAdjustMode();
 			// let app = getApp()
 			blue_class.getInstance().write2tooth(arraybuffer)
+
+			this.pillowPressStatus = blue_class.getInstance().getPillowStatus()
 
 			if (this.initHeadHeight > 0 && this.initNeckHeight > 0) {
 				// let init_arraybuffer = initPillow(this.initHeadHeight, this.initNeckHeight, this.initWidthHeight, this
@@ -197,7 +213,7 @@
 			}
 		},
 		onUnload() {
-			console.log('adjust on onUnload!')
+			console.log('work on onUnload!')
 			// 把模式还原成自动
 			let arraybuffer = changeAdjustMode(0);
 			blue_class.getInstance().write2tooth(arraybuffer)
@@ -205,14 +221,33 @@
 			uni.$off('xx', this.handleMessage);
 		},
 		onHide() {
-			console.log('adjust on hide!')
+			console.log('work on hide!')
 			// 把模式还原成自动
 			let arraybuffer = changeAdjustMode(0);
 			blue_class.getInstance().write2tooth(arraybuffer)
+			uni.$on('update_pillow_info', this.updateInfo);
 
 			uni.$off('xx', this.handleMessage);
 		},
 		methods: {
+			updateInfo() {
+				this.pillowPressStatus = blue_class.getInstance().getPillowStatus()
+				switch (this.pillowPressStatus) {
+					case 0:
+						this.selectIndex = 1;
+						this.pillowStatus = '空闲';
+						break;
+					case 1:
+						console.log('枕头平躺状态')
+						this.pillowStatus = "平躺中";
+						this.selectIndex = 1;
+						break;
+					case 2:
+						console.log('枕头侧卧状态')
+						this.pillowStatus = '侧卧中';
+						this.selectIndex = 2;
+				}
+			},
 			uploadDataHandle() {
 				let upload_data = uploadDataRequest(5)
 				blue_class.getInstance().write2tooth(upload_data)
@@ -313,83 +348,11 @@
 						break;
 				}
 				return;
-				// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
-				if (arrayBuffer.length == 4) {
-					let receive16 = ab2hex(res.value);
-					let ask = receive16.slice(0, 2);
-					let len = receive16.slice(2, 4);
-					let result = receive16.slice(4, 6);
-					let mark = receive16.slice(6, 8);
 
-					console.log('数据长度:', len, result, ('0x' + result).toString(10), mark)
-					//指令应答
-					if (mark == '33') {
-						switch (parseInt(ask)) {
-							case 1:
-								console.log('33 => 1:', result);
-								break;
-							case 4:
-								console.log('33 => 4:', result);
-								break;
-						}
-					}
-				} else if (arrayBuffer.length == 2) {
-					let receive16 = ab2hex(res.value);
-					let mark = receive16.slice(2, 4)
-					let len = receive16.slice(0, 2)
-					console.log('接收到回复数据:', mark, len)
-					if (mark == '55') {
-						console.log('接收到回复数据', ab2hex(res.value))
-						console.log('校验长度', parseInt('0x' + len))
-						console.log('握手成功可以发送ssid了')
-						write2tooth(this.deviceId, this.serviceId, this.characteristicStringId,
-							hexStringToArrayBuffer('jimlee'))
-					} else if (mark == '66') {
-						console.log('握手成功可以发送ssid密码了')
-						// 发送wifi密码
-						write2tooth(this.deviceId, this.serviceId, this.characteristicStringId,
-							hexStringToArrayBuffer('lijiming'))
-					} else if (mark == 'aa') {
-						console.log('发送成功了ssid了')
-					} else if (mark == '33') {
-						console.log('收到成功调整枕头')
-						console.log('8个字节指令的校验和', parseInt('0x' + len))
-					}
-				} else if (arrayBuffer.length == 8) {
-					// //默认是枕头状态 5s收到一次
-					let receive16 = ab2hex(res.value);
-					// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
-					let status = receive16.slice(0, 2);
-					let status1 = '0x' + status;
-
-					let status10 = parseInt(status1);
-					switch (status10) {
-						case 0:
-							console.log('枕头空闲状态')
-							break;
-						case 1:
-							console.log('枕头平躺状态')
-							break;
-						case 2:
-							console.log('枕头侧卧状态')
-							break;
-					}
-					let headHeight = receive16.slice(4, 6);
-					let headHeight10 = parseInt('0x' + headHeight);
-					let neckHeight = receive16.slice(6, 8);
-					let neckHeight10 = parseInt('0x' + neckHeight);
-					let vesrion = receive16.slice(8, 10);
-					let vesrion10 = parseInt('0x' + vesrion);
-					let isright = receive16.slice(10, 12);
-					let isright10 = parseInt('0x' + isright);
-					let press = receive16.slice(12, 14);
-					let press10 = parseInt('0x' + press);
-
-					this.head = headHeight10;
-					this.neck = neckHeight10;
-				}
 			},
 			parsePillowStatus(arraybuffer) {
+				blue_class.getInstance().parsePillowStatus(arraybuffer)
+				return;
 				// //默认是枕头状态 5s收到一次
 				let receive16 = ab2hex(arraybuffer);
 				// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
@@ -418,7 +381,7 @@
 
 				let detail_status_16 = receive16.slice(2, 4);
 				let detail_status = '0x' + detail_status_16;
-				let n1 = (detail_status & 0x03);
+				let n1 = (detail_status & 0x01);
 				// 0--空闲，1--充电中，2--充电完成
 				switch (n1) {
 					case 0:

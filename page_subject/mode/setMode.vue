@@ -34,7 +34,7 @@
 			<view class="item-plus" @click="addModeHandler">
 				+
 			</view>
-			<view class="kv" @click="navHandle">
+			<view class="kv" @click="navJustHandle">
 				<image class="kv-img" mode="widthFix" :src="'../static/mode/SY_04A_bg01.png'"></image>
 				<label class="tips">手动微调</label>
 			</view>
@@ -257,6 +257,17 @@
 			}
 		},
 		methods: {
+			navJustHandle() {
+				if (!this.selectItem.headHeight && !this.selectItem.neckHeight) {
+					uni.showToast({
+						title: '未选择模式数据！'
+					})
+					return;
+				}
+				uni.navigateTo({
+					url: "/page_subject/adjust/adjust" + object2Query(this.selectItem)
+				})
+			},
 			navHandle() {
 				if (!this.selectItem.headHeight && !this.selectItem.neckHeight) {
 					uni.showToast({
@@ -265,9 +276,21 @@
 					return;
 				}
 
-				uni.navigateTo({
-					url: "/page_subject/adjust/adjust" + object2Query(this.selectItem)
+
+				// 如果有数据，默认调整枕头
+				let init_arraybuffer = initPillow(this.selectItem.headHeight, this.selectItem.neckHeight, 200, this
+					.selectItem
+					.sideHeadHeight, this.selectItem.sideNeckHeight, 200);
+				// let app = getApp()
+				blue_class.getInstance().write2tooth(init_arraybuffer);
+
+				uni.switchTab({
+					url: "/pages/status/status"
 				})
+
+				// uni.navigateTo({
+				// 	url: "/page_subject/adjust/adjust" + object2Query(this.selectItem)
+				// })
 			},
 			bindClick(params) {
 				uni.showModal({

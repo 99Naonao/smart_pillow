@@ -124,7 +124,7 @@
 							<view class=""><label class="title">●后背与后脑:</label><label
 									class="">{{sideLittleBlockBack}}{{unitDesc}}</label>
 							</view>
-							<view><label class="title">●后背与脖子:</label>{{sideNeckBack}}{{unitDesc}}</view>
+							<view v-if="false"><label class="title">●后背与脖子:</label>{{sideNeckBack}}{{unitDesc}}</view>
 							<!-- <view><label class="title">●后背与耳朵:</label>{{sideEarBack}}{{unitDesc}}</view> -->
 						</view>
 					</view>
@@ -282,7 +282,8 @@
 				bodyImgHeight: 0,
 				bodyImgOriginWidth: 0.1,
 				bodyImgOriginHeight: 0.1,
-				shoulderSpace: 0,
+				shoulderSpace: 0, // 肩宽
+				headSpace: 0, // 头宽
 				frontLeftEarX: 0.1,
 				frontRightEarX: 0.1,
 				frontLeftShoulder: 0.1,
@@ -506,10 +507,10 @@
 				console.log('mode:', this.inputName, storageObj)
 				let params = {
 					name: this.inputName,
-					headHeight: this.sideLittleBlockBack,
-					neckHeight: this.sideLittleNeckBack,
-					sideHeadHeight: this.frontLeftPart + this.frontRightPart,
-					sideNeckHeight: (this.shoulderSpace - this.manFactor) * 0.5
+					headHeight: Math.floor(this.sideLittleBlockBack),
+					neckHeight: Math.floor(this.sideLittleNeckBack),
+					sideHeadHeight: Math.floor((this.shoulderSpace - this.headSpace) * 0.5),
+					sideNeckHeight: Math.floor((this.shoulderSpace - this.manFactor) * 0.5)
 				}
 
 				let form = {
@@ -593,10 +594,10 @@
 				}
 
 				let orginfo = {
-					headHeight: this.sideLittleBlockBack,
-					neckHeight: this.sideLittleNeckBack,
-					sideHeadHeight: this.frontLeftPart + this.frontRightPart,
-					sideNeckHeight: (this.shoulderSpace - this.manFactor) * 0.5
+					headHeight: Math.floor(this.sideLittleBlockBack),
+					neckHeight: Math.floor(this.sideLittleNeckBack),
+					sideHeadHeight: Math.floor((this.shoulderSpace - this.headSpace) * 0.5),
+					sideNeckHeight: Math.floor((this.shoulderSpace - this.manFactor) * 0.5)
 				}
 				// 判断是否女的
 				if (form && form.sexIndex) {
@@ -1044,6 +1045,13 @@
 				space = space.toFixed(3)
 
 				this.shoulderSpace = Math.floor(space) + 10
+
+				space = Math.abs(this.frontLeftEarX - this.frontRightEarX);
+				space = space * this.unit / this.factor
+				space = space + 1
+				space = space.toFixed(3)
+
+				this.headSpace = space;
 				// console.log('this.shoulderSpace:', this.shoulderSpace, space, 1, space + 1)
 				// 左肩
 				this.$set(this.shoulderLeftWrapStyle, '--left', (300 * rightShoulder / this.bodyImgOriginWidth) +

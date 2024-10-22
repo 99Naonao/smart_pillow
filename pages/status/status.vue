@@ -16,7 +16,7 @@
 			</view>
 			<view class="rightInfo" :style="menuInfo">
 				<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconCW.png"></image>
-				<label class="desc" for="">{{login?'已连接':'未连接'}}</label>
+				<label class="desc" for="">{{pillowStatusDesc}}</label>
 			</view>
 			<view class="headInfo" :style="menuInfo">
 				<view>颈枕高度</view>
@@ -96,6 +96,20 @@
 
 	export default {
 		computed: {
+			pillowStatusDesc() {
+				if (this.loginStatus) {
+
+					if (this.pillowStatus == 0) {
+						return '空闲'
+					} else if (this.pillowStatus == 1) {
+						return '平躺中'
+					} else if (this.pillowStatus == 2) {
+						return '侧卧中'
+					}
+				} else {
+					return '未连接'
+				}
+			},
 			login() {
 				return this.loginStatus;
 			},
@@ -141,6 +155,7 @@
 				pillowHeight: 1,
 				pillowSideHeight: 1,
 				pillowPower: 1,
+				pillowStatus: 0,
 				pillowPowerCharging: 0, // 充电状态
 			}
 		},
@@ -320,6 +335,7 @@
 				this.$set(this, 'pillowSideHeight', blue_class.getInstance().pillowSideHeight);
 				this.$set(this, 'pillowPower', blue_class.getInstance().pillowPower);
 				this.$set(this, 'pillowPowerCharging', blue_class.getInstance().chargingStatus);
+				this.$set(this, 'pillowStatus', blue_class.getInstance().pillowStatus);
 
 				this.$set(this.menuInfo, '--bateryWidth', (blue_class.getInstance().pillowPower * 50 / 1000) + 'rpx');
 
