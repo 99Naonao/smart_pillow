@@ -247,6 +247,18 @@
 						this.pillowStatus = '侧卧中';
 						this.selectIndex = 2;
 				}
+
+				if (this.selectIndex == 2) {
+					this.$set(this, 'sideNeck', blue_class.getInstance().pillowSideHeight);
+					this.$set(this, 'sideHead', blue_class.getInstance().pillowHeight);
+				} else {
+					this.$set(this, 'neck', blue_class.getInstance().pillowSideHeight);
+					this.$set(this, 'head', blue_class.getInstance().pillowHeight);
+				}
+
+				this.$set(this, 'pillowPower', blue_class.getInstance().pillowPower);
+				this.$set(this, 'pillowPowerCharging', blue_class.getInstance().chargingStatus);
+				this.$set(this, 'pillowStatus', blue_class.getInstance().pillowStatus);
 			},
 			uploadDataHandle() {
 				let upload_data = uploadDataRequest(5)
