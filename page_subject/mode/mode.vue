@@ -42,10 +42,10 @@
 				</view>
 				<view class="info-right">
 					<view>
-						头枕高度{{60}}cm
+						头枕高度{{selectItem.headHeight}}cm
 					</view>
 					<view>
-						颈枕高度{{60}}cm
+						颈枕高度{{selectItem.neckHeight}}cm
 					</view>
 				</view>
 			</view>
@@ -56,10 +56,10 @@
 				</view>
 				<view class="info-right">
 					<view>
-						头枕高度{{60}}cm
+						头枕高度{{selectItem.sideHeadHeight}}cm
 					</view>
 					<view>
-						颈枕高度{{60}}cm
+						颈枕高度{{selectItem.sideNeckHeight}}cm
 					</view>
 				</view>
 			</view>
@@ -237,10 +237,24 @@
 				// }
 			},
 			sendItemHandler() {
-				let params = this.selectItem;
-				console.log('params:', params)
-				uni.navigateTo({
-					url: "/page_subject/adjust/adjust" + object2Query(params)
+				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
+				let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : this.selectItem.headHeight, this
+					.selectItem
+					.neckHeight > 100 ? 100 : this.selectItem.neckHeight, 100, this
+					.selectItem.sideHeadHeight > 100 ? 100 : this.selectItem.sideHeadHeight, this.selectItem
+					.sideNeckHeight >
+					100 ?
+					100 :
+					this.selectItem.sideNeckHeight, 100);
+				// 如果有数据，默认调整枕头
+				// let init_arraybuffer = initPillow(this.selectItem.headHeight, this.selectItem.neckHeight, 200, this
+				// 	.selectItem
+				// 	.sideHeadHeight, this.selectItem.sideNeckHeight, 200);
+				// let app = getApp()
+				blue_class.getInstance().write2tooth(init_arraybuffer);
+
+				uni.switchTab({
+					url: "/pages/status/status"
 				})
 			},
 			// 发送模式设置
@@ -251,10 +265,6 @@
 				let params = this.modeList[item];
 				this.selectItem = params;
 				return;
-				console.log('params:', item, params)
-				uni.navigateTo({
-					url: "/page_subject/adjust/adjust" + object2Query(params)
-				})
 
 				// let init_arraybuffer = initPillow(params.headHeight, params.neckHeight, params.shoulderHeight, params
 				// 	.sideHeadHeight, params.sideNeckHeight, params.sideShoulderHeight);

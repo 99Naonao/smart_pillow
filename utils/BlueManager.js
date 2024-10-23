@@ -114,7 +114,7 @@ class blue_class {
 	onBLECharacteristicValueChange() {
 		uni.onBLECharacteristicValueChange((res) => {
 			let arrayBuffer = new Uint8Array(res.value);
-			console.log('[接收到数据]', this.ab2hex(res.value), arrayBuffer.length)
+			console.log('[接收到数据root]', this.ab2hex(res.value), arrayBuffer.length)
 			// var resData = this.ab2hex(sjRes.value);
 			uni.$emit('xx', res);
 		})

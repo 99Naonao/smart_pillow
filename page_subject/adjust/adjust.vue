@@ -3,20 +3,21 @@
 		title='枕头调整'></z-nav-bar> -->
 	<view class="main">
 		<view class="select-part">
-			<view :class="this.selectIndex==1?'select-btn':'select-btn unselect-btn'">
+			<view :class="this.selectIndex==1?'select-btn':'select-btn unselect-btn'" v-if="this.selectIndex==1">
 				<image mode="widthFix" class="icon1" :src="'../static/adjust/SY_11_IconYWb.png'"></image>
 				<label>仰卧调节</label>
 			</view>
-			<view :class="this.selectIndex==2?'select-btn':'select-btn unselect-btn'">
+			<view :class="this.selectIndex==2?'select-btn':'select-btn unselect-btn'" v-if="this.selectIndex==2">
 				<image mode="widthFix" class="icon2" :src="'../static/adjust/SY_11_IconCWb.png'"></image>
 				<label>侧卧调节</label>
 			</view>
 		</view>
+		<view class="text-tips">请保持{{this.selectIndex == 1?'仰卧姿态':'侧卧姿态'}}进行调节</view>
 		<view class="info-part">
 			<view class="info-second-part">
-				<label class='desc1'>脖颈部</label>
+				<label class='desc1'>头枕部</label>
 				<label class='desc1size'>{{this.selectIndex==1?this.neck:this.sideNeck}}mm</label>
-				<label class='desc2'>头枕部</label>
+				<label class='desc2'>颈枕部</label>
 				<label class='desc2size'>{{this.selectIndex==1?this.head:this.sideHead}}mm</label>
 				<image class="human-icon" :src="'../static/adjust/SY_11_bg01YW.png'"></image>
 				<image class="main-icon" :src="'../static/adjust/SY_11_bg02TZ.png'"></image>
@@ -27,10 +28,10 @@
 				<!-- 				<image class="bzb-icon" :src="'../static/adjust/SY_11_buttonBZb.png'"></image>
 				<image class="tzb-icon" :src="'../static/adjust/SY_11_buttonTZb.png'"></image> -->
 				<view :class="this.selectHead?'bo bo-left':'bo bo-left select'" @click="selectHeadHandler(false)">
-					脖枕
+					头枕
 				</view>
 				<view :class="this.selectHead?'bo bo-right select':'bo bo-right'" @click="selectHeadHandler(true)">
-					头枕
+					颈枕
 				</view>
 			</view>
 			<view class="version">
@@ -51,7 +52,7 @@
 				</view>
 				<view class="opt-tip2">按住降低,放开停止</view>
 			</view>
-			<view class=" opt-part" v-if="true">
+			<view class=" opt-part" v-if="false">
 				<view class="opt-btn" @click="uploadDataHandle" v-if="false">
 					<label>上报数据</label>
 				</view>
@@ -68,6 +69,7 @@
 			</view>
 		</view>
 		<input-view ref="inputView" class="input-part" v-if="showMeasure&&false"></input-view>
+		<recommand-info></recommand-info>
 
 
 		<uni-popup ref="popupSave" type="bottom" background-color="#fff" border-radius="10px 10px 0 0"
@@ -87,15 +89,13 @@
 					@click="closeSave">
 				</image>
 			</view>
-
 		</uni-popup>
 	</view>
-
 </template>
-
 <script>
 	import blue_class from '../../utils/BlueManager'
 	import InputView from '../../pages/shootView/InputView.vue'
+	import RecommandInfo from './RecommandInfo.vue'
 	import {
 		object2Query,
 		parsePillowRealState,
@@ -113,6 +113,7 @@
 		hand1Shake,
 		write2tooth,
 		parsePillowState,
+		sendModeByName,
 		saveRandomMode
 	} from '@/common/util.js'
 	import {
@@ -124,7 +125,8 @@
 	} from '../../common/util'
 	export default {
 		components: {
-			InputView
+			InputView,
+			RecommandInfo
 		},
 		computed: {
 			pillowStatusDesc() {
@@ -172,12 +174,12 @@
 			this.pillowName = decodeURIComponent(options.pillowName || '')
 			this.deviceId = options.deviceId || ''
 			this.serviceId = options.serviceId || ''
-			this.initHeadHeight = options.headHeight || 0
-			this.initNeckHeight = options.neckHeight || 0
-			this.initWidthHeight = options.shoulderHeight || 0
-			this.initSideNeckHeight = options.sideNeckHeight || 0
-			this.initSideHeadHeight = options.sideHeadHeight || 0
-			this.initSideWdithHeight = options.sideShoulderHeight || 0
+			this.initHeadHeight = Math.floor(options.headHeight || 0)
+			this.initNeckHeight = Math.floor(options.neckHeight || 0)
+			this.initWidthHeight = Math.floor(options.shoulderHeight || 0)
+			this.initSideNeckHeight = Math.floor(options.sideNeckHeight || 0)
+			this.initSideHeadHeight = Math.floor(options.sideHeadHeight || 0)
+			this.initSideWdithHeight = Math.floor(options.sideShoulderHeight || 0)
 			this.saveOptions = options;
 			blue_class.getInstance().updateDeviceName(this.pillowName);
 			uni.setNavigationBarTitle({
@@ -189,22 +191,23 @@
 			// uni.onBLECharacteristicValueChange(this.handleMessage)
 			uni.$on('xx', this.handleMessage);
 			uni.$on('update_pillow_info', this.updateInfo);
-			// this.requestStatus()
+
 			let arraybuffer = changeAdjustMode();
-			// let app = getApp()
 			blue_class.getInstance().write2tooth(arraybuffer)
 
 			this.pillowPressStatus = blue_class.getInstance().getPillowStatus()
 
-			if (this.initHeadHeight > 0 && this.initNeckHeight > 0) {
+			if (this.initHeadHeight >= 0 && this.initNeckHeight >= 0) {
 				// let init_arraybuffer = initPillow(this.initHeadHeight, this.initNeckHeight, this.initWidthHeight, this
 				// 	.initSideHeadHeight, this.initSideNeckHeight, this.initSideWdithHeight);
 				// // let app = getApp()
 				// blue_class.getInstance().write2tooth(init_arraybuffer);
 				this.showMeasure = true;
-				// 如果有数据，默认调整枕头
-				let init_arraybuffer = initPillow(this.initHeadHeight, this.initNeckHeight, 200, this
-					.initSideHeadHeight, this.initSideNeckHeight, 200);
+				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
+				let init_arraybuffer = initPillow(this.initHeadHeight > 100 ? 100 : this.initHeadHeight, this
+					.initNeckHeight > 100 ? 100 : this.initNeckHeight, 100, this
+					.initSideHeadHeight > 100 ? 100 : this.initSideHeadHeight, this.initSideNeckHeight > 100 ? 100 :
+					this.initSideNeckHeight, 100);
 				// let app = getApp()
 				blue_class.getInstance().write2tooth(init_arraybuffer);
 				// this.$refs.inputView.showParams(this.saveOptions);
@@ -285,7 +288,7 @@
 				this.$refs.popupSave.close();
 			},
 			saveHandler() {
-				saveRandomMode({
+				let result = saveRandomMode({
 					name: this.inputName,
 					headHeight: this.head,
 					neckHeight: this.neck,
@@ -293,11 +296,23 @@
 					sideNeckHeight: this.sideNeck,
 				})
 
-				let changeAdjust = changeSaveAdjustMode();
+				if (result == false) {
+					uni.showToast({
+						title: '模式名称重复，保存失败'
+					})
+					return;
+				}
+				// 切换成自动模式
+				let changeAdjust = changeAdjustMode(0);
 				blue_class.getInstance().write2tooth(changeAdjust);
 				uni.showToast({
 					title: '保存中',
 					success() {
+						// 更新新的数据
+						sendModeByName(this.inputName)
+
+						// 跳转首页
+
 						uni.switchTab({
 							url: '/pages/status/status'
 						})
@@ -335,6 +350,28 @@
 						}
 						break;
 					case 2:
+						let result2 = receive_dataView.getUint8(0)
+						console.log("[2222调整模式成功]")
+						switch (parseInt(result2)) {
+							case 0:
+								console.log("[调整模式成功]")
+								uni.showToast({
+									title: '发送枕头参数成功'
+								})
+								break;
+							case 1:
+								console.log("[调整模式参数非法]")
+								uni.showToast({
+									title: '输入参数非法'
+								})
+								break;
+							case 2:
+								console.log("[不支持的指令]")
+								uni.showToast({
+									title: '不支持的指令'
+								})
+								break;
+						}
 						break;
 					case 4:
 						let result4 = receive_dataView.getUint8(0)
@@ -628,6 +665,13 @@
 			width: 61rpx;
 			height: 41rpx;
 		}
+	}
+
+	.text-tips {
+		text-align: center;
+		color: rgb(28, 68, 133);
+		font-size: 24rpx;
+		padding: 10rpx;
 	}
 
 	.normal-btn {

@@ -1,3 +1,5 @@
+import blue_class from '../utils/BlueManager'
+
 function formatTime(time) {
 	if (typeof time !== 'number' || time < 0) {
 		return time
@@ -541,7 +543,7 @@ var restartPillow = function(mark) {
 // 初始数据校准
 var initPillow = function(head, neck, width, sideHead, sideNexck, sideWidth) {
 	// 2——用户卧姿参数设置，数据1－正卧头部气囊高度值（U8），数据2－正卧颈部气囊高度值（U8），数据3－正卧肩宽值（U16）数据4－侧卧头部气囊高度值（U8），数据5－侧卧颈部气囊高度值（U8），数据6－侧卧肩宽值（U16）
-	console.log('[initPillow] buffer');
+	console.log('[initPillow] buffer', head, neck, width, sideHead, sideNexck, sideWidth);
 
 	const data_buffer = new ArrayBuffer(8);
 	const dataBufferView = new DataView(data_buffer);
@@ -615,10 +617,45 @@ var saveRandomMode = function(obj) {
 	} else {
 		storageObj = JSON.parse(storageObj)
 	}
+	// 监测名称重复
+	let item = {}
+	for (var index in storageObj) {
+		if (storageObj[index] && storageObj[index].name == name) {
+			item = storageObj[item]
+			return false;
+		}
+	}
 	// params.name = 'mode_' + Math.floor(Math.random() * 1000) / 1000
 	// 存储数据
 	storageObj.push(params)
 	uni.setStorageSync('myMode', JSON.stringify(storageObj));
+	return true;
+}
+
+var sendModeByName = function(name) {
+	let storageObj = uni.getStorageSync('myMode');
+	if (!storageObj) {
+		storageObj = []
+	} else {
+		storageObj = JSON.parse(storageObj)
+	}
+	let item = {}
+	for (var index in storageObj) {
+		if (storageObj[index] && storageObj[index].name == name) {
+			item = storageObj[index]
+			break;
+		}
+	}
+	// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
+	let init_arraybuffer = initPillow(item.headHeight > 100 ? 100 : item.headHeight, item
+		.neckHeight > 100 ? 100 : item.neckHeight, 100, item.sideHeadHeight > 100 ? 100 : item.sideHeadHeight,
+		item
+		.sideNeckHeight >
+		100 ?
+		100 :
+		item.sideNeckHeight, 100);
+	blue_class.getInstance().write2tooth(init_arraybuffer);
+	return true;
 }
 export {
 	object2Query,
@@ -651,5 +688,6 @@ export {
 	parseTime,
 	ab2str,
 	str2ab,
+	sendModeByName,
 	dateUtils
 }
