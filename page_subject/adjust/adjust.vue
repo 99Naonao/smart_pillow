@@ -65,7 +65,7 @@
 				</view>
 			</view>
 			<view class="bottom-part">
-				<view class="save" @click="saveModeHandler">保存{{selectIndex==1?'/侧卧调整':'返回主页'}}</view>
+				<view class="save" @click="saveModeHandler">保存{{selectIndex==1?'/侧卧调整':'/返回主页'}}</view>
 				<view class="text-tips text-button" @click="cancelSaveHandle">
 					不保存{{this.selectIndex==1?'/继续调整侧卧高度':'/返回主页'}}
 				</view>
@@ -184,7 +184,8 @@
 			this.initSideHeadHeight = Math.floor(options.sideHeadHeight || 0)
 			this.initSideWdithHeight = Math.floor(options.sideShoulderHeight || 0)
 			this.saveOptions = options;
-			this.inputName = options.name ? options.name : '模式';
+			this.inputName = options.name ? decodeURIComponent(options.name) : '模式';
+			console.log(decodeURIComponent(options.name))
 			blue_class.getInstance().updateDeviceName(this.pillowName);
 			uni.setNavigationBarTitle({
 				title: this.pillowName
@@ -355,13 +356,14 @@
 					// 切换成自动模式
 					let changeAdjust = changeAdjustMode(0);
 					blue_class.getInstance().write2tooth(changeAdjust);
-					send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
+					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
 						.initSideNeckHeight);
 
 					uni.showToast({
 						title: '调整中',
-						success() {
+						success: () => {
 							this.selectIndex = 2;
+							this.closeSave()
 						}
 					})
 				} else {

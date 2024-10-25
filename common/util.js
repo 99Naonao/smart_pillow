@@ -621,8 +621,10 @@ var saveRandomMode = function(obj) {
 	let item = null
 	for (var index in storageObj) {
 		if (storageObj[index] && storageObj[index].name == params.name) {
-			item = storageObj[item]
-			storageObj[item] = params;
+			item = storageObj[index]
+			storageObj[index] = params;
+			console.log("check:", storageObj[index], params, item)
+			break;
 		}
 	}
 	// params.name = 'mode_' + Math.floor(Math.random() * 1000) / 1000
