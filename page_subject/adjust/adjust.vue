@@ -93,6 +93,18 @@
 				</image>
 			</view>
 		</uni-popup>
+		<!-- 结果提示界面 -->
+		<uni-popup ref="popupTips" type="bottom" style="z-index: 10000; position: absolute;"
+			border-radius="40rpx 40rpx 40rpx 40rpx" background-color='white' :mask-click="true">
+			<view class="popup-tips">
+				<view class="send-btn">接下来进行侧卧调整,请保持侧卧姿势.
+				</view>
+				<image class="titleimg" src="../../static/adjust/SY_05_B001.png"></image>
+				<image class="close-btn" src="../../static/adjust/SY_05_buttonCOLa.png" mode="widthFix"
+					@click="closeTipsSave">
+				</image>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 <script>
@@ -185,6 +197,11 @@
 			this.initSideWdithHeight = Math.floor(options.sideShoulderHeight || 0)
 			this.saveOptions = options;
 			this.inputName = options.name ? decodeURIComponent(options.name) : '模式';
+
+			this.head = this.initHeadHeight;
+			this.neck = this.initNeckHeight;
+			this.sideNeck = this.initSideNeckHeight;
+			this.sideHead = this.initSideHeadHeight
 			console.log(decodeURIComponent(options.name))
 			blue_class.getInstance().updateDeviceName(this.pillowName);
 			uni.setNavigationBarTitle({
@@ -327,6 +344,9 @@
 			saveModeHandler() {
 				this.$refs.popupSave.open('bottom');
 			},
+			closeTipsSave() {
+				this.$refs.popupTips.close()
+			},
 			// 关闭
 			closeSave() {
 				this.$refs.popupSave.close();
@@ -359,13 +379,15 @@
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
 						.initSideNeckHeight);
 
-					uni.showToast({
-						title: '调整中',
-						success: () => {
-							this.selectIndex = 2;
-							this.closeSave()
-						}
-					})
+
+					this.selectIndex = 2;
+					this.closeSave()
+					this.$refs.popupTips.open('center')
+
+					// uni.showToast({
+					// 	title: '调整中',
+					// 	success: () => {}
+					// })
 				} else {
 					result = saveRandomMode({
 						name: this.inputName,
@@ -387,7 +409,7 @@
 					let changeAdjust = changeAdjustMode(0);
 					blue_class.getInstance().write2tooth(changeAdjust);
 
-					send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
+					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
 						.initSideNeckHeight);
 					uni.showToast({
 						title: '保存中',
@@ -779,6 +801,80 @@
 
 	}
 
+	.popup-tips {
+		position: relative;
+		padding: 20rpx;
+		top: 0;
+		// background-color: rgba(255, 255, 255, 0.1);
+		// border-radius: 40rpx;
+
+		.modal-tips {
+			margin-top: 25rpx;
+			background-color: white;
+			border-radius: 40rpx;
+		}
+
+		.titleimg {
+			width: 106rpx;
+			height: 95rpx;
+			position: absolute;
+			left: 50%;
+			top: -40rpx;
+			margin-left: -53rpx;
+		}
+
+		.send-btn {
+			background-color: #fff;
+			margin: 20rpx;
+			margin-top: 50rpx;
+			color: #354D5B;
+			line-height: 80rpx;
+			padding-left: 50rpx;
+			padding-right: 50rpx;
+			border-radius: 15rpx;
+			text-align: center;
+		}
+
+		.sure-btn {
+			background-color: #4d7fc9;
+			margin: 30rpx;
+			color: white;
+			font-size: 28rpx;
+			line-height: 68rpx;
+			padding-left: 50rpx;
+			padding-right: 50rpx;
+			border-radius: 25rpx;
+			text-align: center;
+		}
+
+		.close-btn {
+			width: 26rpx;
+			height: 27rpx;
+			right: 30rpx;
+			top: 20rpx;
+			position: absolute;
+		}
+
+		.icon {
+			width: 42rpx;
+			height: 42rpx;
+		}
+
+		.input-area {
+			margin-left: 20rpx;
+			letter-spacing: 2rpx;
+			background-color: #DEDEDE;
+			padding: 20rpx;
+			color: rgba(91, 120, 151, 1)
+		}
+
+		.icon-text {
+			// line-height: 42rpx;
+			margin-left: 20rpx;
+			letter-spacing: 5rpx;
+		}
+	}
+
 	.resetbtn {
 		padding: 5rpx;
 		color: white;
@@ -924,6 +1020,7 @@
 				0% {
 					transform: translateY(0);
 					opacity: 0.3;
+					top: 50px;
 				}
 
 				30% {
@@ -934,7 +1031,7 @@
 
 				100% {
 					transform: translateY(0);
-					top: 70px;
+					top: 100px;
 					opacity: 1;
 				}
 			}
@@ -943,17 +1040,17 @@
 				0% {
 					transform: translateY(0);
 					opacity: 0.3;
+					top: 50px;
 				}
 
 				30% {
 					transform: translateY(120);
 					opacity: 1;
-
 				}
 
 				100% {
 					transform: translateY(0);
-					top: 70px;
+					top: 100px;
 					opacity: 1;
 				}
 			}
@@ -967,7 +1064,7 @@
 			@-webkit-keyframes upEffect {
 				0% {
 					opacity: 0.3;
-					top: 50px;
+					top: 120px;
 				}
 
 				30% {
@@ -975,7 +1072,7 @@
 				}
 
 				100% {
-					top: 20px;
+					top: 70px;
 					opacity: 1;
 				}
 			}
@@ -983,7 +1080,7 @@
 			@keyframes upEffect {
 				0% {
 					opacity: 0.3;
-					top: 50px;
+					top: 120px;
 				}
 
 				30% {
@@ -991,7 +1088,7 @@
 				}
 
 				100% {
-					top: 20px;
+					top: 70px;
 					opacity: 1;
 				}
 			}
