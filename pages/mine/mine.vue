@@ -38,6 +38,21 @@
 				<view>眠加积分是眠加健康睡眠中心</view>
 			</view>
 		</view>
+
+		<view class="info-part">
+			<view class="opt-part">
+				<view class="opt-btn" @click="uploadDataHandle" v-if="false">
+					<label>上报数据</label>
+				</view>
+
+				<view class="opt-btn" @click="resetHandle">
+					<label>设备校准</label>
+				</view>
+				<view class="opt-btn" @click="restartHandle">
+					<label>设备重启</label>
+				</view>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -214,6 +229,62 @@
 					padding-top: 20rpx;
 					padding-bottom: 20rpx;
 				}
+			}
+		}
+
+		.opt-part {
+			display: flex;
+			justify-content: space-around;
+			background-color: white;
+			padding-top: 62rpx;
+			position: relative;
+
+			.opt-tips-con {
+				display: flex;
+				justify-content: space-around;
+				position: relative;
+			}
+
+			.opt-tip1 {
+				position: absolute;
+				top: 95rpx;
+				left: 50rpx;
+				text-align: center;
+				color: #676767;
+			}
+
+			.opt-tip2 {
+				position: absolute;
+				top: 95rpx;
+				right: 50rpx;
+				text-align: center;
+				color: #676767;
+			}
+
+			.opt-btn {
+				width: 284rpx;
+				height: 90rpx;
+				display: flex;
+				justify-content: space-around;
+				align-items: center;
+				background-color: rgb(28, 68, 133);
+				border-radius: 30rpx;
+				line-height: 56rpx;
+				color: white;
+
+				label {
+					margin-left: -55rpx;
+				}
+			}
+
+			.opt-btn-top {
+				background-color: rgb(79, 128, 191);
+			}
+
+
+			.icon {
+				width: 56rpx;
+				height: 56rpx;
 			}
 		}
 	}

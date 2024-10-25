@@ -52,7 +52,7 @@
 				</view>
 				<view class="opt-tip2">按住降低,放开停止</view>
 			</view>
-			<view class=" opt-part" v-if="false">
+			<view class="opt-part" v-if="false">
 				<view class="opt-btn" @click="uploadDataHandle" v-if="false">
 					<label>上报数据</label>
 				</view>
@@ -65,7 +65,8 @@
 				</view>
 			</view>
 			<view class="bottom-part">
-				<view class="save" @click="saveModeHandler">保存</view>
+				<view class="save" @click="saveModeHandler">保存{{selectIndex==1?'/侧卧调整':'返回主页'}}</view>
+				<view @click="cancelSaveHandle">不保存{{this.selectIndex==1?'/继续调整侧卧高度':''}}</view>
 			</view>
 		</view>
 		<input-view ref="inputView" class="input-part" v-if="showMeasure&&false"></input-view>
@@ -83,7 +84,7 @@
 					<text class="">名称</text>
 					<input v-model="inputName" class="flex1 input-area" placeholder="输入我的模式" />
 				</view>
-				<view class="send-btn" @click="saveHandler">保存当前模式</view>
+				<view class="send-btn" @click="saveHandler">保存当前模式/返回主页</view>
 				<image class="titleimg" src="../../static/adjust/SY_05_B001.png"></image>
 				<image class="close-btn" src="../../static/adjust/SY_05_buttonCOLa.png" mode="widthFix"
 					@click="closeSave">
@@ -192,8 +193,8 @@
 			uni.$on('xx', this.handleMessage);
 			uni.$on('update_pillow_info', this.updateInfo);
 
-			let arraybuffer = changeAdjustMode();
-			blue_class.getInstance().write2tooth(arraybuffer)
+			// let arraybuffer = changeAdjustMode();
+			// blue_class.getInstance().write2tooth(arraybuffer)
 
 			this.pillowPressStatus = blue_class.getInstance().getPillowStatus()
 
@@ -233,6 +234,10 @@
 			uni.$off('xx', this.handleMessage);
 		},
 		methods: {
+			changeHandMode() {
+				let arraybuffer = changeAdjustMode();
+				blue_class.getInstance().write2tooth(arraybuffer)
+			},
 			updateInfo() {
 				this.pillowPressStatus = blue_class.getInstance().getPillowStatus()
 				switch (this.pillowPressStatus) {
@@ -280,6 +285,24 @@
 				let shake1 = handPillowStatus()
 				blue_class.getInstance().write2tooth(shake1)
 			},
+			// 不保存
+			cancelSaveHandle() {
+				//  还原数据
+				if (this.selectIndex == 1) {
+					// 切换成自动模式
+					let changeAdjust = changeAdjustMode(0);
+					blue_class.getInstance().write2tooth(changeAdjust);
+					this.selectIndex = 2;
+				} else {
+					// 切换成自动模式
+					let changeAdjust = changeAdjustMode(0);
+					blue_class.getInstance().write2tooth(changeAdjust);
+					// 跳转首页
+					uni.switchTab({
+						url: '/pages/status/status'
+					})
+				}
+			},
 			saveModeHandler() {
 				this.$refs.popupSave.open('bottom');
 			},
@@ -298,9 +321,8 @@
 
 				if (result == false) {
 					uni.showToast({
-						title: '模式名称重复，保存失败'
+						title: '模式数据已覆盖'
 					})
-					return;
 				}
 				// 切换成自动模式
 				let changeAdjust = changeAdjustMode(0);
@@ -310,9 +332,7 @@
 					success() {
 						// 更新新的数据
 						sendModeByName(this.inputName)
-
 						// 跳转首页
-
 						uni.switchTab({
 							url: '/pages/status/status'
 						})
@@ -500,6 +520,7 @@
 			// 调低枕头
 			adjustLowSleepHandler() {
 				this.touchingDown = true
+				this.changeHandMode()
 				let action = 2
 				let arraybuffer
 				// 如果选择的仰卧
@@ -588,6 +609,7 @@
 				let action = 1;
 				this.touchingUp = true
 
+				this.changeHandMode()
 				// 如果选择的仰卧
 				if (this.selectIndex == 1) {
 					if (this.selectHead) {

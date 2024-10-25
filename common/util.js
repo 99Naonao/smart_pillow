@@ -618,17 +618,20 @@ var saveRandomMode = function(obj) {
 		storageObj = JSON.parse(storageObj)
 	}
 	// 监测名称重复
-	let item = {}
+	let item = null
 	for (var index in storageObj) {
-		if (storageObj[index] && storageObj[index].name == name) {
+		if (storageObj[index] && storageObj[index].name == params.name) {
 			item = storageObj[item]
-			return false;
+			storageObj[item] = params;
 		}
 	}
 	// params.name = 'mode_' + Math.floor(Math.random() * 1000) / 1000
 	// 存储数据
-	storageObj.push(params)
+	// storageObj.push(params)
 	uni.setStorageSync('myMode', JSON.stringify(storageObj));
+	if (item) {
+		return false;
+	}
 	return true;
 }
 
