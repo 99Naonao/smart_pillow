@@ -66,7 +66,9 @@
 			</view>
 			<view class="bottom-part">
 				<view class="save" @click="saveModeHandler">保存{{selectIndex==1?'/侧卧调整':'返回主页'}}</view>
-				<view @click="cancelSaveHandle">不保存{{this.selectIndex==1?'/继续调整侧卧高度':''}}</view>
+				<view class="text-tips text-button" @click="cancelSaveHandle">
+					不保存{{this.selectIndex==1?'/继续调整侧卧高度':'/返回主页'}}
+				</view>
 			</view>
 		</view>
 		<input-view ref="inputView" class="input-part" v-if="showMeasure&&false"></input-view>
@@ -84,7 +86,7 @@
 					<text class="">名称</text>
 					<input v-model="inputName" class="flex1 input-area" placeholder="输入我的模式" />
 				</view>
-				<view class="send-btn" @click="saveHandler">保存当前模式/返回主页</view>
+				<view class="send-btn" @click="saveHandler">保存{{selectIndex==1?'仰卧数据':'侧卧数据'}}</view>
 				<image class="titleimg" src="../../static/adjust/SY_05_B001.png"></image>
 				<image class="close-btn" src="../../static/adjust/SY_05_buttonCOLa.png" mode="widthFix"
 					@click="closeSave">
@@ -182,6 +184,7 @@
 			this.initSideHeadHeight = Math.floor(options.sideHeadHeight || 0)
 			this.initSideWdithHeight = Math.floor(options.sideShoulderHeight || 0)
 			this.saveOptions = options;
+			this.inputName = options.name ? options.name : '模式';
 			blue_class.getInstance().updateDeviceName(this.pillowName);
 			uni.setNavigationBarTitle({
 				title: this.pillowName
@@ -285,6 +288,15 @@
 				let shake1 = handPillowStatus()
 				blue_class.getInstance().write2tooth(shake1)
 			},
+			send2Pillow(headHeight, neckHeight, sideHeadHeight, sideNeckHeight) {
+				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
+				let init_arraybuffer = initPillow(headHeight > 100 ? 100 : headHeight, neckHeight > 100 ? 100 : neckHeight,
+					100, sideHeadHeight > 100 ? 100 : sideHeadHeight, sideNeckHeight >
+					100 ?
+					100 :
+					sideNeckHeight, 100);
+				blue_class.getInstance().write2tooth(init_arraybuffer);
+			},
 			// 不保存
 			cancelSaveHandle() {
 				//  还原数据
@@ -292,11 +304,19 @@
 					// 切换成自动模式
 					let changeAdjust = changeAdjustMode(0);
 					blue_class.getInstance().write2tooth(changeAdjust);
+
+					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
+						.initSideNeckHeight);
+
 					this.selectIndex = 2;
 				} else {
 					// 切换成自动模式
 					let changeAdjust = changeAdjustMode(0);
 					blue_class.getInstance().write2tooth(changeAdjust);
+
+					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
+						.initSideNeckHeight);
+
 					// 跳转首页
 					uni.switchTab({
 						url: '/pages/status/status'
@@ -311,34 +331,74 @@
 				this.$refs.popupSave.close();
 			},
 			saveHandler() {
-				let result = saveRandomMode({
-					name: this.inputName,
-					headHeight: this.head,
-					neckHeight: this.neck,
-					sideHeadHeight: this.sideHead,
-					sideNeckHeight: this.sideNeck,
-				})
-
-				if (result == false) {
-					uni.showToast({
-						title: '模式数据已覆盖'
+				let result;
+				if (this.selectIndex == 1) {
+					// 仰卧数据
+					result = saveRandomMode({
+						name: this.inputName,
+						headHeight: this.head,
+						neckHeight: this.neck,
+						sideHeadHeight: this.initSideHeadHeight,
+						sideNeckHeight: this.initSideNeckHeight,
 					})
-				}
-				// 切换成自动模式
-				let changeAdjust = changeAdjustMode(0);
-				blue_class.getInstance().write2tooth(changeAdjust);
-				uni.showToast({
-					title: '保存中',
-					success() {
-						// 更新新的数据
-						sendModeByName(this.inputName)
-						// 跳转首页
-						uni.switchTab({
-							url: '/pages/status/status'
+
+					if (result == false) {
+						uni.showToast({
+							title: '模式数据已覆盖'
 						})
 					}
-				})
-				// uni.navigateBack()
+
+					//更新初始的高度
+					this.initHeadHeight = this.head
+					this.initNeckHeight = this.neck
+
+					// 切换成自动模式
+					let changeAdjust = changeAdjustMode(0);
+					blue_class.getInstance().write2tooth(changeAdjust);
+					send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
+						.initSideNeckHeight);
+
+					uni.showToast({
+						title: '调整中',
+						success() {
+							this.selectIndex = 2;
+						}
+					})
+				} else {
+					result = saveRandomMode({
+						name: this.inputName,
+						headHeight: this.head,
+						neckHeight: this.neck,
+						sideHeadHeight: this.sideHead,
+						sideNeckHeight: this.sideNeck,
+					})
+
+					if (result == false) {
+						uni.showToast({
+							title: '模式数据已覆盖'
+						})
+					}
+					this.initSideHeadHeight = this.sideHead
+					this.initSideNeckHeight = this.sideNeck
+
+					// 切换成自动模式
+					let changeAdjust = changeAdjustMode(0);
+					blue_class.getInstance().write2tooth(changeAdjust);
+
+					send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
+						.initSideNeckHeight);
+					uni.showToast({
+						title: '保存中',
+						success() {
+							// 更新新的数据
+							sendModeByName(this.inputName)
+							// 跳转首页
+							uni.switchTab({
+								url: '/pages/status/status'
+							})
+						}
+					})
+				}
 			},
 			handleMessage(res) {
 				// console.log(`value:`, res.value)
@@ -1056,6 +1116,13 @@
 		position: fixed;
 		bottom: 0rpx;
 		border-radius: 50rpx 50rpx 0rpx 0rpx;
+
+		.text-tips {
+			text-align: center;
+			color: rgb(28, 68, 133);
+			font-size: 24rpx;
+			padding: 10rpx;
+		}
 
 		.save {
 			width: 670rpx;
