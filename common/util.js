@@ -630,11 +630,58 @@ var saveRandomMode = function(obj) {
 	// params.name = 'mode_' + Math.floor(Math.random() * 1000) / 1000
 	// 存储数据
 	// storageObj.push(params)
+	if (!item) {
+		storageObj.push(params)
+	}
 	uni.setStorageSync('myMode', JSON.stringify(storageObj));
 	if (item) {
 		return false;
 	}
 	return true;
+}
+
+var getAIModeByName = function(name) {
+	let storageObj = uni.getStorageSync('myAIMode');
+	if (!storageObj) {
+		storageObj = []
+	} else {
+		storageObj = JSON.parse(storageObj)
+	}
+
+	let item;
+	for (var index in storageObj) {
+		if (storageObj[index] && storageObj[index].name == name) {
+			item = storageObj[index]
+			storageObj[index] = params;
+			break;
+		}
+	}
+
+	return item;
+}
+// 保存ai模式
+var saveAIMode = function(params) {
+	let name = params.name;
+	let storageObj = uni.getStorageSync('myAIMode');
+	if (!storageObj) {
+		storageObj = []
+	} else {
+		storageObj = JSON.parse(storageObj)
+	}
+
+	let item
+	for (var index in storageObj) {
+		if (storageObj[index] && storageObj[index].name == name) {
+			item = storageObj[index]
+			storageObj[index] = params;
+			break;
+		}
+	}
+	if (!item) {
+		storageObj.push(params)
+	}
+
+	uni.setStorageSync('myAIMode', JSON.stringify(storageObj));
 }
 
 var sendModeByName = function(name) {
@@ -644,7 +691,7 @@ var sendModeByName = function(name) {
 	} else {
 		storageObj = JSON.parse(storageObj)
 	}
-	let item = {}
+	let item
 	for (var index in storageObj) {
 		if (storageObj[index] && storageObj[index].name == name) {
 			item = storageObj[index]
@@ -693,6 +740,8 @@ export {
 	parseTime,
 	ab2str,
 	str2ab,
+	saveAIMode,
 	sendModeByName,
+	getAIModeByName,
 	dateUtils
 }

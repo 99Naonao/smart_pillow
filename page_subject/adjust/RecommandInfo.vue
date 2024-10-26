@@ -1,6 +1,6 @@
 <template>
-	<view class="info-part">
-		<view class="text-tips">小提示:建议您的调整不要超过推荐数值</view>
+	<view class="info-part" :class="showTips?['info-top']:[]">
+		<view class="text-tips" v-if="showTips">小提示:建议您的调整不要超过推荐数值</view>
 		<view class="info-item-recommond">
 			<view class="info-left">
 				<image class="icon3" mode="widthFix" :src="'../static/mode/SY_04A_IconAIh.png'"></image>
@@ -40,23 +40,33 @@
 
 <script>
 	export default {
+		props: {
+			showTips: {
+				type: Boolean,
+				default: true,
+			},
+			standard: {
+				type: Object,
+				default: () => {}
+			}
+		},
 		data() {
 			return {
-				standard: {}, //推荐参数
+
 			}
 		},
 		mounted() {
-			let standard = uni.getStorageSync('standard');
-			if (standard) {
-				this.standard = JSON.parse(standard)
-			} else {
-				this.standard = {
-					headHeight: 60,
-					neckHeight: 60,
-					sideHeadHeight: 60,
-					sideNeckHeight: 60,
-				}
-			}
+			// let standard = uni.getStorageSync('standard');
+			// if (standard) {
+			// 	this.standard = JSON.parse(standard)
+			// } else {
+			// 	this.standard = {
+			// 		headHeight: 60,
+			// 		neckHeight: 60,
+			// 		sideHeadHeight: 60,
+			// 		sideNeckHeight: 60,
+			// 	}
+			// }
 		},
 		onShow() {}
 	}
@@ -64,11 +74,15 @@
 
 <style lang="scss" scoped>
 	.info-part {
-		margin-top: 50rpx;
+
 		margin-left: 40rpx;
 		margin-right: 40rpx;
 		font-size: 24rpx;
 		color: #354D5B;
+
+		.info-top {
+			margin-top: 50rpx;
+		}
 
 		.text-tips {
 			text-align: center;

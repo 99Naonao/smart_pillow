@@ -67,7 +67,7 @@
 						</view>
 					</view>
 				</view>
-				<view class="info-item-recommond">
+				<view class="info-item-recommond" v-if="false">
 					<view class="info-left">
 						<image class="icon3" mode="widthFix" :src="'../static/mode/SY_04A_IconAIh.png'"></image>
 						<label>推荐高度</label>
@@ -105,19 +105,21 @@
 					</view>
 				</view>
 			</view>
+			<recommand-info :showTips="false" :standard="standard"></recommand-info>
 		</view>
-		<!-- <input-view ref="inputView"></input-view> -->
 	</view>
 </template>
 
 <script>
 	import InputView from '../../pages/shootView/InputView.vue'
+	import RecommandInfo from '../adjust/RecommandInfo.vue'
 	import {
 		object2Query,
 		handPillowSideState,
 		handPillowFrontState,
 		handlePillowDelayState,
 		hexStringToArrayBuffer,
+		getAIModeByName,
 		ab2hex,
 		hand1Shake,
 		write2tooth,
@@ -146,7 +148,8 @@
 	// } from '@/common/util.js'
 	export default {
 		components: {
-			InputView
+			InputView,
+			RecommandInfo
 		},
 		onLoad(options) {
 			this.pillowName = decodeURIComponent(options.pillowName || '')
@@ -166,17 +169,6 @@
 				this.modeList = []
 			}
 
-			let standard = uni.getStorageSync('standard');
-			if (standard) {
-				this.standard = JSON.parse(standard)
-			} else {
-				this.standard = {
-					headHeight: 60,
-					neckHeight: 60,
-					sideHeadHeight: 60,
-					sideNeckHeight: 60,
-				}
-			}
 
 			this.lastSend = uni.getStorageSync('lastMode');
 		},
@@ -332,17 +324,15 @@
 				this.selectItem = this.modeList[indexxx]
 				console.log('选中!!!', this.selectItem, indexxx)
 
-				// if (this.$refs.swaction)
-				// 	this.$refs.swaction.closeAll()
-				// console.log(">>>>删除>>>",shopData) 
-				// let params = {
-				// 	id: shopData.id
-				// }
-				// const res = await ShopApi.cartDel(params)
-				// if (res.success) {
-				// 	this.$u.toast("移出购物车成功")
-				// 	this.dataList.splice(e.index, 1) //删除值
-				// }
+				this.standard = getAIModeByName(this.selectItem.name)
+				if (!this.standard) {
+					this.standard = {
+						headHeight: 60,
+						neckHeight: 60,
+						sideHeadHeight: 60,
+						sideNeckHeight: 60,
+					}
+				}
 			},
 			saveMode() {
 				uni.setStorageSync('myMode', JSON.stringify(this.modeList));

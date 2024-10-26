@@ -226,12 +226,14 @@
 				// blue_class.getInstance().write2tooth(init_arraybuffer);
 				this.showMeasure = true;
 				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
-				let init_arraybuffer = initPillow(this.initHeadHeight > 100 ? 100 : this.initHeadHeight, this
-					.initNeckHeight > 100 ? 100 : this.initNeckHeight, 100, this
-					.initSideHeadHeight > 100 ? 100 : this.initSideHeadHeight, this.initSideNeckHeight > 100 ? 100 :
-					this.initSideNeckHeight, 100);
-				// let app = getApp()
-				blue_class.getInstance().write2tooth(init_arraybuffer);
+				// let init_arraybuffer = initPillow(this.initHeadHeight > 100 ? 100 : this.initHeadHeight, this
+				// 	.initNeckHeight > 100 ? 100 : this.initNeckHeight, 100, this
+				// 	.initSideHeadHeight > 100 ? 100 : this.initSideHeadHeight, this.initSideNeckHeight > 100 ? 100 :
+				// 	this.initSideNeckHeight, 100);
+				// // let app = getApp()
+				// blue_class.getInstance().write2tooth(init_arraybuffer);
+				this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
+					.initSideNeckHeight)
 				// this.$refs.inputView.showParams(this.saveOptions);
 			} else {
 				this.showMeasure = false;
@@ -288,6 +290,20 @@
 				this.$set(this, 'pillowPower', blue_class.getInstance().pillowPower);
 				this.$set(this, 'pillowPowerCharging', blue_class.getInstance().chargingStatus);
 				this.$set(this, 'pillowStatus', blue_class.getInstance().pillowStatus);
+				// 判断是否结束
+				console.log('pillowPlasticHead:', blue_class.getInstance().pillowPlasticHead)
+				console.log('pillowPlasticNeck:', blue_class.getInstance().pillowPlasticNeck)
+				if (blue_class.getInstance().pillowPlasticHead == 0 && blue_class.getInstance().pillowPlasticNeck == 0) {
+					uni.hideLoading()
+					if (this.selectIndex == 1) {
+						this.selectIndex = 2;
+					} else {
+						// 跳转首页
+						uni.switchTab({
+							url: '/pages/status/status'
+						})
+					}
+				}
 			},
 			uploadDataHandle() {
 				let upload_data = uploadDataRequest(5)
@@ -314,6 +330,9 @@
 					100 :
 					sideNeckHeight, 100);
 				blue_class.getInstance().write2tooth(init_arraybuffer);
+				uni.showLoading({
+					title: '调整中'
+				})
 			},
 			// 不保存
 			cancelSaveHandle() {
@@ -326,7 +345,7 @@
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
 						.initSideNeckHeight);
 
-					this.selectIndex = 2;
+					// this.selectIndex = 2;
 				} else {
 					// 切换成自动模式
 					let changeAdjust = changeAdjustMode(0);
@@ -336,9 +355,9 @@
 						.initSideNeckHeight);
 
 					// 跳转首页
-					uni.switchTab({
-						url: '/pages/status/status'
-					})
+					// uni.switchTab({
+					// 	url: '/pages/status/status'
+					// })
 				}
 			},
 			saveModeHandler() {

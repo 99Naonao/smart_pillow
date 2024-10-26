@@ -194,6 +194,9 @@
 </template>
 
 <script>
+	import {
+		saveAIMode
+	} from '../../common/util'
 	import InputView from './InputView.vue'
 	import {
 		object2Query,
@@ -547,9 +550,19 @@
 				} else {
 					storageObj = JSON.parse(storageObj)
 				}
+
+				// 保存一份ai数据
+				params.standard = {
+					headHeight: params.headHeight,
+					neckHeight: params.neckHeight,
+					sideHeadHeight: params.sideHeadHeight,
+					sideNeckHeight: params.sideNeckHeight
+				}
 				// 存储数据
 				storageObj.push(params)
+				saveAIMode(params);
 				uni.setStorageSync('myMode', JSON.stringify(storageObj));
+
 				uni.setStorageSync('standard', JSON.stringify(params));
 
 				uni.showToast({
@@ -573,6 +586,12 @@
 			closeTipsSave() {
 				this.$refs.popupTips.close()
 			},
+			checkMoreStr(num) {
+				if (num < 10) {
+					return '0' + num
+				}
+				return num;
+			},
 			// 手动测量
 			handleClick() {
 				let form = {
@@ -592,8 +611,13 @@
 						sexIndex: 2,
 					}
 				}
-
+				let data = new Date();
+				let name = data.getFullYear() + this.checkMoreStr((data.getMonth() + 1)) + this.checkMoreStr(data
+						.getDate()) + this.checkMoreStr(data
+						.getHours()) + this.checkMoreStr(data.getMinutes()) +
+					this.checkMoreStr(data.getSeconds())
 				let orginfo = {
+					name: name,
 					headHeight: Math.floor(this.sideLittleBlockBack),
 					neckHeight: Math.floor(this.sideLittleNeckBack),
 					sideHeadHeight: Math.floor((this.shoulderSpace - this.headSpace) * 0.5),
@@ -607,6 +631,8 @@
 				}
 				let params = (orginfo)
 				uni.setStorageSync('standard', JSON.stringify(params));
+
+				saveAIMode(params)
 				console.log('params:', params)
 				uni.redirectTo({
 					url: '/page_subject/adjust/adjust' + object2Query(params)

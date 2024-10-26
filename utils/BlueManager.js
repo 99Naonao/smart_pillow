@@ -16,6 +16,8 @@ class blue_class {
 	pillowHeight = 1;
 	pillowSideHeight = 2;
 	pillowPower = 0;
+	pillowPlasticHead = 0;
+	pillowPlasticNeck = 0;
 	pillowStatus = 0; // 0--空闲，1--平躺，2--侧卧；
 	chargingStatus = 0; // 0--空闲，1--充电中，2--充电完成
 	constructor() {
@@ -52,6 +54,13 @@ class blue_class {
 		this.chargingStatus = value;
 		console.log('PillowCharging:', this.chargingStatus)
 	}
+
+	setPillowPlasticStatus(head_status, neck_status) {
+		this.pillowPlasticNeck = neck_status;
+		this.pillowPlasticHead = head_status;
+		console.log('setPillowPlasticStatus:', this.pillowPlasticNeck)
+	}
+
 
 	getPillowCharging() {
 		return this.chargingStatus
@@ -182,13 +191,22 @@ class blue_class {
 		let isright10 = parseInt('0x' + isright);
 		let press = receive16.slice(12, 16);
 		let press10 = parseInt('0x' + press);
+		let plastic_status = receive16.slice(16, 18);
+		let plastic_status16 = '0x' + plastic_status;
+		let plastic_status10 = parseInt(plastic_status16);
+		// 8：气囊状态（bit0-1（头部气囊充气状态，0--空闲，1--充气，2--放气），bit3-4(颈部气囊状态 0--空闲，1--充气，2--放气））
 
+		let plastic_n1 = (plastic_status16) & 0x01;
+		let plastic_n2 = (plastic_status16 >> 2) & 0x01;
+		console.log('头部气囊充气状态:', plastic_n1);
+		console.log('颈部气囊状态:', plastic_n2);
 
 		// 0100970d030101f3
 		// dataView.setUint32(0, second | (minutes << 6) | (hours << 12) | (days << 17) | (months << 22) | ((year -
 		// 		2020) <<
 		// 	26))
 
+		blue_class.getInstance().setPillowPlasticStatus(plastic_n1, plastic_n2)
 		blue_class.getInstance().setPillowCharging(n1)
 		blue_class.getInstance().setPillowHeight(headHeight10)
 		blue_class.getInstance().setPillowStatus(status10)
