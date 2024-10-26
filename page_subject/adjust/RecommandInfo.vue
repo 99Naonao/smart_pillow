@@ -73,16 +73,16 @@
 </script>
 
 <style lang="scss" scoped>
-	.info-part {
+	.info-top {
+		margin-top: 50rpx;
+	}
 
+	.info-part {
 		margin-left: 40rpx;
 		margin-right: 40rpx;
 		font-size: 24rpx;
 		color: #354D5B;
 
-		.info-top {
-			margin-top: 50rpx;
-		}
 
 		.text-tips {
 			text-align: center;

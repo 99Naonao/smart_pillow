@@ -72,7 +72,7 @@
 			</view>
 		</view>
 		<input-view ref="inputView" class="input-part" v-if="showMeasure&&false"></input-view>
-		<recommand-info></recommand-info>
+		<recommand-info :showTips="true" :standard="standard"></recommand-info>
 
 
 		<uni-popup ref="popupSave" type="bottom" background-color="#fff" border-radius="10px 10px 0 0"
@@ -129,7 +129,8 @@
 		write2tooth,
 		parsePillowState,
 		sendModeByName,
-		saveRandomMode
+		saveRandomMode,
+		getAIModeByName
 	} from '@/common/util.js'
 	import {
 		version
@@ -182,6 +183,8 @@
 				initWidthHeight: 0,
 				initSideNeckHeight: 0,
 				initSideWdithHeight: 0,
+				standard: {},
+				step: 0, // 当前步骤
 			}
 		},
 		onLoad(options) {
@@ -209,6 +212,7 @@
 			})
 		},
 		onShow() {
+			this.step = 0;
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
 			// uni.onBLECharacteristicValueChange(this.handleMessage)
 			uni.$on('xx', this.handleMessage);
@@ -233,7 +237,19 @@
 				// // let app = getApp()
 				// blue_class.getInstance().write2tooth(init_arraybuffer);
 				this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
-					.initSideNeckHeight)
+					.initSideNeckHeight, 0)
+
+
+				this.standard = getAIModeByName(this.inputName)
+				if (!this.standard) {
+					this.standard = {
+						headHeight: 60,
+						neckHeight: 60,
+						sideHeadHeight: 60,
+						sideNeckHeight: 60,
+					}
+				}
+
 				// this.$refs.inputView.showParams(this.saveOptions);
 			} else {
 				this.showMeasure = false;
@@ -294,15 +310,28 @@
 				console.log('pillowPlasticHead:', blue_class.getInstance().pillowPlasticHead)
 				console.log('pillowPlasticNeck:', blue_class.getInstance().pillowPlasticNeck)
 				if (blue_class.getInstance().pillowPlasticHead == 0 && blue_class.getInstance().pillowPlasticNeck == 0) {
-					uni.hideLoading()
-					if (this.selectIndex == 1) {
+					try {
+						uni.hideLoading();
+					} catch (e) {
+						//TODO handle the exception
+					}
+					if (this.step == 1) {
 						this.selectIndex = 2;
-					} else {
+					} else if (this.step == 2) {
 						// 跳转首页
 						uni.switchTab({
 							url: '/pages/status/status'
 						})
 					}
+
+					// if (this.selectIndex == 1) {
+					// 	this.selectIndex = 2;
+					// } else {
+					// 	// 跳转首页
+					// 	uni.switchTab({
+					// 		url: '/pages/status/status'
+					// 	})
+					// }
 				}
 			},
 			uploadDataHandle() {
@@ -322,7 +351,7 @@
 				let shake1 = handPillowStatus()
 				blue_class.getInstance().write2tooth(shake1)
 			},
-			send2Pillow(headHeight, neckHeight, sideHeadHeight, sideNeckHeight) {
+			send2Pillow(headHeight, neckHeight, sideHeadHeight, sideNeckHeight, step) {
 				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
 				let init_arraybuffer = initPillow(headHeight > 100 ? 100 : headHeight, neckHeight > 100 ? 100 : neckHeight,
 					100, sideHeadHeight > 100 ? 100 : sideHeadHeight, sideNeckHeight >
@@ -333,6 +362,8 @@
 				uni.showLoading({
 					title: '调整中'
 				})
+
+				this.step = step;
 			},
 			// 不保存
 			cancelSaveHandle() {
@@ -343,7 +374,7 @@
 					blue_class.getInstance().write2tooth(changeAdjust);
 
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
-						.initSideNeckHeight);
+						.initSideNeckHeight, 1);
 
 					// this.selectIndex = 2;
 				} else {
@@ -352,7 +383,7 @@
 					blue_class.getInstance().write2tooth(changeAdjust);
 
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
-						.initSideNeckHeight);
+						.initSideNeckHeight, 2);
 
 					// 跳转首页
 					// uni.switchTab({
@@ -396,10 +427,10 @@
 					let changeAdjust = changeAdjustMode(0);
 					blue_class.getInstance().write2tooth(changeAdjust);
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
-						.initSideNeckHeight);
+						.initSideNeckHeight, 1);
 
 
-					this.selectIndex = 2;
+					// this.selectIndex = 2;
 					this.closeSave()
 					this.$refs.popupTips.open('center')
 
@@ -429,16 +460,16 @@
 					blue_class.getInstance().write2tooth(changeAdjust);
 
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
-						.initSideNeckHeight);
+						.initSideNeckHeight, 2);
 					uni.showToast({
 						title: '保存中',
 						success() {
+							// 跳转首页
 							// 更新新的数据
 							sendModeByName(this.inputName)
-							// 跳转首页
-							uni.switchTab({
-								url: '/pages/status/status'
-							})
+							// uni.switchTab({
+							// 	url: '/pages/status/status'
+							// })
 						}
 					})
 				}

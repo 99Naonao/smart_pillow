@@ -652,7 +652,6 @@ var getAIModeByName = function(name) {
 	for (var index in storageObj) {
 		if (storageObj[index] && storageObj[index].name == name) {
 			item = storageObj[index]
-			storageObj[index] = params;
 			break;
 		}
 	}
