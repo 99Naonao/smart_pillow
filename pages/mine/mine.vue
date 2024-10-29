@@ -57,9 +57,32 @@
 </template>
 
 <script>
+	import blue_class from '../../utils/BlueManager'
 	import {
 		autoLogin
 	} from '@/utils/miniapp.js'
+	import {
+		object2Query,
+		parsePillowRealState,
+		handPillowStatus,
+		handPillowSideState,
+		handPillowFrontState,
+		handlePillowDelayState,
+		hexStringToArrayBuffer,
+		ab2hex,
+		resetPillow,
+		uploadDataRequest,
+		initPillow,
+		changeAdjustMode,
+		changeSaveAdjustMode,
+		hand1Shake,
+		write2tooth,
+		parsePillowState,
+		sendModeByName,
+		saveRandomMode,
+		restartPillow,
+		getAIModeByName
+	} from '@/common/util.js'
 	export default {
 		data() {
 			return {
@@ -90,6 +113,14 @@
 			}
 		},
 		methods: {
+			restartHandle() {
+				let arraybuffer = restartPillow(77);
+				blue_class.getInstance().write2tooth(arraybuffer)
+			},
+			resetHandle() {
+				let reset_data = resetPillow(88);
+				blue_class.getInstance().write2tooth(reset_data)
+			},
 			go2Use() {
 				uni.showToast({
 					title: '暂未开放'
