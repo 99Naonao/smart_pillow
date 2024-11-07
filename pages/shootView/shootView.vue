@@ -99,6 +99,14 @@
 					<view class="circle"></view>
 					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">后背凸点</view>
 				</view>
+				<view class="wrap backUpPointWrap" :style="backUpPointWrapStyle" v-if="sideBodyImgUrl!=''">
+					<view class="circle"></view>
+					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">颈部凹点上</view>
+				</view>
+				<view class="wrap backDownPointWrap" :style="backDownPointWrapStyle" v-if="sideBodyImgUrl!=''">
+					<view class="circle"></view>
+					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">颈部凹点下</view>
+				</view>
 				<text style="line-height: 140rpx;" v-else>
 					上传待检测的图片
 				</text>
@@ -254,6 +262,14 @@
 					'--bottom': '10rpx',
 				},
 				backPointWrapStyle: {
+					'--left': '10rpx',
+					'--bottom': '10rpx',
+				},
+				backUpPointWrapStyle: {
+					'--left': '10rpx',
+					'--bottom': '10rpx',
+				},
+				backDownPointWrapStyle: {
 					'--left': '10rpx',
 					'--bottom': '10rpx',
 				},
@@ -1005,6 +1021,24 @@
 								.bodyImgOriginWidth) +
 							'px')
 						this.$set(this.backPointWrapStyle, '--bottom', (300 * Math.abs(points[5] -
+								this
+								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
+							'px')
+
+						// 颈部上坐标
+						this.$set(this.backUpPointWrapStyle, '--left', (300 * points[6] / this
+								.bodyImgOriginWidth) +
+							'px')
+						this.$set(this.backUpPointWrapStyle, '--bottom', (300 * Math.abs(points[7] -
+								this
+								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
+							'px')
+
+						// 颈部下坐标
+						this.$set(this.backDownPointWrapStyle, '--left', (300 * points[8] / this
+								.bodyImgOriginWidth) +
+							'px')
+						this.$set(this.backDownPointWrapStyle, '--bottom', (300 * Math.abs(points[9] -
 								this
 								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 							'px')

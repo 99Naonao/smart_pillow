@@ -16,9 +16,9 @@
 		<view class="info-part">
 			<view class="info-second-part">
 				<label class='desc1'>头枕部</label>
-				<label class='desc1size'>{{this.selectIndex==1?this.neck:this.sideNeck}}mm</label>
+				<label class='desc1size'>{{this.selectIndex==1?this.head:this.sideHead}}mm</label>
 				<label class='desc2'>颈枕部</label>
-				<label class='desc2size'>{{this.selectIndex==1?this.head:this.sideHead}}mm</label>
+				<label class='desc2size'>{{this.selectIndex==1?this.neck:this.sideNeck}}mm</label>
 				<image class="human-icon" :src="'../static/adjust/SY_11_bg01YW.png'"></image>
 				<image class="main-icon" :src="'../static/adjust/SY_11_bg02TZ.png'"></image>
 				<image class="down-icon" :class="touchingDown?['down-icon-effect']:[]"
@@ -27,10 +27,10 @@
 				</image>
 				<!-- 				<image class="bzb-icon" :src="'../static/adjust/SY_11_buttonBZb.png'"></image>
 				<image class="tzb-icon" :src="'../static/adjust/SY_11_buttonTZb.png'"></image> -->
-				<view :class="this.selectHead?'bo bo-left':'bo bo-left select'" @click="selectHeadHandler(false)">
+				<view :class="this.selectHead?'bo bo-left':'bo bo-left select'" @click="selectHeadHandler(true)">
 					头枕
 				</view>
-				<view :class="this.selectHead?'bo bo-right select':'bo bo-right'" @click="selectHeadHandler(true)">
+				<view :class="this.selectHead?'bo bo-right select':'bo bo-right'" @click="selectHeadHandler(false)">
 					颈枕
 				</view>
 			</view>
@@ -1025,6 +1025,8 @@
 			.desc2 {
 				position: absolute;
 				color: #354D5B;
+
+
 				left: 390rpx;
 				top: 47rpx;
 				font-size: 30rpx;
@@ -1035,7 +1037,7 @@
 				font-size: 36rpx;
 				color: #003C71;
 				position: absolute;
-				right: 37rpx;
+				right: 25rpx;
 				top: 43rpx;
 				z-index: 11;
 			}
