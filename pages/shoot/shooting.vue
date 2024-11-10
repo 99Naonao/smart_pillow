@@ -74,6 +74,11 @@
 				measureResult: 0,
 			}
 		},
+		onLoad() {
+			this.shootingTips = "请拍摄正面照片"
+			this.frontImage = ''
+			this.sideImage = ''
+		},
 		onShow() {
 			// uni.showToast({
 			// 	title: '请拍摄正面照片',
@@ -81,7 +86,9 @@
 			// })
 			// this.$refs.popupTips.open('center')
 
-			this.shootingTips = "请拍摄正面照片"
+			// this.shootingTips = "请拍摄正面照片"
+			// this.frontImage = ''
+			// this.sideImage = ''
 		},
 		onReady() {
 			// 获取小程序右上角胶囊按钮的坐标，用作自定义导航栏。

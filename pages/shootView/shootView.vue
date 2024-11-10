@@ -42,7 +42,7 @@
 						<image class="side1Img" src="../static/camera/SY_09_ButCMSJ01.png" mode="widthFix"></image>
 						<view v-if="false">侧面数据</view>
 					</view>
-					<view class="back2 flex1 flex">
+					<view class="back2 flex1 flex align-center">
 						<image mode="widthFix" class="img2back" src="../../static/camera/SY_09_ButZMSJ02.png">
 						</image>
 						<view class="left-part">
@@ -51,10 +51,10 @@
 							<view v-if="false">正面数据</view>
 						</view>
 						<view class="right-info-part">
-							<view class=""><label class="title">●右耳到右肩:</label><label
+							<view class=""><label class="title">●头枕高度:</label><label
 									class="">{{frontRightPart}}{{unitDesc}}</label></view>
-							<view><label class="title">●肩宽:</label>{{shoulderSpace}}{{unitDesc}}</view>
-							<view><label class="title">●左耳到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view>
+							<view><label class="title">●颈枕高度:</label>{{shoulderSpace}}{{unitDesc}}</view>
+							<!-- <view><label class="title">●左耳到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view> -->
 						</view>
 					</view>
 				</view>
@@ -64,7 +64,7 @@
 						<p>正面信息（照片以0.8米宽度为参照物计算结果）:</p>
 					</view>
 					<block></block>
-					<view>
+					<view class="right-info-part">
 						<view class=""><label class="title">●头枕高度:</label><label
 								class="">{{frontRightPart}}{{unitDesc}}</label></view>
 						<view><label class="title">●颈枕高度:</label>{{shoulderSpace}}{{unitDesc}}</view>
@@ -92,7 +92,7 @@
 				</view>
 				<view class="wrap neckPointWrap" :style="neckPointWrapStyle" v-if="sideBodyImgUrl!=''">
 					<view class="circle"></view>
-					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">A</view>
+					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'"></view>
 					<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
 				</view>
 				<view class="wrap backPointWrap" :style="backPointWrapStyle" v-if="false">
@@ -101,11 +101,11 @@
 				</view>
 				<view class="wrap backUpPointWrap" :style="backUpPointWrapStyle" v-if="sideBodyImgUrl!=''">
 					<view class="circle"></view>
-					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">B</view>
+					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'"></view>
 				</view>
 				<view class="wrap backDownPointWrap" :style="backDownPointWrapStyle" v-if="sideBodyImgUrl!=''">
 					<view class="circle"></view>
-					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">C</view>
+					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'"></view>
 				</view>
 				<text style="line-height: 140rpx;" v-else>
 					上传待检测的图片
@@ -115,15 +115,12 @@
 				<view class="datainfo flex">
 					<view class="back1" @click="handleFrontClick()">
 						<image class="front2Img" src="../static/camera/SY_09_ButCMSJ01.png" mode="widthFix"></image>
-						<view v-if="false">正面数据</view>
 					</view>
 					<view class="back2 flex1 flex align-center">
 						<image mode="widthFix" class="img2back" src="../../static/camera/SY_09_ButZMSJ02.png">
 						</image>
 						<view class="left-part">
-							<image v-if="false" class="side2Img" src="../static/adjust/Side02.png" mode="widthFix">
-							</image>
-							<view v-if="false">侧面数据</view>
+
 						</view>
 						<view class="right-info-part">
 							<view class=""><label class="title">●头枕高度:</label><label
@@ -132,7 +129,6 @@
 							<view class=""><label class="title">●颈枕高度:</label><label
 									class="">{{sideLittleBlockBack}}{{unitDesc}}</label>
 							</view>
-							<view v-if="false"><label class="title">●后背与脖子:</label>{{sideNeckBack}}{{unitDesc}}</view>
 							<!-- <view><label class="title">●后背与耳朵:</label>{{sideEarBack}}{{unitDesc}}</view> -->
 						</view>
 					</view>
@@ -1112,7 +1108,7 @@
 
 				this.shoulderSpace = Math.floor(space) + 10
 				this.shoulderSpace = this.shoulderSpace * 0.9;
-				this.shoulderSpace = this.shoulderSpace.toFixed(3)
+				this.shoulderSpace = this.shoulderSpace.toFixed(0)
 
 				space = Math.abs(this.frontLeftEarX - this.frontRightEarX);
 				space = space * this.unit / this.factor
