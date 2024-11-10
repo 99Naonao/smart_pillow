@@ -236,8 +236,8 @@
 				// 	this.initSideNeckHeight, 100);
 				// // let app = getApp()
 				// blue_class.getInstance().write2tooth(init_arraybuffer);
-				this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
-					.initSideNeckHeight, 0)
+				this.send2Pillow(this.initHeadHeight - 20, this.initNeckHeight - 20, this.initSideHeadHeight - 30, this
+					.initSideNeckHeight - 30, 0)
 
 
 				this.standard = getAIModeByName(this.inputName)
@@ -311,7 +311,7 @@
 				console.log('pillowPlasticNeck:', blue_class.getInstance().pillowPlasticNeck)
 				if (blue_class.getInstance().pillowPlasticHead == 0 && blue_class.getInstance().pillowPlasticNeck == 0) {
 					try {
-						uni.hideLoading();
+						// uni.hideLoading();
 					} catch (e) {
 						//TODO handle the exception
 					}
@@ -359,9 +359,9 @@
 					100 :
 					sideNeckHeight, 100);
 				blue_class.getInstance().write2tooth(init_arraybuffer);
-				uni.showLoading({
-					title: '调整中'
-				})
+				// uni.showLoading({
+				// 	title: '调整中'
+				// })
 
 				this.step = step;
 			},

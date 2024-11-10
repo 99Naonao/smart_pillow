@@ -12,22 +12,22 @@
 				<view class="info-part" :style="frontImageStyle" v-if="bodyImgUrl!=''">
 					<view class="wrap shoulderLeftWrap" :style="shoulderLeftWrapStyle">
 						<view class="circle"></view>
-						<view class="tips">右肩</view>
+						<view class="tips"></view>
 						<!-- <view>{{shoulderSpace}}{{unitDesc}}</view> -->
 					</view>
 					<view class="wrap shoulderRightWrap" :style="shoulderRightWrapStyle">
 						<view class="circle"></view>
-						<view class="tips">左肩</view>
+						<view class="tips"></view>
 						<!-- <view>{{shoulderSpace}}{{unitDesc}}</view> -->
 					</view>
 					<view class="wrap shoulderLeftEarWrap" :style="shoulderLeftEarWrapStyle">
 						<view class="circle"></view>
-						<view class="tips">左耳</view>
+						<view class="tips"></view>
 						<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
 					</view>
 					<view class="wrap shoulderRightEarWrap" :style="shoulderRightEarWrapStyle">
 						<view class="circle"></view>
-						<view class="tips tips-left">右耳</view>
+						<view class="tips tips-left"></view>
 						<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
 					</view>
 					<!-- <view wx:for="{{markList}}" class="marker">123</view> -->
@@ -65,10 +65,10 @@
 					</view>
 					<block></block>
 					<view>
-						<view class=""><label class="title">●右耳朵到右肩:</label><label
+						<view class=""><label class="title">●头枕高度:</label><label
 								class="">{{frontRightPart}}{{unitDesc}}</label></view>
-						<view><label class="title">●肩宽:</label>{{shoulderSpace}}{{unitDesc}}</view>
-						<view><label class="title">●左耳朵到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view>
+						<view><label class="title">●颈枕高度:</label>{{shoulderSpace}}{{unitDesc}}</view>
+						<!-- <view><label class="title">●左耳朵到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view> -->
 						<!-- 					<view><label class="title">脖子中心到左肩:</label>{{frontLeftNeckPart}}{{unitDesc}}</view>
 					<view><label class="title">脖子中心到右肩:</label>{{frontRightNeckPart}}{{unitDesc}}</view> -->
 					</view>
@@ -85,27 +85,27 @@
 			<!-- <view style="text-align: center;padding: 20rpx;font-weight: 600;"><label class="title">侧面图片</label></view> -->
 			<view class="frontPic" :style="sideImageStyle">
 				<image v-if="sideBodyImgUrl!=''" :src="sideBodyImgUrl" mode="widthFix"></image>
-				<view class="wrap headPointWrap" :style="headPointWrapStyle" v-if="sideBodyImgUrl!=''">
+				<view class="wrap headPointWrap" :style="headPointWrapStyle" v-if="false">
 					<view class="circle"></view>
 					<view class="tips" :class="sideForward=='left'? 'tips-head-right':'tips-head-left'">后脑勺</view>
 					<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
 				</view>
 				<view class="wrap neckPointWrap" :style="neckPointWrapStyle" v-if="sideBodyImgUrl!=''">
 					<view class="circle"></view>
-					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">颈部凹点</view>
+					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">A</view>
 					<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
 				</view>
-				<view class="wrap backPointWrap" :style="backPointWrapStyle" v-if="sideBodyImgUrl!=''">
+				<view class="wrap backPointWrap" :style="backPointWrapStyle" v-if="false">
 					<view class="circle"></view>
 					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">后背凸点</view>
 				</view>
 				<view class="wrap backUpPointWrap" :style="backUpPointWrapStyle" v-if="sideBodyImgUrl!=''">
 					<view class="circle"></view>
-					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">颈部凹点上</view>
+					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">B</view>
 				</view>
 				<view class="wrap backDownPointWrap" :style="backDownPointWrapStyle" v-if="sideBodyImgUrl!=''">
 					<view class="circle"></view>
-					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">颈部凹点下</view>
+					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">C</view>
 				</view>
 				<text style="line-height: 140rpx;" v-else>
 					上传待检测的图片
@@ -126,10 +126,10 @@
 							<view v-if="false">侧面数据</view>
 						</view>
 						<view class="right-info-part">
-							<view class=""><label class="title">●后背与颈部:</label><label
+							<view class=""><label class="title">●头枕高度:</label><label
 									class="">{{sideLittleNeckBack}}{{unitDesc}}</label>
 							</view>
-							<view class=""><label class="title">●后背与后脑:</label><label
+							<view class=""><label class="title">●颈枕高度:</label><label
 									class="">{{sideLittleBlockBack}}{{unitDesc}}</label>
 							</view>
 							<view v-if="false"><label class="title">●后背与脖子:</label>{{sideNeckBack}}{{unitDesc}}</view>
@@ -334,7 +334,8 @@
 				let space = Math.abs(this.frontRightEarX - this.frontRightShoulder);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
-				space = Math.floor(space)
+				// 测算出的高度都*0.9
+				space = Math.floor(space * 0.9)
 				return space
 			},
 			frontLeftNeckPart() {
@@ -387,17 +388,19 @@
 				return space
 			},
 			sideLittleNeckBack() {
-				let space = Math.abs(this.sideLower - this.sideBack);
+				let space = Math.abs(this.sideC - this.sideB);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
 				space = Math.floor(space)
 				return space
 			},
 			sideLittleBlockBack() {
-				let space = Math.abs(this.sideBack - this.sideBlock);
+				let space = Math.abs(this.sideA - this.sideC);
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
 				space = Math.floor(space)
+				// 最高不超过80cm
+				space = Math.min(space, 80)
 				return space
 			},
 			shoulderPart() {
@@ -998,6 +1001,10 @@
 						// 最低点为止
 						this.sideLower = points[2]
 
+						this.sideB = points[6];
+						this.sideA = points[2];
+						this.sideC = points[8];
+
 
 						// 后脑勺
 						this.$set(this.headPointWrapStyle, '--left', (300 * points[0] / this
@@ -1102,9 +1109,10 @@
 				let space = Math.abs(rightShoulder - leftShoulder);
 				space = space * this.unit / this.factor
 				space = space + 1
-				space = space.toFixed(3)
 
 				this.shoulderSpace = Math.floor(space) + 10
+				this.shoulderSpace = this.shoulderSpace * 0.9;
+				this.shoulderSpace = this.shoulderSpace.toFixed(3)
 
 				space = Math.abs(this.frontLeftEarX - this.frontRightEarX);
 				space = space * this.unit / this.factor

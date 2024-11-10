@@ -9,9 +9,9 @@
 				<view class="fillprogress" :style="menuInfo"></view>
 				<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconDLa.png"></image>
 				<image class="icon" v-if="pillowPowerCharging==1" mode="widthFix"
-					src="../../static/index/SY_00A_IconDLa.png"></image>
+					src="../../static/index/SY_00A_IconDLaing.png"></image>
 				<image class="icon" v-if="pillowPowerCharging==2" mode="widthFix"
-					src="../../static/index/SY_00A_IconDLa.png"></image>
+					src="../../static/index/SY_00A_IconDLaing.png"></image>
 				<label class="batedesc" for="">{{getPillowPower}}%</label>
 			</view>
 			<view class="rightInfo" :style="menuInfo">
