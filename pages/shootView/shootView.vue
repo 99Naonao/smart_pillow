@@ -331,7 +331,7 @@
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
 				// 测算出的高度都*0.9
-				space = Math.floor(space * 0.5 * 0.9)
+				space = Math.floor(space * 0.5)
 				return space
 			},
 			frontLeftNeckPart() {
@@ -385,6 +385,7 @@
 			},
 			sideLittleNeckBack() {
 				let space = Math.abs(this.sideC - this.sideB);
+				space = Math.max(space, 1)
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
 				space = Math.floor(space)
@@ -392,6 +393,7 @@
 			},
 			sideLittleBlockBack() {
 				let space = Math.abs(this.sideA - this.sideC);
+				space = Math.max(space, 1)
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
 				space = Math.floor(space)
@@ -527,8 +529,8 @@
 					name: this.inputName,
 					headHeight: Math.floor(this.sideLittleBlockBack),
 					neckHeight: Math.floor(this.sideLittleNeckBack),
-					sideHeadHeight: Math.floor((this.shoulderSpace - this.headSpace) * 0.5),
-					sideNeckHeight: Math.floor((this.shoulderSpace - this.manFactor) * 0.5)
+					sideHeadHeight: Math.floor((this.shoulderSpace)),
+					sideNeckHeight: Math.floor((this.frontRightPart))
 				}
 
 				let form = {
@@ -537,25 +539,25 @@
 					tall: 168,
 					sexIndex: 2
 				}
-				let obj = uni.getStorageSync('user_measure');
-				if (obj) {
-					form = JSON.parse(obj);
-				} else {
-					form = {
-						age: 20,
-						weight: 50,
-						tall: 168,
-						sexIndex: 2,
-					}
-				}
+				// let obj = uni.getStorageSync('user_measure');
+				// if (obj) {
+				// 	form = JSON.parse(obj);
+				// } else {
+				// 	form = {
+				// 		age: 20,
+				// 		weight: 50,
+				// 		tall: 168,
+				// 		sexIndex: 2,
+				// 	}
+				// }
 
 
-				// 判断是否女的
-				if (form && form.sexIndex) {
-					if (form.sexIndex == 2) {
-						params.sideNeckHeight = (this.shoulderSpace - this.womenFactor) * 0.5
-					}
-				}
+				// // 判断是否女的
+				// if (form && form.sexIndex) {
+				// 	if (form.sexIndex == 2) {
+				// 		params.sideNeckHeight = (this.shoulderSpace - this.womenFactor) * 0.5
+				// 	}
+				// }
 
 				console.log('params:', params)
 				//
@@ -635,15 +637,10 @@
 					name: name,
 					headHeight: Math.floor(this.sideLittleBlockBack),
 					neckHeight: Math.floor(this.sideLittleNeckBack),
-					sideHeadHeight: Math.floor((this.shoulderSpace - this.headSpace) * 0.5),
-					sideNeckHeight: Math.floor((this.shoulderSpace - this.manFactor) * 0.5)
+					sideHeadHeight: Math.floor((this.shoulderSpace)),
+					sideNeckHeight: Math.floor((this.frontRightPart))
 				}
-				// 判断是否女的
-				if (form && form.sexIndex) {
-					if (form.sexIndex == 2) {
-						orginfo.sideNeckHeight = (this.shoulderSpace - this.womenFactor) * 0.5
-					}
-				}
+
 				let params = (orginfo)
 				uni.setStorageSync('standard', JSON.stringify(params));
 
@@ -718,7 +715,8 @@
 								this.bodyImgWidth = fixWidth;
 								this.bodyImgHeight = (fixWidth / width) * height;
 
-								this.$set(this.frontImageStyle, '--imgWidth', (this.bodyImgWidth) +
+								this.$set(this.frontImageStyle, '--imgWidth', (this
+										.bodyImgWidth) +
 									'px')
 								this.$set(this.frontImageStyle, '--imgHeight', (this
 										.bodyImgHeight) +
@@ -766,7 +764,8 @@
 								var bodyImgHeight = (fixWidth / width) * height;
 								this.$set(this.sideImageStyle, '--imgWidth', bodyImgWidth +
 									'px');
-								this.$set(this.sideImageStyle, '--imgHeight', bodyImgHeight +
+								this.$set(this.sideImageStyle, '--imgHeight',
+									bodyImgHeight +
 									'px');
 
 								this.factor = width * (1 / 0.8) // 参参照物宽度
@@ -825,7 +824,8 @@
 				this.sideNeck = body_parts.neck.x
 				this.sideEye = body_parts.left_eye.score > 0.5 ? body_parts.left_eye.x : body_parts.right_eye.x
 				this.sideNose = body_parts.nose.x;
-				this.sideMouth = body_parts.left_mouth_corner.x > 0.5 ? body_parts.left_mouth_corner.x : body_parts
+				this.sideMouth = body_parts.left_mouth_corner.x > 0.5 ? body_parts.left_mouth_corner.x :
+					body_parts
 					.left_mouth_corner.x
 				// 识别人物朝向，根据两个眼睛位置
 
@@ -1032,7 +1032,8 @@
 						this.$set(this.backUpPointWrapStyle, '--left', (300 * points[6] / this
 								.bodyImgOriginWidth) +
 							'px')
-						this.$set(this.backUpPointWrapStyle, '--bottom', (300 * Math.abs(points[7] -
+						this.$set(this.backUpPointWrapStyle, '--bottom', (300 * Math.abs(points[
+									7] -
 								this
 								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 							'px')
@@ -1041,7 +1042,8 @@
 						this.$set(this.backDownPointWrapStyle, '--left', (300 * points[8] / this
 								.bodyImgOriginWidth) +
 							'px')
-						this.$set(this.backDownPointWrapStyle, '--bottom', (300 * Math.abs(points[9] -
+						this.$set(this.backDownPointWrapStyle, '--bottom', (300 * Math.abs(points[
+									9] -
 								this
 								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 							'px')
@@ -1134,7 +1136,7 @@
 				}
 
 				this.shoulderSpace = Math.floor(space)
-				this.shoulderSpace = (this.shoulderSpace * 0.5 - speSpace) * 0.9;
+				this.shoulderSpace = (this.shoulderSpace * 0.5 - speSpace) * 1;
 				this.shoulderSpace = this.shoulderSpace.toFixed(0)
 				// console.log('fuck:', space, speSpace, this.shoulderSpace)
 				// console.log('fuck obj:', obj)
@@ -1147,27 +1149,33 @@
 				this.headSpace = space;
 				// console.log('this.shoulderSpace:', this.shoulderSpace, space, 1, space + 1)
 				// 左肩
-				this.$set(this.shoulderLeftWrapStyle, '--left', (300 * rightShoulder / this.bodyImgOriginWidth) +
+				this.$set(this.shoulderLeftWrapStyle, '--left', (300 * rightShoulder / this
+						.bodyImgOriginWidth) +
 					'px')
 				this.$set(this.shoulderLeftWrapStyle, '--bottom', (300 * Math.abs(right_shoulder.y - this
 						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 					'px')
 				// 右肩
-				this.$set(this.shoulderRightWrapStyle, '--left', (300 * leftShoulder / this.bodyImgOriginWidth) +
+				this.$set(this.shoulderRightWrapStyle, '--left', (300 * leftShoulder / this
+						.bodyImgOriginWidth) +
 					'px')
 				this.$set(this.shoulderRightWrapStyle, '--bottom', (300 * Math.abs(left_shoulder.y - this
 						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 					'px')
 				// 左耳
-				this.$set(this.shoulderLeftEarWrapStyle, '--left', (300 * this.frontLeftEarX / this.bodyImgOriginWidth) +
+				this.$set(this.shoulderLeftEarWrapStyle, '--left', (300 * this.frontLeftEarX / this
+						.bodyImgOriginWidth) +
 					'px')
-				this.$set(this.shoulderLeftEarWrapStyle, '--bottom', (300 * Math.abs(body_parts.left_ear.y - this
+				this.$set(this.shoulderLeftEarWrapStyle, '--bottom', (300 * Math.abs(body_parts.left_ear.y -
+						this
 						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 					'px')
 				// 右耳
-				this.$set(this.shoulderRightEarWrapStyle, '--left', (300 * this.frontRightEarX / this.bodyImgOriginWidth) +
+				this.$set(this.shoulderRightEarWrapStyle, '--left', (300 * this.frontRightEarX / this
+						.bodyImgOriginWidth) +
 					'px')
-				this.$set(this.shoulderRightEarWrapStyle, '--bottom', (300 * Math.abs(body_parts.right_ear.y - this
+				this.$set(this.shoulderRightEarWrapStyle, '--bottom', (300 * Math.abs(body_parts.right_ear.y -
+						this
 						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 					'px')
 
