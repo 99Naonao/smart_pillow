@@ -699,12 +699,12 @@ var sendModeByName = function(name) {
 	}
 	// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
 	let init_arraybuffer = initPillow(item.headHeight > 100 ? 100 : item.headHeight, item
-		.neckHeight > 100 ? 100 : item.neckHeight, 100, item.sideHeadHeight > 100 ? 100 : item.sideHeadHeight,
+		.neckHeight > 100 ? 100 : item.neckHeight, 200, item.sideHeadHeight > 100 ? 100 : item.sideHeadHeight,
 		item
 		.sideNeckHeight >
 		100 ?
 		100 :
-		item.sideNeckHeight, 100);
+		item.sideNeckHeight, 200);
 	blue_class.getInstance().write2tooth(init_arraybuffer);
 	return true;
 }

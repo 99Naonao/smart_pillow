@@ -331,7 +331,7 @@
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
 				// 测算出的高度都*0.9
-				space = Math.floor(space * 0.9)
+				space = Math.floor(space * 0.5 * 0.9)
 				return space
 			},
 			frontLeftNeckPart() {
@@ -1104,11 +1104,40 @@
 
 				let space = Math.abs(rightShoulder - leftShoulder);
 				space = space * this.unit / this.factor
-				space = space + 1
+				space = space + 1;
 
-				this.shoulderSpace = Math.floor(space) + 10
-				this.shoulderSpace = this.shoulderSpace * 0.9;
+				let form = {
+					age: 20,
+					weight: 50,
+					tall: 168,
+					sexIndex: 2
+				}
+				let measureobj = uni.getStorageSync('user_measure');
+				if (measureobj) {
+					form = JSON.parse(measureobj);
+				} else {
+					form = {
+						age: 20,
+						weight: 50,
+						tall: 168,
+						sexIndex: 2,
+					}
+				}
+
+
+				let speSpace = 120
+				// 判断是否女的
+				if (form && form.sexIndex) {
+					if (form.sexIndex == 2) {
+						speSpace = 100;
+					}
+				}
+
+				this.shoulderSpace = Math.floor(space)
+				this.shoulderSpace = (this.shoulderSpace * 0.5 - speSpace) * 0.9;
 				this.shoulderSpace = this.shoulderSpace.toFixed(0)
+				// console.log('fuck:', space, speSpace, this.shoulderSpace)
+				// console.log('fuck obj:', obj)
 
 				space = Math.abs(this.frontLeftEarX - this.frontRightEarX);
 				space = space * this.unit / this.factor

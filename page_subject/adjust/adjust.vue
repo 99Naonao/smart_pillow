@@ -236,8 +236,8 @@
 				// 	this.initSideNeckHeight, 100);
 				// // let app = getApp()
 				// blue_class.getInstance().write2tooth(init_arraybuffer);
-				this.send2Pillow(this.initHeadHeight - 20, this.initNeckHeight - 20, this.initSideHeadHeight - 30, this
-					.initSideNeckHeight - 30, 0)
+				this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
+					.initSideNeckHeight, 0)
 
 
 				this.standard = getAIModeByName(this.inputName)
@@ -353,11 +353,17 @@
 			},
 			send2Pillow(headHeight, neckHeight, sideHeadHeight, sideNeckHeight, step) {
 				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
-				let init_arraybuffer = initPillow(headHeight > 100 ? 100 : headHeight, neckHeight > 100 ? 100 : neckHeight,
-					100, sideHeadHeight > 100 ? 100 : sideHeadHeight, sideNeckHeight >
+				// 默认发送高度减2cm 或者3 cm
+				let headSafeHeight = headHeight - 20 > 0 ? headHeight - 20 : 0
+				let neckSafeHeight = neckHeight - 20 > 0 ? neckHeight - 20 : 0
+				let sideHeadSafeHeight = sideHeadHeight - 30 > 0 ? sideHeadHeight - 30 : 0
+				let sideNeckSafeHeight = sideNeckHeight - 30 > 0 ? sideNeckHeight - 30 : 0
+				let init_arraybuffer = initPillow(headHeight > 100 ? 100 : headSafeHeight, neckHeight > 100 ? 100 :
+					neckSafeHeight,
+					200, sideHeadHeight > 100 ? 100 : sideHeadSafeHeight, sideNeckHeight >
 					100 ?
 					100 :
-					sideNeckHeight, 100);
+					sideNeckSafeHeight, 200);
 				blue_class.getInstance().write2tooth(init_arraybuffer);
 				// uni.showLoading({
 				// 	title: '调整中'
