@@ -89,6 +89,50 @@
 			// this.shootingTips = "请拍摄正面照片"
 			// this.frontImage = ''
 			// this.sideImage = ''
+			// wx.authorize({
+			// 	scope: 'scope.camera',
+			// 	success() {
+			// 		uni.showToast({
+			// 			title: '同意授权'
+			// 		})
+			// 	},
+			// 	fail() {
+			// 		uni.showToast({
+			// 			title: '拒绝授权'
+			// 		})
+			// 	}
+			// })
+			let scope = 'scope.camera';
+			wx.getSetting({
+				success: res => {
+					if (scope) {
+						// 判断是否授权
+						if (res.authSetting[scope]) {
+
+						} else {
+							wx.authorize({
+								scope: 'scope.camera',
+								success() {
+									uni.showToast({
+										title: '同意授权'
+									})
+								},
+								fail() {
+									uni.showToast({
+										title: '拒绝授权'
+									})
+								}
+							})
+						}
+						// resolve(res.authSetting[scope])
+					} else {
+						// resolve(res.authSetting)
+					}
+				},
+				fail: err => {
+					reject(err)
+				}
+			})
 		},
 		onReady() {
 			// 获取小程序右上角胶囊按钮的坐标，用作自定义导航栏。
