@@ -354,10 +354,10 @@
 			send2Pillow(headHeight, neckHeight, sideHeadHeight, sideNeckHeight, step) {
 				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
 				// 默认发送高度减2cm 或者3 cm
-				let headSafeHeight = headHeight - 20 > 0 ? headHeight - 20 : 0
-				let neckSafeHeight = neckHeight - 20 > 0 ? neckHeight - 20 : 0
-				let sideHeadSafeHeight = sideHeadHeight - 30 > 0 ? sideHeadHeight - 30 : 0
-				let sideNeckSafeHeight = sideNeckHeight - 30 > 0 ? sideNeckHeight - 30 : 0
+				let headSafeHeight = headHeight - 20 > 0 ? headHeight - 20 : 1
+				let neckSafeHeight = neckHeight - 20 > 0 ? neckHeight - 20 : 1
+				let sideHeadSafeHeight = sideHeadHeight - 30 > 0 ? sideHeadHeight - 30 : 1
+				let sideNeckSafeHeight = sideNeckHeight - 30 > 0 ? sideNeckHeight - 30 : 1
 				let init_arraybuffer = initPillow(headHeight > 100 ? 100 : headSafeHeight, neckHeight > 100 ? 100 :
 					neckSafeHeight,
 					200, sideHeadHeight > 100 ? 100 : sideHeadSafeHeight, sideNeckHeight >
@@ -382,7 +382,7 @@
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
 						.initSideNeckHeight, 1);
 
-					// this.selectIndex = 2;
+					this.selectIndex = 2;
 				} else {
 					// 切换成自动模式
 					let changeAdjust = changeAdjustMode(0);
@@ -392,9 +392,9 @@
 						.initSideNeckHeight, 2);
 
 					// 跳转首页
-					// uni.switchTab({
-					// 	url: '/pages/status/status'
-					// })
+					uni.switchTab({
+						url: '/pages/status/status'
+					})
 				}
 			},
 			saveModeHandler() {
@@ -935,6 +935,11 @@
 		padding: 5rpx;
 		color: white;
 		background-color: rgb(109, 0, 1);
+	}
+
+	.text-button {
+		font-size: 20rpx;
+		padding: 20rpx;
 	}
 
 	.main {
