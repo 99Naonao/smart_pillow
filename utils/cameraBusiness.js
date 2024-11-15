@@ -381,6 +381,9 @@ function initEnvironment(canvasDom) {
 	session.start(err => {
 		if (err) {
 			console.log('session.start', err)
+			uni.showToast({
+				title: 'err:' + err
+			})
 			return
 		}
 		console.log('session.start', 'ok')
