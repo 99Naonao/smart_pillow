@@ -272,12 +272,12 @@
 				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
 				let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : this.selectItem.headHeight, this
 					.selectItem
-					.neckHeight > 100 ? 100 : this.selectItem.neckHeight, 100, this
+					.neckHeight > 100 ? 100 : this.selectItem.neckHeight, 200, this
 					.selectItem.sideHeadHeight > 100 ? 100 : this.selectItem.sideHeadHeight, this.selectItem
 					.sideNeckHeight >
 					100 ?
 					100 :
-					this.selectItem.sideNeckHeight, 100);
+					this.selectItem.sideNeckHeight, 200);
 				// 如果有数据，默认调整枕头
 				// let init_arraybuffer = initPillow(this.selectItem.headHeight, this.selectItem.neckHeight, 200, this
 				// 	.selectItem

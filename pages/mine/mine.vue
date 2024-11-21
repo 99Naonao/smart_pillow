@@ -53,6 +53,11 @@
 				</view>
 			</view>
 		</view>
+		<view class="flex justify-content-space-around align-center" style="background-color: white;">
+			<label class="tips">输入肩宽(mm)</label>
+			<input ref="inputView" class="input-area" v-model="shoulderWidthNum" placeholder=""
+				@blur="saveWdithHandle" />
+		</view>
 	</view>
 </template>
 
@@ -84,6 +89,11 @@
 		getAIModeByName
 	} from '@/common/util.js'
 	export default {
+		computed: {
+			shoulderWidth() {
+				return this.shoulderWidthNum
+			}
+		},
 		data() {
 			return {
 				bgColorList: [{
@@ -101,7 +111,8 @@
 				score: 100,
 				userInfo: {
 					avatar: ''
-				}
+				},
+				shoulderWidthNum: ''
 			}
 		},
 		onShow() {
@@ -111,6 +122,15 @@
 					selected: 3
 				});
 			}
+
+			let shoulderWidth = uni.getStorageSync('shoulderWidth');
+			if (Number(shoulderWidth) > 0) {
+
+			} else {
+				shoulderWidth = 200;
+			}
+
+			this.shoulderWidthNum = shoulderWidth;
 		},
 		methods: {
 			restartHandle() {
@@ -130,6 +150,12 @@
 				autoLogin((res) => {
 					console.log('success')
 				})
+			},
+			saveWdithHandle() {
+				uni.setStorageSync('shoulderWidth', this.shoulderWidthNum);
+				uni.showToast({
+					title: '保存成功'
+				})
 			}
 		}
 	}
@@ -139,6 +165,22 @@
 	.container {
 		// background-color: line-gradient(90deg, #5794d2, #607796);
 		background: linear-gradient(90deg, rgb(87, 148, 210), rgb(96, 119, 150));
+
+		.input-area {
+			margin: 20rpx;
+			letter-spacing: 2rpx;
+			text-align: center;
+			background-color: #406dafb2;
+			border-radius: 10rpx;
+			padding: 20rpx;
+			color: white;
+		}
+
+		.tips {
+			color: black;
+			font-size: 28rpx;
+
+		}
 
 		.info {
 			margin: 0 auto;
@@ -160,6 +202,8 @@
 				text-align: center;
 				position: relative;
 			}
+
+
 
 			.avatar_bg {
 				width: 114upx;

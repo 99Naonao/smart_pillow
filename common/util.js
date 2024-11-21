@@ -544,7 +544,14 @@ var restartPillow = function(mark) {
 var initPillow = function(head, neck, width, sideHead, sideNexck, sideWidth) {
 	// 2——用户卧姿参数设置，数据1－正卧头部气囊高度值（U8），数据2－正卧颈部气囊高度值（U8），数据3－正卧肩宽值（U16）数据4－侧卧头部气囊高度值（U8），数据5－侧卧颈部气囊高度值（U8），数据6－侧卧肩宽值（U16）
 	console.log('[initPillow] buffer', head, neck, width, sideHead, sideNexck, sideWidth);
+	let shoulderWidth = uni.getStorageSync('shoulderWidth');
+	if (Number(shoulderWidth) > 0) {
 
+	} else {
+		shoulderWidth = 200;
+	}
+	width = shoulderWidth;
+	sideWidth = shoulderWidth;
 	const data_buffer = new ArrayBuffer(8);
 	const dataBufferView = new DataView(data_buffer);
 	// 0--头部气囊，1--颈部气囊）

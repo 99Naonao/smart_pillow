@@ -332,6 +332,10 @@
 				space = space.toFixed(this.toFixed)
 				// 测算出的高度都*0.9
 				space = Math.floor(space * 0.5)
+				// 测算高度不能低于30mm 不能低于棉花高度
+				space = Math.max(space, 30)
+				// 不高于130mm
+				space = Math.min(space, 130)
 				return space
 			},
 			frontLeftNeckPart() {
@@ -389,6 +393,8 @@
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
 				space = Math.floor(space)
+				space = Math.max(30, space);
+				space = Math.min(130, space);
 				return space
 			},
 			sideLittleBlockBack() {
@@ -397,8 +403,9 @@
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
 				space = Math.floor(space)
-				// 最高不超过80cm
-				space = Math.min(space, 80)
+				space = Math.max(30, space);
+				// 最高不超过130cm
+				space = Math.min(space, 130)
 				return space
 			},
 			shoulderPart() {
@@ -527,10 +534,10 @@
 				console.log('mode:', this.inputName, storageObj)
 				let params = {
 					name: this.inputName,
-					headHeight: Math.floor(this.sideLittleBlockBack),
-					neckHeight: Math.floor(this.sideLittleNeckBack),
-					sideHeadHeight: Math.floor((this.shoulderSpace)),
-					sideNeckHeight: Math.floor((this.frontRightPart))
+					neckHeight: Math.floor(this.sideLittleBlockBack),
+					headHeight: Math.floor(this.sideLittleNeckBack),
+					sideNeckHeight: Math.floor((this.shoulderSpace)),
+					sideHeadHeight: Math.floor((this.frontRightPart))
 				}
 
 				let form = {
@@ -635,10 +642,10 @@
 					this.checkMoreStr(data.getSeconds())
 				let orginfo = {
 					name: name,
-					headHeight: Math.floor(this.sideLittleBlockBack),
-					neckHeight: Math.floor(this.sideLittleNeckBack),
-					sideHeadHeight: Math.floor((this.shoulderSpace)),
-					sideNeckHeight: Math.floor((this.frontRightPart))
+					neckHeight: Math.floor(this.sideLittleBlockBack),
+					headHeight: Math.floor(this.sideLittleNeckBack),
+					sideNeckHeight: Math.floor((this.shoulderSpace)),
+					sideHeadHeight: Math.floor((this.frontRightPart))
 				}
 
 				let params = (orginfo)
@@ -784,6 +791,8 @@
 				let base64 = await this.base64({
 					url: tempUrl
 				});
+
+				console.log('detecting:', tempUrl, isSide, base64)
 
 				const uploadTask = uni.uploadFile({
 					url: 'https://dev.ic1101.top/new_battle/zhBaiduAip',
@@ -1138,6 +1147,10 @@
 				this.shoulderSpace = Math.floor(space)
 				this.shoulderSpace = (this.shoulderSpace * 0.5 - speSpace) * 1;
 				this.shoulderSpace = this.shoulderSpace.toFixed(0)
+				// 不低于30mm
+				this.shoulderSpace = Math.max(this.shoulderSpace, 30)
+				// 不高于130mm
+				this.shoulderSpace = Math.min(this.shoulderSpace, 130)
 				// console.log('fuck:', space, speSpace, this.shoulderSpace)
 				// console.log('fuck obj:', obj)
 

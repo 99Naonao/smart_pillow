@@ -279,20 +279,25 @@
 			},
 			updateInfo() {
 				this.pillowPressStatus = blue_class.getInstance().getPillowStatus()
-				switch (this.pillowPressStatus) {
-					case 0:
-						this.selectIndex = 1;
-						this.pillowStatus = '空闲';
-						break;
-					case 1:
-						console.log('枕头平躺状态')
-						this.pillowStatus = "平躺中";
-						this.selectIndex = 1;
-						break;
-					case 2:
-						console.log('枕头侧卧状态')
-						this.pillowStatus = '侧卧中';
-						this.selectIndex = 2;
+				if (this.showMeasure) {
+					// 如果是手动微调，不主动根据压力测试改变页签
+				} else {
+
+					switch (this.pillowPressStatus) {
+						case 0:
+							this.selectIndex = 1;
+							this.pillowStatus = '空闲';
+							break;
+						case 1:
+							console.log('枕头平躺状态')
+							this.pillowStatus = "平躺中";
+							this.selectIndex = 1;
+							break;
+						case 2:
+							console.log('枕头侧卧状态')
+							this.pillowStatus = '侧卧中';
+							this.selectIndex = 2;
+					}
 				}
 
 				if (this.selectIndex == 2) {
@@ -309,6 +314,8 @@
 				// 判断是否结束
 				console.log('pillowPlasticHead:', blue_class.getInstance().pillowPlasticHead)
 				console.log('pillowPlasticNeck:', blue_class.getInstance().pillowPlasticNeck)
+				// 这段先隐藏,不需要锁屏
+				return;
 				if (blue_class.getInstance().pillowPlasticHead == 0 && blue_class.getInstance().pillowPlasticNeck == 0) {
 					try {
 						// uni.hideLoading();
@@ -436,7 +443,7 @@
 						.initSideNeckHeight, 1);
 
 
-					// this.selectIndex = 2;
+					this.selectIndex = 2;
 					this.closeSave()
 					this.$refs.popupTips.open('center')
 
@@ -467,15 +474,17 @@
 
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
 						.initSideNeckHeight, 2);
+
+					let inputName = this.inputName;
 					uni.showToast({
 						title: '保存中',
 						success() {
 							// 跳转首页
 							// 更新新的数据
-							sendModeByName(this.inputName)
-							// uni.switchTab({
-							// 	url: '/pages/status/status'
-							// })
+							sendModeByName(inputName)
+							uni.switchTab({
+								url: '/pages/status/status'
+							})
 						}
 					})
 				}
