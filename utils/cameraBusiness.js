@@ -188,7 +188,7 @@ function render(frame) {
 	// 更新threejs场景的背景
 	webglBusiness.renderGL(frame)
 	// 更新3D模型的动画
-	updateAnimation()
+	// updateAnimation()
 	// 从ar每帧图像获取ar相机对象
 	const ar_camera = frame.camera
 
@@ -317,7 +317,7 @@ function initTHREE() {
 	scene = new THREE.Scene()
 
 	// 半球光
-	const light1 = new THREE.HemisphereLight(0xffffff, 0x444444)
+	const light1 = new THREE.HemisphereLight(0xffffff, 0x333333)
 	light1.position.set(0, 0.2, 0)
 	scene.add(light1)
 
@@ -375,7 +375,7 @@ function initEnvironment(canvasDom) {
 			},
 		},
 		// 新增version参数
-		version: 'v2',
+		version: 'v1',
 	})
 	// 开始AR会话
 	session.start(err => {

@@ -1,15 +1,14 @@
 <template>
 	<view>
-
-		<canvas id="canvas1" class="canvas1" type="webgl" disable-scroll="true" @touchend="bindtouchend_callback">
+		<canvas type="webgl" canvas-id="canvas1" id="canvas1" class="canvas1" disable-scroll="true">
 			<cover-view class="cover">
-				<cover-image @click="backBtn_callback" aria-role="button" src="/static/camera/back.png" class="back-btn"
-					:style="backBtnStyle">
+				<cover-image @touchend="backBtn_callback" aria-role="button" src="/static/camera/back.png"
+					class="back-btn" :style="backBtnStyle">
 				</cover-image>
 				<cover-view class="shooting-tips" :style="backBtnStyle">{{shootingTips}}</cover-view>
-				<cover-image class="shootBtn" @click="shootBtnHandler" aria-role="button"
+				<cover-image class="shootBtn" @touchend="shootBtnHandler" aria-role="button"
 					src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
-				<cover-image class="chooseBtn" @click="chooseBtnHandler" aria-role="button"
+				<cover-image class="chooseBtn" @touchend="chooseBtnHandler" aria-role="button"
 					src="/static/adjust/SY_07_button01a.png"></cover-image>
 				<cover-image class="ruler" :style="backBtnStyle" aria-role="button"
 					src="/static/adjust/SY_07_Cam00.png"></cover-image>
@@ -24,7 +23,7 @@
 						<cover-view class="modal-tips">
 							<cover-view class="send-btn">正面已拍摄, 请拍摄侧面照片
 							</cover-view>
-							<cover-view class="sure-btn" @click="closeTipsSave">确定</cover-view>
+							<cover-view class="sure-btn" @touchend="closeTipsSave">确定</cover-view>
 						</cover-view>
 						<cover-image class="titleimg" src="../../static/adjust/SY_05_B001.png"></cover-image>
 					</cover-view>
@@ -58,6 +57,7 @@
 				frontImage: '',
 				sideImage: "",
 				canvasInstance: '',
+				canvasID: 0,
 				canvasWidth: 1,
 				canvasHeight: 1,
 				backBtnStyle: {
@@ -147,16 +147,20 @@
 			// this.menuButtonTop = menuButton.top
 			// 胶囊按钮的高度
 			// this.menuButtonHeight = menuButton.height
-			console.log('onready:', menuButton)
+			console.log('onready2:', canvasId, menuButton)
 			// 获取画布组件
-			wx.createSelectorQuery()
-				.select('#' + canvasId)
-				.node()
+			const query = wx.createSelectorQuery()
+			const selectCanvas = query.select('#' + canvasId)
+			const that = this
+			selectCanvas.node()
 				.exec(res => {
 					const canvas = res[0].node
-					this.canvasInstance = canvas
-					this.canvasWidth = canvas.width
-					this.canvasHeight = canvas.height
+					that.canvasInstance = canvas
+					that.canvasID = canvas.id;
+					console.log("this.canvasInstance3:", that.canvasInstance, that.canvasID)
+					that.canvasWidth = canvas.width
+					that.canvasHeight = canvas.height
+
 					// 启动AR会话
 					cameraBusiness.initEnvironment(canvas)
 					// 加载3D模型
@@ -255,50 +259,137 @@
 			// 		}
 			// 	})
 			// },
+			shootBtnIOS(pixel) {
+				let that = this;
+				uni.canvasToTempFilePath({
+					x: 0,
+					y: 0,
+					width: that.canvasWidth,
+					height: that.canvasHeight,
+					destWidth: pixel * that.canvasWidth,
+					destHeight: pixel * that.canvasHeight,
+					canvasId: that.canvasID,
+					fileType: 'jpg',
+					success: (res) => {
+						console.log('this.frontImage:', that.frontImage)
+						if (this.frontImage) {
+							this.playAudioEffect()
+							this.sideImage = res.tempFilePath;
+							var url_ = '/pages/shootView/shootView' +
+								object2Query({
+									sideImage: this.sideImage,
+									frontImage: this.frontImage
+								})
+
+							uni.redirectTo({
+								url: url_
+							})
+						} else {
+							this.playAudioEffect()
+							this.frontImage = res.tempFilePath;
+							console.log('1234', res.tempFilePath, this
+								.frontImage)
+							this.shootingTips = "请拍摄侧面照片"
+							this.showTips = true;
+							// uni.showToast({
+							// 	title: '请拍摄侧面照片',
+							// 	duration: 3000
+							// })
+
+							// wx.previewImage({
+							// 	urls: [this.frontImage],
+							// 	current: this.frontImage
+							// })
+						}
+					},
+					fail(err) {
+						console.error(err)
+					}
+				}, that);
+			},
+			shootBtnAndroid(pixel) {
+				let that = this;
+				const query = wx.createSelectorQuery()
+				const selectCanvas = query.select('#canvas1')
+				console.log('selectCanvas:', selectCanvas)
+				selectCanvas.node().exec((res) => {
+					const canvas = res[0].node
+					const gl = canvas.getContext('webgl')
+					gl.canvas.id = res[0].node.id
+					console.log('gl:', gl)
+					// console.log('gltodataurl:', gl.canvas.toDataURL())
+					const imageData = gl.canvas.toDataURL();
+					const imageData2 = imageData.replace(/^data:image\/\w+;base64,/, "");
+					console.log(imageData2)
+					const time = new Date().getTime();
+					let imgPath = wx.env.USER_DATA_PATH + "/poster_" + time + "_shoot" + ".png";
+					const fs = wx.getFileSystemManager();
+					fs.writeFileSync(imgPath, imageData2, "base64");
+					console.log('writeFileSync123:', imgPath)
+					fs.close()
+
+					wx.getImageInfo({
+						src: imgPath,
+						success: res => {
+							console.error('success', res)
+						},
+						fail(res) {
+							console.error(res)
+						}
+					})
+
+
+					if (this.frontImage) {
+						this.playAudioEffect()
+						this.sideImage = imgPath;
+						var url_ = '/pages/shootView/shootView' +
+							object2Query({
+								sideImage: this.sideImage,
+								frontImage: this.frontImage
+							})
+
+						uni.redirectTo({
+							url: url_
+						})
+					} else {
+						this.playAudioEffect()
+						this.frontImage = imgPath;
+						console.log('1234', imgPath, this
+							.frontImage)
+						this.shootingTips = "请拍摄侧面照片"
+						this.showTips = true;
+						// uni.showToast({
+						// 	title: '请拍摄侧面照片',
+						// 	duration: 3000
+						// })
+
+						// wx.previewImage({
+						// 	urls: [this.frontImage],
+						// 	current: this.frontImage
+						// })
+					}
+				})
+				that.canvasInstance.width = that
+					.canvasWidth
+				that.canvasInstance.height = that
+					.canvasHeight
+			},
 			shootBtnHandler() {
 				// console.log('this.canvasInstance1:', this.canvasInstance, this.canvasInstance.id)
+				let that = this;
 				wx.getSystemInfo({
 					success: (res) => {
 						let pixel = res.pixelRatio
-						wx.canvasToTempFilePath({
-							x: 0,
-							y: 0,
-							width: this.canvasWidth,
-							height: this.canvasHeight,
-							destWidth: pixel * this.canvasWidth,
-							destHeight: pixel * this.canvasHeight,
-							canvasId: this.canvasInstance.id,
-							success: (res) => {
-								console.log('this.frontImage:', this.frontImage)
-								if (this.frontImage) {
-									this.playAudioEffect()
-									this.sideImage = res.tempFilePath;
-									var url_ = '/pages/shootView/shootView' + object2Query({
-										sideImage: this.sideImage,
-										frontImage: this.frontImage
-									})
-
-									uni.redirectTo({
-										url: url_
-									})
-								} else {
-									this.playAudioEffect()
-									this.frontImage = res.tempFilePath;
-									console.log('1234', res.tempFilePath, this.frontImage)
-									this.shootingTips = "请拍摄侧面照片"
-									this.showTips = true;
-									// uni.showToast({
-									// 	title: '请拍摄侧面照片',
-									// 	duration: 3000
-									// })
-
-									// wx.previewImage({
-									// 	urls: [this.frontImage],
-									// 	current: this.frontImage
-									// })
-								}
-							}
-						})
+						let platform = res.platform;
+						if (platform == 'ios') {
+							this.shootBtnIOS(pixel)
+						} else {
+							this.shootBtnAndroid(pixel)
+						}
+						console.log("shootBtnHandler11:", platform, that.canvasInstance, that.canvasID, pixel,
+							that
+							.canvasWidth, that
+							.canvasHeight)
 					}
 				})
 			}
