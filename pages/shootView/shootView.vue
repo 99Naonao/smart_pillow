@@ -1,11 +1,6 @@
 <template>
 	<view class="container">
 		<z-nav-bar :bgColor="bgColorList" backState=1000 home='false'>检测</z-nav-bar>
-		<!-- 		<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
-			title='检测'></z-nav-bar> -->
-		<!-- 		<view class="back">
-			<image class="back-img" mode="widthFix" :src="'../../static/SY_09A_Mas.png'"></image>
-		</view> -->
 		<view class="main" v-if="showFront">
 			<view class="frontPic" :style="frontImageStyle">
 				<image v-if="bodyImgUrl!=''" :src="bodyImgUrl" mode="widthFix"></image>
@@ -43,21 +38,22 @@
 			<view class="uni-common-mt">
 				<view class="datainfo flex" v-if="showFront">
 					<view class="back1" @click="handleSideClick">
-						<image class="side1Img" src="../static/camera/SY_09_ButCMSJ01.png" mode="widthFix"></image>
+						<image class="side1Img" src="../static/camera/SY_09_ButCM01.png" mode="widthFix"></image>
 						<view v-if="false">侧面数据</view>
 					</view>
 					<view class="back2 flex1 flex align-center">
 						<image mode="widthFix" class="img2back" src="../../static/camera/SY_09_ButZMSJ02.png">
 						</image>
 						<view class="left-part">
-							<image class="front1Img" v-if="false" src="../static/adjust/face02.png" mode="widthFix">
+							<image class="front1Img" v-if="false" src="../static/camera/SY_09_ButZMSJ02.png"
+								mode="widthFix">
 							</image>
 							<view v-if="false">正面数据</view>
 						</view>
 						<view class="right-info-part">
-							<view class=""><label class="title">●头枕高度:</label><label
+							<view class=""><label class="title">头枕高度:</label><label
 									class="">{{frontRightPart}}{{unitDesc}}</label></view>
-							<view><label class="title">●颈枕高度:</label>{{shoulderSpace}}{{unitDesc}}</view>
+							<view><label class="title">颈枕高度:</label>{{shoulderSpace}}{{unitDesc}}</view>
 							<!-- <view><label class="title">●左耳到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view> -->
 						</view>
 					</view>
@@ -69,9 +65,9 @@
 					</view>
 					<block></block>
 					<view class="right-info-part">
-						<view class=""><label class="title">●头枕高度:</label><label
+						<view class=""><label class="title">头枕高度:</label><label
 								class="">{{frontRightPart}}{{unitDesc}}</label></view>
-						<view><label class="title">●颈枕高度:</label>{{shoulderSpace}}{{unitDesc}}</view>
+						<view><label class="title">颈枕高度:</label>{{shoulderSpace}}{{unitDesc}}</view>
 						<!-- <view><label class="title">●左耳朵到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view> -->
 						<!-- 					<view><label class="title">脖子中心到左肩:</label>{{frontLeftNeckPart}}{{unitDesc}}</view>
 					<view><label class="title">脖子中心到右肩:</label>{{frontRightNeckPart}}{{unitDesc}}</view> -->
@@ -121,23 +117,24 @@
 			</view>
 			<view class="uni-common-mt">
 				<view class="datainfo flex">
-					<view class="back1" @click="handleFrontClick()">
-						<image class="front2Img" src="../static/camera/SY_09_ButCMSJ01.png" mode="widthFix"></image>
-					</view>
-					<view class="back2 flex1 flex align-center">
-						<image mode="widthFix" class="img2back" src="../../static/camera/SY_09_ButZMSJ02.png">
-						</image>
-						<view class="left-part">
+					<view class="back1 flex1 flex align-center">
+						<view class="left-side-part">
+							<image mode="widthFix" class="img2back" src="../../static/camera/SY_09_ButCM02.png">
+							</image>
+							<view class="side-info-part">
 
+								<view class=""><label class="title">头枕高度:</label><label
+										class="">{{sideLittleNeckBack}}{{unitDesc}}</label>
+								</view>
+								<view class=""><label class="title">颈枕高度:</label><label
+										class="">{{sideLittleBlockBack}}{{unitDesc}}</label>
+								</view>
+							</view>
 						</view>
-						<view class="right-info-part">
-							<view class=""><label class="title">●头枕高度:</label><label
-									class="">{{sideLittleNeckBack}}{{unitDesc}}</label>
-							</view>
-							<view class=""><label class="title">●颈枕高度:</label><label
-									class="">{{sideLittleBlockBack}}{{unitDesc}}</label>
-							</view>
+						<view class="right-side-part">
 							<!-- <view><label class="title">●后背与耳朵:</label>{{sideEarBack}}{{unitDesc}}</view> -->
+							<image class="front2Img" @click="handleFrontClick()"
+								src="../static/camera/SY_09_ButZM01.png" mode="widthFix"></image>
 						</view>
 					</view>
 				</view>
@@ -1026,7 +1023,7 @@
 								.bodyImgOriginWidth) +
 							'px')
 						this.$set(this.headPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(points[
-								1] -
+									1] -
 								this
 								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 							'px')
@@ -1035,7 +1032,7 @@
 								.bodyImgOriginWidth) +
 							'px')
 						this.$set(this.neckPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(points[
-								3] -
+									3] -
 								this
 								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 							'px')
@@ -1045,7 +1042,7 @@
 								.bodyImgOriginWidth) +
 							'px')
 						this.$set(this.backPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(points[
-								5] -
+									5] -
 								this
 								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 							'px')

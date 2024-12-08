@@ -1,6 +1,10 @@
+
+.container{
+	background-color: rgb(17, 30, 63);
+	height: 100%;
+}
 .main {
-		margin-left: 30rpx;
-		margin-right: 30rpx;
+
 		position: relative;
 		top: 0;
 		z-index: 1;
@@ -39,8 +43,8 @@
 	.datainfo{
 		.back1{
 			// background-color: #5B7897;
-			width: 180rpx;
-			height: 180rpx;
+			width: 243rpx;
+			height: 162rpx;
 			text-align: center;
 			// padding: 20rpx;
 			border-top-left-radius: 20rpx;
@@ -52,10 +56,48 @@
 			}
 		}
 		
+		.left-side-part{
+			width: 513rpx;
+			height: 163rpx;
+			position: absolute;
+			top: 0rpx;
+			image{
+				width: 100%;
+				height: 100%;
+			}
+		}
+		
+		.right-side-part{
+			padding-left: 0rpx;
+			position: relative;
+			top: 0rpx;
+			left: 493rpx;
+			z-index: 10;
+			width: 242rpx;
+			height: 162rpx;
+		}
+		
+		
+		.side-info-part{
+			position: absolute;
+			top: 26rpx;
+			left: 233rpx;
+			.title {
+				line-height: 55rpx;
+			}
+		}
+		
+		.back-side2
+		{
+			padding:20rpx;
+			left: 20rpx;
+			position: absolute;
+		}
+		
 		.back2{
 			// background-color: rgba(200, 200, 200, 0.7);
 			padding:20rpx;
-			margin-left: 20rpx;
+			margin-left: -10rpx;
 			border-top-right-radius: 20rpx;
 			border-bottom-right-radius: 20rpx;
 			color: #fff;
@@ -66,7 +108,7 @@
 			}
 			.img2back{
 				position: absolute;
-				width: 473rpx;
+				width: 513rpx;
 				height: 163rpx;
 				left: -20rpx;
 				top: 0rpx;
@@ -76,12 +118,13 @@
 		.right-info-part{
 			padding-left: 20rpx;
 			position: relative;
-			top: -10rpx;
+			top: 0rpx;
+			left: 20rpx;
 			z-index: 10;
 
 		}
 		.side1Img{
-			width: 203rpx;
+			width: 243rpx;
 			height: 162rpx;
 		}
 		.front1Img{
@@ -94,7 +137,7 @@
 			// height: 162rpx;
 		}
 		.front2Img{
-			width: 203rpx;
+			width: 242rpx;
 			height: 162rpx;
 		}
 	}
@@ -390,10 +433,12 @@
 			letter-spacing: 5rpx;
 		}
 	}
-
+ 
 	.popup-container {
 		position: relative;
 		margin: 20rpx;
+
+		
 
 		.titleimg {
 			width: 106rpx;
