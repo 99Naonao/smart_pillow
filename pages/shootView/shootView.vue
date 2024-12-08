@@ -3,12 +3,13 @@
 		<z-nav-bar :bgColor="bgColorList" backState=1000 home='false'>检测</z-nav-bar>
 		<!-- 		<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
 			title='检测'></z-nav-bar> -->
-		<view class="back">
-			<image class="back-img" mode="widthFix" :src="'../../static/SY_09A_Mas.jpg'"></image>
-		</view>
+		<!-- 		<view class="back">
+			<image class="back-img" mode="widthFix" :src="'../../static/SY_09A_Mas.png'"></image>
+		</view> -->
 		<view class="main" v-if="showFront">
 			<view class="frontPic" :style="frontImageStyle">
 				<image v-if="bodyImgUrl!=''" :src="bodyImgUrl" mode="widthFix"></image>
+
 				<view class="info-part" :style="frontImageStyle" v-if="bodyImgUrl!=''">
 					<view class="wrap shoulderLeftWrap" :style="shoulderLeftWrapStyle">
 						<view class="circle"></view>
@@ -35,6 +36,9 @@
 				<text style="line-height: 140rpx;" v-else>
 					上传待检测的图片
 				</text>
+			</view>
+			<view class="back">
+				<image class="back-img" mode="widthFix" :src="'../../static/SY_09A_Mas.png'"></image>
 			</view>
 			<view class="uni-common-mt">
 				<view class="datainfo flex" v-if="showFront">
@@ -85,6 +89,7 @@
 			<!-- <view style="text-align: center;padding: 20rpx;font-weight: 600;"><label class="title">侧面图片</label></view> -->
 			<view class="frontPic" :style="sideImageStyle">
 				<image v-if="sideBodyImgUrl!=''" :src="sideBodyImgUrl" mode="widthFix"></image>
+
 				<view class="wrap headPointWrap" :style="headPointWrapStyle" v-if="false">
 					<view class="circle"></view>
 					<view class="tips" :class="sideForward=='left'? 'tips-head-right':'tips-head-left'">后脑勺</view>
@@ -110,6 +115,9 @@
 				<text style="line-height: 140rpx;" v-else>
 					上传待检测的图片
 				</text>
+			</view>
+			<view class="back">
+				<image class="back-img" mode="widthFix" :src="'../../static/SY_09A_Mas.png'"></image>
 			</view>
 			<view class="uni-common-mt">
 				<view class="datainfo flex">
@@ -161,6 +169,7 @@
 			<button class="save" @click="saveHandler">存储</button>
 		</view> -->
 		</view>
+
 		<!-- 存储设置界面弹窗 -->
 		<uni-popup ref="popup" type="bottom" background-color="#fff" border-radius="10px 10px 0 0" :mask-click="false">
 			<view class="popup-container">
@@ -286,6 +295,7 @@
 					'--imgHeight': '140rpx',
 				},
 				factor: 1,
+				fixedImgWidth: 250,
 				manFactor: 130, // 单位是mm
 				womenFactor: 100, // 单位是mm
 				unit: 1000, // 100是cm 1000是mm
@@ -417,7 +427,7 @@
 				wx.getImageInfo({
 					src: this.bodyImgUrl,
 					success: res => {
-						const fixWidth = 300
+						const fixWidth = this.fixedImgWidth
 						const {
 							width,
 							height
@@ -469,7 +479,7 @@
 				wx.getImageInfo({
 					src: this.sideBodyImgUrl,
 					success: res => {
-						const fixWidth = 300
+						const fixWidth = this.fixedImgWidth
 						let {
 							width,
 							height,
@@ -711,7 +721,7 @@
 						wx.getImageInfo({
 							src: tempFilePaths[0],
 							success: res => {
-								const fixWidth = 300
+								const fixWidth = this.fixedImgWidth
 								const {
 									width,
 									height
@@ -754,7 +764,7 @@
 						wx.getImageInfo({
 							src: tempFilePaths[0],
 							success: res => {
-								const fixWidth = 300
+								const fixWidth = this.fixedImgWidth
 								let {
 									width,
 									height,
@@ -1012,46 +1022,50 @@
 
 
 						// 后脑勺
-						this.$set(this.headPointWrapStyle, '--left', (300 * points[0] / this
+						this.$set(this.headPointWrapStyle, '--left', (this.fixedImgWidth * points[0] / this
 								.bodyImgOriginWidth) +
 							'px')
-						this.$set(this.headPointWrapStyle, '--bottom', (300 * Math.abs(points[1] -
+						this.$set(this.headPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(points[
+								1] -
 								this
 								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 							'px')
 						// 脖颈最低
-						this.$set(this.neckPointWrapStyle, '--left', (300 * points[2] / this
+						this.$set(this.neckPointWrapStyle, '--left', (this.fixedImgWidth * points[2] / this
 								.bodyImgOriginWidth) +
 							'px')
-						this.$set(this.neckPointWrapStyle, '--bottom', (300 * Math.abs(points[3] -
+						this.$set(this.neckPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(points[
+								3] -
 								this
 								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 							'px')
 
 						// 后背坐标
-						this.$set(this.backPointWrapStyle, '--left', (300 * points[4] / this
+						this.$set(this.backPointWrapStyle, '--left', (this.fixedImgWidth * points[4] / this
 								.bodyImgOriginWidth) +
 							'px')
-						this.$set(this.backPointWrapStyle, '--bottom', (300 * Math.abs(points[5] -
+						this.$set(this.backPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(points[
+								5] -
 								this
 								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 							'px')
 
 						// 颈部上坐标
-						this.$set(this.backUpPointWrapStyle, '--left', (300 * points[6] / this
+						this.$set(this.backUpPointWrapStyle, '--left', (this.fixedImgWidth * points[6] / this
 								.bodyImgOriginWidth) +
 							'px')
-						this.$set(this.backUpPointWrapStyle, '--bottom', (300 * Math.abs(points[
+						this.$set(this.backUpPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(points[
 									7] -
 								this
 								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 							'px')
 
 						// 颈部下坐标
-						this.$set(this.backDownPointWrapStyle, '--left', (300 * points[8] / this
+						this.$set(this.backDownPointWrapStyle, '--left', (this.fixedImgWidth * points[8] / this
 								.bodyImgOriginWidth) +
 							'px')
-						this.$set(this.backDownPointWrapStyle, '--bottom', (300 * Math.abs(points[
+						this.$set(this.backDownPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(
+								points[
 									9] -
 								this
 								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
@@ -1162,32 +1176,33 @@
 				this.headSpace = space;
 				// console.log('this.shoulderSpace:', this.shoulderSpace, space, 1, space + 1)
 				// 左肩
-				this.$set(this.shoulderLeftWrapStyle, '--left', (300 * rightShoulder / this
+				this.$set(this.shoulderLeftWrapStyle, '--left', (this.fixedImgWidth * rightShoulder / this
 						.bodyImgOriginWidth) +
 					'px')
-				this.$set(this.shoulderLeftWrapStyle, '--bottom', (300 * Math.abs(right_shoulder.y - this
+				this.$set(this.shoulderLeftWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(right_shoulder.y - this
 						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 					'px')
 				// 右肩
-				this.$set(this.shoulderRightWrapStyle, '--left', (300 * leftShoulder / this
+				this.$set(this.shoulderRightWrapStyle, '--left', (this.fixedImgWidth * leftShoulder / this
 						.bodyImgOriginWidth) +
 					'px')
-				this.$set(this.shoulderRightWrapStyle, '--bottom', (300 * Math.abs(left_shoulder.y - this
+				this.$set(this.shoulderRightWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(left_shoulder.y - this
 						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 					'px')
 				// 左耳
-				this.$set(this.shoulderLeftEarWrapStyle, '--left', (300 * this.frontLeftEarX / this
+				this.$set(this.shoulderLeftEarWrapStyle, '--left', (this.fixedImgWidth * this.frontLeftEarX / this
 						.bodyImgOriginWidth) +
 					'px')
-				this.$set(this.shoulderLeftEarWrapStyle, '--bottom', (300 * Math.abs(body_parts.left_ear.y -
+				this.$set(this.shoulderLeftEarWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(body_parts.left_ear.y -
 						this
 						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 					'px')
 				// 右耳
-				this.$set(this.shoulderRightEarWrapStyle, '--left', (300 * this.frontRightEarX / this
+				this.$set(this.shoulderRightEarWrapStyle, '--left', (this.fixedImgWidth * this.frontRightEarX / this
 						.bodyImgOriginWidth) +
 					'px')
-				this.$set(this.shoulderRightEarWrapStyle, '--bottom', (300 * Math.abs(body_parts.right_ear.y -
+				this.$set(this.shoulderRightEarWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(body_parts.right_ear
+						.y -
 						this
 						.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 					'px')
