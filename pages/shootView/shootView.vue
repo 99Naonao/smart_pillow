@@ -750,6 +750,11 @@
 				})
 			},
 			startSideCamera() {
+				// 重新测量
+				uni.navigateTo({
+					url: "/pages/shoot/shooting"
+				})
+				return;
 				uni.chooseImage({
 					success: async (chooseImageRes) => {
 						const tempFilePaths = chooseImageRes.tempFilePaths;
