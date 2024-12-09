@@ -12,6 +12,10 @@
 					src="/static/adjust/SY_07_button01a.png"></cover-image>
 				<cover-image class="ruler" :style="backBtnStyle" aria-role="button"
 					src="/static/adjust/SY_07_Cam00.png"></cover-image>
+				<cover-image class="circle" :style="leftCircleBtnStyle" aria-role="button"
+					src="/static/SY_07_CamSPY.png"></cover-image>
+				<cover-image class="circle" :style="topCircleBtnStyle" aria-role="button"
+					src="/static/SY_07_CamSPY.png"></cover-image>
 				<cover-view class="tips" :style="backBtnStyle">80cm</cover-view>
 				<cover-view class="tips2" :style="backBtnStyle">1.请将摄像机画面的左右边缘对准80cm的拍摄顶点</cover-view>
 				<cover-view class="tips2 tips3" :style="backBtnStyle">
@@ -79,29 +83,15 @@
 			this.frontImage = ''
 			this.sideImage = ''
 		},
+		onHide() {
+			wx.stopAccelerometer()
+		},
 		onShow() {
-			// uni.showToast({
-			// 	title: '请拍摄正面照片',
-			// 	duration: 3000
-			// })
-			// this.$refs.popupTips.open('center')
+			wx.startAccelerometer({
+				interval: 'ui'
+			})
 
-			// this.shootingTips = "请拍摄正面照片"
-			// this.frontImage = ''
-			// this.sideImage = ''
-			// wx.authorize({
-			// 	scope: 'scope.camera',
-			// 	success() {
-			// 		uni.showToast({
-			// 			title: '同意授权'
-			// 		})
-			// 	},
-			// 	fail() {
-			// 		uni.showToast({
-			// 			title: '拒绝授权'
-			// 		})
-			// 	}
-			// })
+			wx.onAccelerometerChange(this.refreshAcc)
 			let scope = 'scope.camera';
 			wx.getSetting({
 				success: res => {
@@ -171,6 +161,9 @@
 				})
 		},
 		methods: {
+			refreshAcc(obj) {
+				console.log('refreshAcc', obj.x, obj.y, obj.z);
+			},
 			playAudioEffect() {
 				const innerAudioContext = uni.createInnerAudioContext();
 				innerAudioContext.autoplay = true;
@@ -433,6 +426,11 @@
 		width: 64rpx;
 		height: 64rpx;
 		margin-top: var(--menuButtonTop);
+	}
+
+	.circle {
+		width: 181rpx;
+		height: 181rpx;
 	}
 
 	.leftFrame {

@@ -425,12 +425,17 @@
 					src: this.bodyImgUrl,
 					success: res => {
 						const fixWidth = this.fixedImgWidth
-						const {
+						let {
 							width,
-							height
+							height,
+							orientation
 						} = res
-						console.log('getImageInfo res', res)
-						console.log('bodyImgUrl', this.bodyImgUrl)
+						console.log('getImageInfo front res', res)
+						console.log('bodyImgUrl', this.bodyImgUrl);
+						if (orientation == 'right' || orientation == 'left') {
+							height = res.width
+							width = res.height
+						}
 						this.bodyImgWidth = fixWidth;
 						this.bodyImgHeight = (fixWidth / width) * height;
 
