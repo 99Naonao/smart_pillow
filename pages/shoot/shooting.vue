@@ -12,9 +12,9 @@
 					src="/static/adjust/SY_07_button01a.png"></cover-image>
 				<cover-image class="ruler" :style="backBtnStyle" aria-role="button"
 					src="/static/adjust/SY_07_Cam00.png"></cover-image>
-				<cover-image class="circle" :style="leftCircleBtnStyle" aria-role="button"
+				<cover-image class="leftcircle" :style="leftBtnStyle" aria-role="button"
 					src="/static/SY_07_CamSPY.png"></cover-image>
-				<cover-image class="circle" :style="topCircleBtnStyle" aria-role="button"
+				<cover-image class="topcircle" :style="topBtnStyle" aria-role="button"
 					src="/static/SY_07_CamSPY.png"></cover-image>
 				<cover-view class="tips" :style="backBtnStyle">80cm</cover-view>
 				<cover-view class="tips2" :style="backBtnStyle">1.请将摄像机画面的左右边缘对准80cm的拍摄顶点</cover-view>
@@ -64,12 +64,24 @@
 				canvasID: 0,
 				canvasWidth: 1,
 				canvasHeight: 1,
+				screenWidth: 100,
+				screenHeight: 100,
+				xx: 0,
+				yy: 0,
 				backBtnStyle: {
 					'--menuButtonTop': '30px',
 					'--menuButtonHeight': '30px',
 					'--menuButtonTop2': '30px',
 					'--menuButtonTop3': '30px',
 					'--menuButtonTop4': '30px',
+				},
+				leftBtnStyle: {
+					'--left': '0px',
+					'--top': '0px'
+				},
+				topBtnStyle: {
+					'--left': '0px',
+					'--top': '0px'
 				},
 				frameStyle: {
 					'--frameTop': '10px',
@@ -85,8 +97,12 @@
 		},
 		onHide() {
 			wx.stopAccelerometer()
+			wx.offAccelerometerChange(this.refreshAcc);
 		},
 		onShow() {
+			const app = getApp();
+			this.screenWidth = app.globalData.screenWidth;
+			this.screenHeight = app.globalData.screenHeight;
 			wx.startAccelerometer({
 				interval: 'ui'
 			})
@@ -162,7 +178,23 @@
 		},
 		methods: {
 			refreshAcc(obj) {
-				console.log('refreshAcc', obj.x, obj.y, obj.z);
+
+				// let x = 0;
+				// let z = 0;
+
+				const {
+					x,
+					y,
+					z
+				} = obj;
+				//根据公式计算出角度
+				// const rotateXY = Math.atan2(x, y) * 180 / Math.PI;
+				// 这里角度就可以赋值到data上，视图层就可以调这个角度了
+				this.$set(this.leftBtnStyle, '--left', this.screenWidth / 2 + this.screenWidth / 2 * x + 'px')
+				this.$set(this.topBtnStyle, '--top', this.screenHeight / 2 + this.screenHeight / 2 * z + 'px')
+				console.log('refreshAcc', this.screenWidth, this.screenHeight, this.screenWidth / 2 + this.screenWidth /
+					2 * x, this.screenHeight / 2 + this
+					.screenHeight / 2 * z);
 			},
 			playAudioEffect() {
 				const innerAudioContext = uni.createInnerAudioContext();
@@ -448,6 +480,25 @@
 		right: 20rpx;
 		top: var(--frameTop);
 	}
+
+	.leftcircle {
+		position: absolute;
+		top: 50%;
+		width: 181rpx;
+		height: 181rpx;
+		transform: translateX(-90rpx) translateY(-90rpx);
+		left: var(--left);
+	}
+
+	.topcircle {
+		position: absolute;
+		left: 50%;
+		width: 181rpx;
+		height: 181rpx;
+		transform: translateX(-90rpx) translateY(-90rpx);
+		top: var(--top);
+	}
+
 
 	.chooseBtn {
 		color: #ffffff;
