@@ -35,7 +35,7 @@
 			<view class="back">
 				<image class="back-img" mode="widthFix" :src="'../../static/SY_09A_Mas.png'"></image>
 			</view>
-			<view class="uni-common-mt">
+			<view class="uni-common-mt123" :style="frontImageStyle">
 				<view class="datainfo flex" v-if="showFront">
 					<view class="back1" @click="handleSideClick">
 						<image class="side1Img" src="../static/camera/SY_09_ButCM01.png" mode="widthFix"></image>
@@ -115,7 +115,7 @@
 			<view class="back">
 				<image class="back-img" mode="widthFix" :src="'../../static/SY_09A_Mas.png'"></image>
 			</view>
-			<view class="uni-common-mt">
+			<view class="uni-common-mt123" :style="sideImageStyle">
 				<view class="datainfo flex">
 					<view class="back1 flex1 flex align-center">
 						<view class="left-side-part">

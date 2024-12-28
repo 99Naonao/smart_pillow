@@ -2,19 +2,23 @@
 .container{
 	background-color: rgb(17, 30, 63);
 	height: 100%;
+	display: flex;
+	flex-direction: column;
 }
 .main {
-	height: 100%;
-	background-color: rgb(17, 30, 63);
+	flex:1;
+	background-color: rgb(8, 14, 29);
 		position: relative;
 		top: 0;
 		z-index: 1;
 	}
 	
-	.uni-common-mt{
+	.uni-common-mt123{
 		position: absolute;
 		z-index: 3;
-		bottom: 250rpx;
+		top: var(--imgHeight);
+		margin-top: 100rpx;
+		// bottom: 250rpx;
 	}
 	
 	.info-part{
