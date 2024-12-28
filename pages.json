@@ -67,6 +67,12 @@
 	"subPackages": [{
 		"root": "page_subject",
 		"pages": [{
+				"path": "study/study",
+				"style": {
+					"navigationStyle": "custom",
+					"navigationBarTitleText": "睡姿学习"
+				}
+			}, {
 				"path": "work/work",
 				"style": {
 					"navigationStyle": "custom",

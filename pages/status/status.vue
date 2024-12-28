@@ -55,8 +55,8 @@
 				</view>
 				<view class="item" @click="statusCheck()">
 					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
-					<label class="title" for="">脊柱微调</label>
-					<image class="icon4" src="../../static/index/SY_00A_IconJZWT.png" mode="widthFix"></image>
+					<label class="title" for="">睡姿学习</label>
+					<image class="icon4" src="../../static/index/SY_00A_IconJZWT1.png" mode="widthFix"></image>
 					<!-- <label class="desc" for="">仰卧中</label> -->
 				</view>
 			</view>
@@ -371,6 +371,10 @@
 				this.connectHandler()
 			},
 			statusCheck() {
+				uni.navigateTo({
+					url: "/page_subject/study/study"
+				})
+				return;
 				uni.navigateTo({
 					url: "/page_subject/ano/ano"
 				})

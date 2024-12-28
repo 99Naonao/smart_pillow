@@ -367,6 +367,9 @@
 							this.parsePillowStatus(arrayBuffer_order)
 							// this.parsePillowSleepData(null)
 							break;
+						case 11:
+							console.error('study success！')
+							break;
 						case 88:
 							break;
 					}

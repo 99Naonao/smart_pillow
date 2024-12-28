@@ -142,6 +142,29 @@ var handPillowFrontState = function(action, isHead = true) {
 	}
 	return buffer
 };
+
+// 学习发送
+var handPillowStudyState = function(status) {
+	// 向蓝牙设备发送一个0x00的2进制数据
+	//先构造数据
+	const data_buffer = new ArrayBuffer(1);
+	const dataBufferView = new DataView(data_buffer);
+	// 0--头部气囊，1--颈部气囊）
+	dataBufferView.setUint8(0, status)
+	let withLengthBuffer = handleSendFormart(data_buffer)
+	console.log("[handPillowStudyState] withLengthBuffer", withLengthBuffer)
+	const orign_buffer = new DataView(withLengthBuffer)
+	console.log("[handPillowStudyState]", withLengthBuffer.byteLength)
+	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
+	const dataView = new DataView(buffer)
+	// 指令码；1：2,3,4--手动调整 
+	dataView.setUint8(0, 7)
+	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
+		dataView.setUint8(index + 1, orign_buffer.getUint8(index))
+	}
+	return buffer
+};
+
 // 侧卧数据
 var handPillowSideState = function(head, neck) {
 	// 向蓝牙设备发送一个0x00的2进制数据
@@ -743,6 +766,7 @@ export {
 	restartPillow,
 	initPillow,
 	appAnswer,
+	handPillowStudyState,
 	parseTime,
 	ab2str,
 	str2ab,
