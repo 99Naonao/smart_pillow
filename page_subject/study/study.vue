@@ -2,6 +2,21 @@
 	<z-nav-bar backState="1000" fontColor='#000' transparentFixedFontColor='#000'></z-nav-bar>
 	<view class="main">
 		<view class="info">
+			<view class="icon">
+				<image class="s-icon0" mode="widthFix" v-if="status==0"
+					src="@/page_subject/static/SY_Xuexi04_IconZhentou.png">
+				</image>
+				<image class="s-icon1" mode="widthFix" v-if="status==1"
+					src="@/page_subject/static/SY_Xuexi01_IconTingtang.png">
+				</image>
+				<image class="s-icon2" mode="widthFix" v-if="status==2"
+					src="@/page_subject/static/SY_Xuexi03_IconCetang.png">
+				</image>
+				<image class="s-icon3" mode="widthFix" v-if="status==4"
+					src="@/page_subject/static/SY_Xuexi05_IconOK.png">
+				</image>
+
+			</view>
 			<view class="title">
 				<view class="" v-if="status==0">
 					枕头空闲学习
@@ -11,6 +26,9 @@
 				</view>
 				<view class="" v-if="status==2">
 					枕头侧卧学习
+				</view>
+				<view class="" v-if="status==3">
+					学习完成!
 				</view>
 			</view>
 			<view class="tips">
@@ -23,10 +41,13 @@
 				<view class="" v-if="status==2">
 					注意:请您保持放松的侧卧姿势左右方向都可以,躺在睡眠枕上,当您准备好了,请点击下方的确认按钮. (如果您不方便操作,也可以让家人帮您按下确认)
 				</view>
+				<view class="" v-if="status==3">
+					记录了您的睡姿后，眠加睡姿检测更准确了。
+				</view>
 			</view>
 		</view>
 		<view class="info">
-			<view class="info-btn" v-if="status==2" @click="successHandler">
+			<view class="info-btn" v-if="status==3" @click="successHandler">
 				学习完毕
 			</view>
 			<view class="info-btn" v-else @click="measureHandler">
@@ -82,6 +103,8 @@
 					this.status = 1
 				} else if (this.status == 1) {
 					this.status = 2;
+				} else if (this.status == 2) {
+					this.status = 3;
 				}
 				let arraybuffer1 = handPillowStudyState(this.status);
 				blue_class.getInstance().write2tooth(arraybuffer1)
@@ -108,6 +131,32 @@
 			}
 		}
 
+		.icon {
+			margin: 20rpx auto;
+			width: 121rpx;
+			height: 121rpx;
+			border-radius: 25rpx;
+			background-color: white;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+
+			.s-icon0 {
+				width: 66rpx;
+				height: 48rpx;
+			}
+
+			.s-icon1 {
+				width: 66rpx;
+				height: 75rpx;
+			}
+
+			.s-icon2 {
+				width: 66rpx;
+				height: 76rpx;
+			}
+		}
+
 		.info {
 			width: 80%;
 			margin: 0 auto;
@@ -118,12 +167,14 @@
 			color: #354D5B;
 			font-size: 36rpx;
 			text-align: center;
+			padding: 20rpx;
 		}
 
 		.tips {
 			color: #5B7897;
 			font-size: 28rpx;
 			text-align: center;
+			padding: 20rpx;
 		}
 
 		.info-btn {

@@ -1083,28 +1083,28 @@
 			.icon2 {
 				position: absolute;
 				left: 50%;
-				top: 45%;
+				top: 47%;
 				margin-left: -22rpx;
-				width: 41rpx;
+				width: 44rpx;
 				height: 35rpx;
 			}
 
 			.icon3 {
 				position: absolute;
 				left: 50%;
-				top: 45%;
-				margin-left: -30rpx;
-				width: 47rpx;
+				top: 47%;
+				margin-left: -21rpx;
+				width: 48rpx;
 				height: 42rpx;
 			}
 
 			.icon4 {
 				position: absolute;
 				left: 50%;
-				top: 45%;
-				margin-left: -20rpx;
-				width: 41rpx;
-				height: 56rpx;
+				top: 47%;
+				margin-left: -25rpx;
+				width: 49rpx;
+				height: 51rpx;
 			}
 		}
 	}

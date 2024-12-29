@@ -25,19 +25,21 @@
 					<form @submit="formSubmit" @reset="formReset">
 						<view class="uni-form-item flex">
 							<view class="title">年龄</view>
-							<input class="uni-input" v-model="form.age" name="age" placeholder="请输入" />
+							<input class="uni-input" type="number" v-model="form.age" name="age" placeholder="请输入" />
 						</view>
 						<view class="uni-form-item">
 							<view class="title">体重</view>
 							<view class="input-part">
-								<input class="uni-input" name="weight" v-model="form.weight" placeholder="请输入" />
+								<input class="uni-input" type="number" name="weight" v-model="form.weight"
+									placeholder="请输入" />
 								<view class="unit-tips">kg</view>
 							</view>
 						</view>
 						<view class="uni-form-item">
 							<view class="title">身高</view>
 							<view class="input-part">
-								<input class="uni-input" name="tall" v-model="form.tall" placeholder="请输入" />
+								<input class="uni-input" type="number" name="tall" v-model="form.tall"
+									placeholder="请输入" />
 								<view class="unit-tips">cm</view>
 							</view>
 						</view>
