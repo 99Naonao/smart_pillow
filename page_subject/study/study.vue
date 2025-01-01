@@ -12,7 +12,7 @@
 				<image class="s-icon2" mode="widthFix" v-if="status==2"
 					src="@/page_subject/static/SY_Xuexi03_IconCetang.png">
 				</image>
-				<image class="s-icon3" mode="widthFix" v-if="status==4"
+				<image class="s-icon3" mode="widthFix" v-if="status==3"
 					src="@/page_subject/static/SY_Xuexi05_IconOK.png">
 				</image>
 
@@ -63,6 +63,9 @@
 		handPillowStudyState
 	} from '../../common/util'
 	import blue_class from '../../utils/BlueManager'
+	import {
+		addStudyLog
+	} from '../../utils/miniapp'
 	export default {
 		data() {
 			return {
@@ -74,9 +77,7 @@
 			// 模式，0--自动，1--手动配置模式，配置其他参数前须切换到该模式
 			let arraybuffer = changeAdjustMode(1);
 			blue_class.getInstance().write2tooth(arraybuffer)
-			// (0--空闲，1--平躺，2--侧卧)
-			let arraybuffer1 = handPillowStudyState(0);
-			blue_class.getInstance().write2tooth(arraybuffer1)
+
 		},
 		destroyed() {
 			console.log('destroyed')
@@ -94,11 +95,16 @@
 		},
 		methods: {
 			successHandler() {
+				addStudyLog({
+					status: this.status
+				})
 				uni.switchTab({
 					url: "/pages/status/status"
 				})
 			},
 			measureHandler() {
+				let arraybuffer1 = handPillowStudyState(this.status);
+				blue_class.getInstance().write2tooth(arraybuffer1)
 				if (this.status == 0) {
 					this.status = 1
 				} else if (this.status == 1) {
@@ -106,8 +112,6 @@
 				} else if (this.status == 2) {
 					this.status = 3;
 				}
-				let arraybuffer1 = handPillowStudyState(this.status);
-				blue_class.getInstance().write2tooth(arraybuffer1)
 			}
 		}
 	}
@@ -154,6 +158,11 @@
 			.s-icon2 {
 				width: 66rpx;
 				height: 76rpx;
+			}
+
+			.s-icon3 {
+				width: 55rpx;
+				height: 73rpx;
 			}
 		}
 

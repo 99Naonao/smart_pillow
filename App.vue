@@ -33,6 +33,8 @@
 							this.globalData.menuBottom = menuButtonInfo.top - res.statusBarHeight;
 							this.globalData.top = menuButtonInfo.top;
 							this.globalData.navHeight = res.statusBarHeight;
+							this.globalData.screenWidth = res.screenWidth;
+							this.globalData.screenHeight = res.screenHeight;
 							// 导航栏右边到屏幕边缘的距离
 							this.globalData.menuRight = res.screenWidth - menuButtonInfo.right;
 							// 导航栏高度

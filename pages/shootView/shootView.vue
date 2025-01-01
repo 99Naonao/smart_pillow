@@ -86,28 +86,31 @@
 			<view class="frontPic" :style="sideImageStyle">
 				<image v-if="sideBodyImgUrl!=''" :src="sideBodyImgUrl" mode="widthFix"></image>
 
-				<view class="wrap headPointWrap" :style="headPointWrapStyle" v-if="false">
-					<view class="circle"></view>
-					<view class="tips" :class="sideForward=='left'? 'tips-head-right':'tips-head-left'">后脑勺</view>
-					<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+				<view class="info-part" :style="sideImageStyle" v-if="sideBodyImgUrl!=''">
+					<view class="wrap headPointWrap" :style="headPointWrapStyle" v-if="false">
+						<view class="circle"></view>
+						<view class="tips" :class="sideForward=='left'? 'tips-head-right':'tips-head-left'">后脑勺</view>
+						<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+					</view>
+					<view class="wrap neckPointWrap" :style="neckPointWrapStyle" v-if="sideBodyImgUrl!=''">
+						<view class="circle"></view>
+						<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'"></view>
+						<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+					</view>
+					<view class="wrap backPointWrap" :style="backPointWrapStyle" v-if="false">
+						<view class="circle"></view>
+						<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">后背凸点</view>
+					</view>
+					<view class="wrap backUpPointWrap" :style="backUpPointWrapStyle" v-if="sideBodyImgUrl!=''">
+						<view class="circle"></view>
+						<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'"></view>
+					</view>
+					<view class="wrap backDownPointWrap" :style="backDownPointWrapStyle" v-if="sideBodyImgUrl!=''">
+						<view class="circle"></view>
+						<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'"></view>
+					</view>
 				</view>
-				<view class="wrap neckPointWrap" :style="neckPointWrapStyle" v-if="sideBodyImgUrl!=''">
-					<view class="circle"></view>
-					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'"></view>
-					<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
-				</view>
-				<view class="wrap backPointWrap" :style="backPointWrapStyle" v-if="false">
-					<view class="circle"></view>
-					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">后背凸点</view>
-				</view>
-				<view class="wrap backUpPointWrap" :style="backUpPointWrapStyle" v-if="sideBodyImgUrl!=''">
-					<view class="circle"></view>
-					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'"></view>
-				</view>
-				<view class="wrap backDownPointWrap" :style="backDownPointWrapStyle" v-if="sideBodyImgUrl!=''">
-					<view class="circle"></view>
-					<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'"></view>
-				</view>
+
 				<text style="line-height: 140rpx;" v-else>
 					上传待检测的图片
 				</text>

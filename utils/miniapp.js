@@ -11,8 +11,51 @@ const api = {
 	wxPay: '/ybGbUserOrder/pay',
 	qrCode: '/getWxQrCode',
 	fenxiaoRule: '/ybDictFenxiao/detail',
+	addAIMeasureLog: '/ybUserPillow/add',
+	addHistoryLog: '/ybUserPillowHis/add',
+	addStudyLog: '/ybUserPillowStudy/add',
+	addStoreAILog: '/ybUserPillowAi/add',
+	addUseLog: '/ybUserPillowAi/add',
 	withDrawListApi: '/user/fenxiao/yongjin/detail/page'
 }
+/**
+ * AI 检测
+ * @param {Object} data
+ */
+export function addAILog(data) {
+	return request_(base.baseUrl + api.addAIMeasureLog, data);
+}
+/**
+ * 枕头使用历史数据
+ * @param {Object} data
+ */
+export function addHistoryLog(data) {
+	return request_(base.baseUrl + api.addHistoryLog, data);
+}
+/**
+ * 学习结束
+ * @param {Object} data
+ */
+export function addStudyLog(data) {
+	return request_(base.baseUrl + api.addStudyLog, data);
+}
+/**
+ * 保存模式
+ * @param {Object} data
+ */
+export function addStoreAILog(data) {
+	return request_(base.baseUrl + api.addStoreAILog, data);
+}
+
+/**
+ * 当前使用的模式
+ * @param {Object} data
+ */
+export function addUseLog(data) {
+	return request_(base.baseUrl + api.addUseLog, data);
+}
+
+
 
 export function getWxUserInfo() {
 	var that = this;
@@ -36,6 +79,11 @@ export function getWxUserInfo() {
 			console.log(res, "userinfo fail");
 		}
 	})
+}
+
+function setUserInfo(userInfo) {
+	//请求前加入token
+	uni.setStorageSync("userInfo", userInfo);
 }
 /**
  * 自动登录
