@@ -13,7 +13,7 @@
 					<view class="usernameInfo">
 						<view class="userNickNameInfo" v-if="nickNameInputFlag">
 							<text class="username">{{ userInfo.nickName || '未知用户' }}</text>
-							<image src="../../static/icon/edit.png"></image>
+							<!-- <image src="../../static/icon/edit.png"></image> -->
 						</view>
 						<view class="username" v-else>
 							<input class="username" type="text" placeholder="请输入新的昵称" @blur="inputClose()"
@@ -107,8 +107,8 @@
 				],
 				title: 'Hello12123',
 				hasLogin: false,
-				nickNameInputFlag: false,
-				score: 100,
+				nickNameInputFlag: true,
+				score: 0,
 				userInfo: {
 					avatar: ''
 				},
@@ -141,6 +141,13 @@
 				let reset_data = resetPillow(88);
 				blue_class.getInstance().write2tooth(reset_data)
 			},
+			refreshUserInfo() {
+				let userInfo = uni.getStorageSync('userInfo')
+				if (userInfo && userInfo.token) {
+					this.score = userInfo.score;
+					this.userInfo = userInfo;
+				}
+			},
 			go2Use() {
 				uni.showToast({
 					title: '暂未开放'
@@ -149,6 +156,8 @@
 			clickWxLogin() {
 				autoLogin((res) => {
 					console.log('success')
+					console.log(uni.getStorageSync('userInfo'))
+					this.refreshUserInfo();
 				})
 			},
 			saveWdithHandle() {

@@ -27,7 +27,7 @@
 				</view>
 			</view>
 		</view>
-		<view v-if="selectItem.headHeight" class="send-btn" @click="sendItemHandler()">
+		<view v-if="selectItem.headHeight" class="send-btn" @click.stop="sendItemHandler()">
 			发送
 		</view>
 		<view class="kv" @click="navHandle">
@@ -119,6 +119,9 @@
 	} from '@/common/util.js'
 
 	import blue_class from '../../utils/BlueManager'
+	import {
+		addUseLog
+	} from '../../utils/miniapp'
 	// import {
 	// 	object2Query,
 	// 	parsePillowRealState,
@@ -237,6 +240,7 @@
 				// }
 			},
 			sendItemHandler() {
+				addUseLog(this.selectItem);
 				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
 				let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : this.selectItem.headHeight, this
 					.selectItem
