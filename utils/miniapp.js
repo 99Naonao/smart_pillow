@@ -23,28 +23,60 @@ const api = {
  * @param {Object} data
  */
 export function addAILog(data) {
-	return request_(base.baseUrl + api.addAIMeasureLog, data);
+	let userId = '';
+	let userInfo = uni.getStorageSync('userInfo');
+	if (userInfo && userInfo.token) {
+		userId = userInfo.userId;
+	}
+	return request_(base.baseUrl + api.addAIMeasureLog, {
+		userId: userId,
+		content: JSON.stringify(data)
+	});
 }
 /**
  * 枕头使用历史数据
  * @param {Object} data
  */
 export function addHistoryLog(data) {
-	return request_(base.baseUrl + api.addHistoryLog, data);
+	let userId = '';
+	let userInfo = uni.getStorageSync('userInfo');
+	if (userInfo && userInfo.token) {
+		userId = userInfo.userId;
+	}
+	return request_(base.baseUrl + api.addHistoryLog, {
+		userId: userId,
+		content: JSON.stringify(data)
+	});
 }
 /**
  * 学习结束
  * @param {Object} data
  */
 export function addStudyLog(data) {
-	return request_(base.baseUrl + api.addStudyLog, data);
+	let userId = '';
+	let userInfo = uni.getStorageSync('userInfo');
+	if (userInfo && userInfo.token) {
+		userId = userInfo.userId;
+	}
+	return request_(base.baseUrl + api.addStudyLog, {
+		userId: userId,
+		content: JSON.stringify(data)
+	});
 }
 /**
  * 保存模式
  * @param {Object} data
  */
 export function addStoreAILog(data) {
-	return request_(base.baseUrl + api.addStoreAILog, data);
+	let userId = '';
+	let userInfo = uni.getStorageSync('userInfo');
+	if (userInfo && userInfo.token) {
+		userId = userInfo.userId;
+	}
+	return request_(base.baseUrl + api.addStoreAILog, {
+		userId: userId,
+		content: JSON.stringify(data)
+	});
 }
 
 /**

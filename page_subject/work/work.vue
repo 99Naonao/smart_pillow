@@ -92,6 +92,9 @@
 	import {
 		nextTick
 	} from 'vue';
+	import {
+		addHistoryLog
+	} from '../../utils/miniapp';
 	export default {
 		components: {
 
@@ -515,7 +518,8 @@
 				//解析枕头睡眠阶段状态	
 				// 数据1-姿态（U8）(1--平躺，2--侧卧) + 数据2开始时间（T4）+数据3结束时间（T4）+ 数据4-姿态（U8）(1--平躺，2--侧卧) + 数据5开始时间（T4）+数据6结束时间（T4）+ ... ,关于该指令的说明，是多个姿态+开始时间和结束时间的条目的组合，根据数据长度计算一条指令中包含多少组数据
 				// let receive8 = new ArrayBuffer(array_buffer);
-				let dataView = receive_dataView
+				let dataView = receive_dataView;
+				let pose = dataView.getUint8(0);
 				console.log('姿态:', dataView.getUint8(0));
 				let uint32_s = dataView.getUint32(1);
 				let unit32_e = dataView.getUint32(5);
@@ -523,6 +527,12 @@
 				// 秒：0-5bit，分：6-11bit，时：12-16bit，日：17-21bit，月：22-25bit，年：26-31bit），年基于2020，月取值1-12
 				console.log('开始时间:', uint32_s, parseTime(uint32_s))
 				console.log('结束时间:', unit32_e, parseTime(unit32_e))
+
+				addHistoryLog({
+					'pose': pose,
+					'start': parseTime(uint32_s),
+					'end': parseTime(unit32_e)
+				});
 				// let uint32_s = dataView.getUint32(1);
 				// let unit32_e = dataView.getUint32(5);
 				// // parseTime(uint32_s)

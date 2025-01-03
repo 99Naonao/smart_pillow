@@ -131,6 +131,8 @@
 			}
 
 			this.shoulderWidthNum = shoulderWidth;
+
+			this.refreshUserInfo();
 		},
 		methods: {
 			restartHandle() {
@@ -226,9 +228,8 @@
 					flex-shrink: 0;
 					width: 114upx;
 					height: 114upx;
-					transform: scale(0.9);
+					transform: scale(1);
 					border-radius: 100%;
-					border: 4rpx solid #fff;
 					background-color: #FFF4EA;
 				}
 			}
