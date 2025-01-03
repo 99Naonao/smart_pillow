@@ -15,7 +15,7 @@ const api = {
 	addHistoryLog: '/ybUserPillowHis/add',
 	addStudyLog: '/ybUserPillowStudy/add',
 	addStoreAILog: '/ybUserPillowAi/add',
-	addUseLog: '/ybUserPillowAi/add',
+	addUseLog: '/ybUserPillowNow/update',
 	withDrawListApi: '/user/fenxiao/yongjin/detail/page'
 }
 /**
@@ -52,7 +52,15 @@ export function addStoreAILog(data) {
  * @param {Object} data
  */
 export function addUseLog(data) {
-	return request_(base.baseUrl + api.addUseLog, data);
+	let userId = '';
+	let userInfo = uni.getStorageSync('userInfo');
+	if (userInfo && userInfo.token) {
+		userId = userInfo.userId;
+	}
+	return request_(base.baseUrl + api.addUseLog, {
+		userId: userId,
+		content: JSON.stringify(data)
+	});
 }
 
 
