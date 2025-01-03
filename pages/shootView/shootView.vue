@@ -210,6 +210,10 @@
 	import {
 		saveAIMode
 	} from '../../common/util'
+	import {
+		addAILog,
+		addStoreAILog
+	} from '../../utils/miniapp'
 	import InputView from './InputView.vue'
 	import {
 		object2Query,
@@ -561,17 +565,23 @@
 					tall: 168,
 					sexIndex: 2
 				}
-				// let obj = uni.getStorageSync('user_measure');
-				// if (obj) {
-				// 	form = JSON.parse(obj);
-				// } else {
-				// 	form = {
-				// 		age: 20,
-				// 		weight: 50,
-				// 		tall: 168,
-				// 		sexIndex: 2,
-				// 	}
-				// }
+				let obj = uni.getStorageSync('user_measure');
+				if (obj) {
+					form = JSON.parse(obj);
+				} else {
+					form = {
+						age: 20,
+						weight: 50,
+						tall: 168,
+						sexIndex: 2,
+					}
+				}
+
+				let send_params = {}
+				Object.assign(send_params, form);
+				Object.assign(send_params, params);
+
+				addStoreAILog(send_params)
 
 
 				// // 判断是否女的
@@ -618,6 +628,39 @@
 						// })
 					}
 				})
+			},
+			finishDecting() {
+				// ai 监测结束
+				let params = {
+					neckHeight: Math.floor(this.sideLittleBlockBack),
+					headHeight: Math.floor(this.sideLittleNeckBack),
+					sideNeckHeight: Math.floor((this.shoulderSpace)),
+					sideHeadHeight: Math.floor((this.frontRightPart))
+				}
+
+				let form = {
+					age: 20,
+					weight: 50,
+					tall: 168,
+					sexIndex: 2
+				}
+				let obj = uni.getStorageSync('user_measure');
+				if (obj) {
+					form = JSON.parse(obj);
+				} else {
+					form = {
+						age: 20,
+						weight: 50,
+						tall: 168,
+						sexIndex: 2,
+					}
+				}
+
+				let send_params = {}
+				Object.assign(send_params, form);
+				Object.assign(send_params, params);
+
+				addAILog(send_params)
 			},
 			closeSave() {
 				this.$refs.popup.close()
@@ -1085,6 +1128,8 @@
 						console.log('points:', points)
 
 						this.$refs.popupTips.open('center')
+
+						this.finishDecting();
 					},
 					fail: (res) => {
 						uni.hideLoading()

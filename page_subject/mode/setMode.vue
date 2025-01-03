@@ -13,7 +13,7 @@
 							<view class="title">
 								{{item.name}}
 							</view>
-							<view v-if="selectItem == item" class="send-btn" @click="sendHandler(item)">
+							<view v-if="selectItem == item" class="send-btn" @click.stop="sendHandler(item)">
 								发送
 							</view>
 						</view>
@@ -128,6 +128,9 @@
 	} from '@/common/util.js'
 
 	import blue_class from '../../utils/BlueManager'
+	import {
+		addUseLog
+	} from '../../utils/miniapp'
 	// import {
 	// 	object2Query,
 	// 	parsePillowRealState,
@@ -284,6 +287,8 @@
 				// 	.sideHeadHeight, this.selectItem.sideNeckHeight, 200);
 				// let app = getApp()
 				blue_class.getInstance().write2tooth(init_arraybuffer);
+
+				addUseLog(this.selectItem)
 
 				uni.switchTab({
 					url: "/pages/status/status"
