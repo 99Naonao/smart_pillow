@@ -152,7 +152,7 @@
 				searching: false, // 搜索中
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 				loginStatus: false,
-				pillowHeight: 1,
+				pillowHeight: 80,
 				pillowSideHeight: 1,
 				pillowPower: 1,
 				pillowStatus: 0,

@@ -13,8 +13,8 @@ import {
 class blue_class {
 	static instance = null; // 静态属性，用于存储单例  
 	// 私有构造函数，防止外部通过 new 关键字创建实例  
-	pillowHeight = 1;
-	pillowSideHeight = 2;
+	pillowHeight = 80;
+	pillowSideHeight = 80;
 	pillowPower = 0;
 	pillowPlasticHead = 0;
 	pillowPlasticNeck = 0;
