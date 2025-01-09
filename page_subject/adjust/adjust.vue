@@ -21,9 +21,10 @@
 				<label class='desc2size'>{{this.selectIndex==1?this.neck:this.sideNeck}}mm</label>
 				<image class="human-icon" :src="'../static/adjust/SY_11_bg01YW.png'"></image>
 				<image class="main-icon" :src="'../static/adjust/SY_11_bg02TZ.png'"></image>
-				<image class="down-icon" :class="touchingDown?['down-icon-effect']:[]"
+				<image class="down-icon" :class="touchingDown?['show-icon','down-icon-effect']:[]"
 					:src="'../static/adjust/SY_11_DOW.png'"></image>
-				<image class="up-icon" :class="touchingUp?['up-icon-effect']:[]" :src="'../static/adjust/SY_11_UP.png'">
+				<image class="up-icon" :class="touchingUp?['show-icon','up-icon-effect']:[]"
+					:src="'../static/adjust/SY_11_UP.png'">
 				</image>
 				<!-- 				<image class="bzb-icon" :src="'../static/adjust/SY_11_buttonBZb.png'"></image>
 				<image class="tzb-icon" :src="'../static/adjust/SY_11_buttonTZb.png'"></image> -->
@@ -66,7 +67,7 @@
 			</view>
 			<view class="bottom-part">
 				<view class="save" @click="saveModeHandler">保存{{selectIndex==1?'/侧卧调整':'/返回主页'}}</view>
-				<view class="text-tips text-button" @click="cancelSaveHandle">
+				<view class="text-tips text-button bottom-btn" @click="cancelSaveHandle">
 					不保存{{this.selectIndex==1?'/继续调整侧卧高度':'/返回主页'}}
 				</view>
 			</view>
@@ -845,6 +846,18 @@
 		padding: 10rpx;
 	}
 
+	.bottom-btn {
+		width: 670rpx;
+		height: 82rpx;
+		border: #1c4485 1px solid;
+		border-radius: 30rpx;
+		background-color: rgb(255, 255, 255);
+		margin: 0 auto;
+		line-height: 82rpx;
+		margin-top: -18rpx;
+		padding: 0rpx !important;
+	}
+
 	.normal-btn {
 		background-color: rgb(255, 255, 255);
 		width: 284rpx;
@@ -1076,6 +1089,7 @@
 				left: 0rpx;
 				top: 190rpx;
 				z-index: 12;
+				display: none;
 			}
 
 			.down-icon {
@@ -1084,8 +1098,12 @@
 				position: absolute;
 				right: 27rpx;
 				top: 190rpx;
-				display: block;
+				display: none;
 				z-index: 12;
+			}
+
+			.show-icon {
+				display: block;
 			}
 
 			@-webkit-keyframes downEffect {
@@ -1305,6 +1323,8 @@
 			color: white;
 			margin-top: 80rpx;
 			border-radius: 50rpx;
+			border-bottom-left-radius: 0;
+			border-bottom-right-radius: 0;
 
 		}
 	}

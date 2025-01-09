@@ -4,6 +4,7 @@
 			title='自定义模式'></z-nav-bar> -->
 		<public-module></public-module>
 		<!-- <view class="title maintitle">自定义模式</view> -->
+		<view class="removetips">提示:往左滑动可以删除已有模式</view>
 		<view class="main">
 			<uni-swipe-action ref="swaction">
 				<view v-for="(item,index) in modeList" :key="index">
@@ -30,7 +31,7 @@
 			</uni-swipe-action>
 		</view>
 		<view class="bottom-part">
-			<view class="removetips">提示:往左滑动可以删除已有模式</view>
+
 			<view class="item-plus" @click="addModeHandler">
 				+
 			</view>
@@ -653,16 +654,18 @@
 			color: #1c4485;
 		}
 
+		.removetips {
+			margin-top: 20rpx;
+			text-align: center;
+			font-size: 26rpx;
+			font-weight: bold;
+			color: rgb(153, 134, 191);
+			margin-bottom: 1rpx;
+		}
+
 		.bottom-part {
 			height: 800rpx;
 
-			.removetips {
-				text-align: center;
-				font-size: 26rpx;
-				font-weight: bold;
-				color: rgb(153, 134, 191);
-				margin-bottom: 10rpx;
-			}
 		}
 
 		.main {
