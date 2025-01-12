@@ -18,12 +18,6 @@ Component({
 				"text": ""
 			},
 			{
-				"pagePath": "/pages/help/help",
-				"iconPath": "/static/index/SY_00_buttonBZa.png",
-				"selectedIconPath": "/static/index/SY_00_buttonBZb.png",
-				"text": ""
-			},
-			{
 				"pagePath": "/pages/product/product",
 				"iconPath": "/static/index/SY_00_buttonCPa.png",
 				"selectedIconPath": "/static/index/SY_00_buttonCPb.png",

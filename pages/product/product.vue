@@ -23,7 +23,7 @@
 			let curPages = getCurrentPages()[0]
 			if (typeof curPages.getTabBar === 'function' && curPages.getTabBar()) {
 				curPages.getTabBar().setData({
-					selected: 2
+					selected: 1
 				});
 			}
 		},
