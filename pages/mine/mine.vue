@@ -68,24 +68,24 @@
 					4.凡以违反积分规则的方式或采用不正当手段（包括但不限于作弊、恶意刷分、扰乱/破坏系统、恶意利用系统或者规则漏洞）获取、使用积分，我们有权根据其行为恶劣程度决定扣除您帐号内所有或部分积分，对于已使用积分，有权要求您返还已抵扣的订单金额或所兑换的礼品或权益；<br>
 					5. 以上积分规则自2024年8月13日生效。<br>
 				</view>
+				<view class="info-part">
+					<view class="opt-part">
+						<view class="opt-btn" @click="uploadDataHandle" v-if="false">
+							<label>上报数据</label>
+						</view>
+
+						<view class="opt-btn" @click="resetHandle">
+							<label>设备校准</label>
+						</view>
+						<view class="opt-btn" @click="restartHandle">
+							<label>设备重启</label>
+						</view>
+					</view>
+				</view>
 			</view>
 		</view>
 
-		<view class="info-part">
-			<view class="opt-part">
-				<view class="opt-btn" @click="uploadDataHandle" v-if="false">
-					<label>上报数据</label>
-				</view>
-
-				<view class="opt-btn" @click="resetHandle">
-					<label>设备校准</label>
-				</view>
-				<view class="opt-btn" @click="restartHandle">
-					<label>设备重启</label>
-				</view>
-			</view>
-		</view>
-		<view class="flex justify-content-space-around align-center" style="background-color: white;">
+		<view class="flex justify-content-space-around align-center" style="background-color: white;" v-if="false">
 			<label class="tips">输入肩宽(mm)</label>
 			<input ref="inputView" class="input-area" v-model="shoulderWidthNum" placeholder=""
 				@blur="saveWdithHandle" />
@@ -183,9 +183,19 @@
 				}
 			},
 			go2Use() {
-				uni.showToast({
-					title: '暂未开放'
-				})
+				// const url =
+				// 	'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx1ac2da77b1e55f42&redirect_uri=https://sleep.zsyl.cc/sleeph5&response_type=code&scope=snsapi_userinfo&state=STATE';
+				// const url2 = 'https://mp.weixin.qq.com/s/tsSJqende7UKJf2xZExZ7Q?token=1386691342&lang=zh_CN'
+
+				// const url3 =
+				// 	'https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz=MzkyMDQ5NTk0OQ&scene=124#wechat_redirect';
+				const url5 = 'https://sleep.zsyl.cc/sleeph5/miniIndex.html'
+				const navtitle = '健康检测'
+				console.log('go2use:', url5)
+				wx.navigateTo({
+					// 跳转到webview页面
+					url: `/pages/mine/webview?url=${url5}&nav=${navtitle}`,
+				});
 			},
 			clickWxLogin() {
 				autoLogin((res) => {
@@ -335,6 +345,8 @@
 				padding-left: 66rpx;
 				padding-right: 66rpx;
 				padding-top: 60rpx;
+				overflow: scroll;
+				height: calc(100vh - 980rpx);
 
 				.subtitle {
 					padding-top: 20rpx;
