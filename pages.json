@@ -52,6 +52,12 @@
 			}
 		},
 		{
+			"path": "pages/mine/webview",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/camera/camera",
 			"style": {
 				"navigationStyle": "custom"

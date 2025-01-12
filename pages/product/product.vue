@@ -1,12 +1,13 @@
 <template>
 	<z-nav-bar backState=2000 home='false'></z-nav-bar>
 	<view class='container'>
-		<image mode="widthFix" class="image1" src="../../static/product/SY_12_bgJY.png" @click='productHandler'></image>
-		<image mode="widthFix" class="image2" src="../../static/product/SY_12_bgQZY.png" @click='productHandler'>
+		<image mode="widthFix" class="image1" src="../../static/product/SY_12_bgJY.png" @click='productMallHandler'>
+		</image>
+		<image mode="widthFix" class="image2" src="../../static/product/SY_12_bgQZY.png" @click='productSleepHandler'>
 		</image>
 		<image mode="widthFix" class="image2" src="../../static/product/SY_12_bgJKJC.png" @click='productHandler'>
 		</image>
-		<image mode="widthFix" class="image3" src="../../static/product/SY_12_bgFJZS.png" @click='productHandler'>
+		<image mode="widthFix" class="image3" src="../../static/product/SY_12_bgFJZS.png" @click='go2Use'>
 		</image>
 	</view>
 </template>
@@ -30,11 +31,38 @@
 
 		},
 		methods: {
-			productHandler(e) {
-				uni.showToast({
-					title: '暂未开放'
+			productMallHandler(e) {
+				wx.navigateToMiniProgram({
+					appId: 'wxadc17399e1b28d8b',
 				})
-			}
+			},
+			productHandler(e) {
+				wx.navigateToMiniProgram({
+					appId: 'wxadc17399e1b28d8b',
+					path: 'pages/shop/shopDetail?id=10030',
+					extraData: {
+						id: 10030
+					}
+				})
+			},
+			productSleepHandler(e) {
+				wx.navigateToMiniProgram({
+					appId: 'wxadc17399e1b28d8b',
+					path: 'pages/shop/shopDetail?id=10031',
+					extraData: {
+						id: 10031
+					}
+				})
+			},
+			go2Use() {
+				const url5 = 'https://sleep.zsyl.cc/sleeph5/miniIndex.html'
+				const navtitle = '健康检测'
+				console.log('go2use:', url5)
+				wx.navigateTo({
+					// 跳转到webview页面
+					url: `/pages/mine/webview?url=${url5}&nav=${navtitle}`,
+				});
+			},
 		}
 	}
 </script>
