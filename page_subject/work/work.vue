@@ -20,7 +20,8 @@
 					<image mode="widthFix" :src="(checkWifiConnectList(item))" @click="connectWifiSleepHandler(item)">
 					</image>
 				</view> -->
-				<view class="connect-btn" @click="connectBlueToothSleepHandler(item)">连接</view>
+				<view class="connect-btn" v-if="item.deviceId == loginDeviceId">已连接</view>
+				<view class="connect-btn" @click="connectBlueToothSleepHandler(item)" v-else>连接</view>
 				<!-- 				<image :src="'../static/SY_01WIEI_buttonTJa.png'" class="connect-btn">
 				</image> -->
 			</view>
@@ -96,6 +97,11 @@
 		addHistoryLog
 	} from '../../utils/miniapp';
 	export default {
+		computed: {
+			loginDeviceId() {
+				return blue_class.getInstance().deviceId;
+			},
+		},
 		components: {
 
 		},
@@ -107,7 +113,7 @@
 			// this.deviceId = app.globalData.deviceId;
 			// this.characteristicId = app.globalData.characteristicId;
 			// this.serviceId = app.globalData.serviceId;
-
+			this.deviceIdList = [];
 			// 如果正在搜索中
 			if (this.searching) {
 				uni.closeBluetoothAdapter({
@@ -116,10 +122,19 @@
 					}
 				})
 			} else {
-				if (blue_class.getInstance().deviceName != '') {
-					this.deviceIdList = [{
-						name: blue_class.getInstance().deviceName
-					}];
+				// 如果连接过
+				if (blue_class.getInstance().deviceId != '') {
+					this.deviceIdList.push({
+						name: blue_class.getInstance().deviceName,
+						deviceId: blue_class.getInstance().deviceId
+					});
+				} else {
+					if (app.globalData.versionCode == 0) {
+						this.deviceIdList.push({
+							name: this.testName,
+							deviceId: 'deviceId'
+						})
+					}
 				}
 			}
 			uni.$on('xx', this.handleMessage)
@@ -257,6 +272,7 @@
 				deviceId: '', // 连接的蓝牙id
 				serviceId: '', // 连接的服务id
 				deviceIdList: [], // 检测列表
+				testName: '测试专用',
 				// deviceIdList: [],
 				connectList: [], // 连接列表
 			}
@@ -691,6 +707,22 @@
 
 
 				let app = getApp();
+				if (app.globalData.versionCode == 0) {
+					wx.showToast({
+						title: '连接成功',
+						icon: 'success',
+						duration: 1000
+					})
+					this.stopBlueTooth();
+					app.globalData.deviceId = 'deviceId';
+					app.globalData.deviceName = this.testName;
+
+					blue_class.getInstance().deviceId = 'deviceId';
+					blue_class.getInstance().deviceName = this.testName;
+					blue_class.getInstance().loginSuccess = true;
+					this.showAdjustHandler();
+					return;
+				}
 				let deviceId = item.deviceId;
 				uni.createBLEConnection({
 					// 这里的 deviceId 需要已经通过 createBLEConnection 与对应设备建立链接

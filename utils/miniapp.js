@@ -16,6 +16,7 @@ const api = {
 	addStudyLog: '/ybUserPillowStudy/add',
 	addStoreAILog: '/ybUserPillowAi/add',
 	addUseLog: '/ybUserPillowNow/update',
+	appVersion: '/appVersion',
 	withDrawListApi: '/user/fenxiao/yongjin/detail/page'
 }
 /**
@@ -222,6 +223,10 @@ export function cardList() {
 export function getSeperateQRCode(data) {
 	return request_(base.baseUrl + api.qrCode, data);
 }
+/**获取app版本**/
+export function getappVersion(data) {
+	return get_(base.baseUrl + api.appVersion, data);
+}
 
 /** 列表**/
 export function getCityList() {
@@ -302,13 +307,14 @@ function getJson_(url) {
 	})
 }
 
-function get_(url) {
+function get_(url, _data = {}) {
 	return new Promise((resolve, reject) => {
 		console.log('====== url ======')
 		console.log(url)
 		uni.request({
 			url: url,
 			method: 'GET',
+			data: _data,
 			header: {
 				'Content-Type': 'application/json;charset=UTF-8'
 			},

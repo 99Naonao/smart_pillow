@@ -133,6 +133,9 @@ class blue_class {
 			console.log(`device ${res.deviceId} state has changed, connected: ${res.connected}`)
 			if (res.deviceId == that.deviceId) {
 				that.loginSuccess = false; // 连接成功
+				that.deviceId = '';
+				that.deviceName = '';
+				//清空缓存
 				uni.$emit('status_change')
 				uni.showToast({
 					title: '连接断开'

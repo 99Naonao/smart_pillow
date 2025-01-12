@@ -254,9 +254,15 @@
 		},
 		methods: {
 			navJustHandle() {
-				if (!this.selectItem.headHeight && !this.selectItem.neckHeight) {
+				if (!this.selectItem) {
 					uni.showToast({
 						title: '未选择模式数据！'
+					})
+					return;
+				}
+				if (!this.selectItem.headHeight && !this.selectItem.neckHeight) {
+					uni.showToast({
+						title: '模式数据不合理！'
 					})
 					return;
 				}

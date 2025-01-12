@@ -93,7 +93,10 @@
 		nextTick
 	} from 'vue';
 	import blue_class from '../../utils/BlueManager';
-
+	import {
+		getappVersion
+	} from '../../utils/miniapp';
+	import base from '@/utils/baseUrl';
 	export default {
 		computed: {
 			pillowStatusDesc() {
@@ -142,7 +145,7 @@
 				bodyImgOriginWidth: 0,
 				bodyImgOriginHeight: 0,
 				deviceId: '', // 设备蓝牙id
-				connectDeviceId: '', // 链接上的蓝牙设备id
+				connectDeviceId: 'deviceId', // 链接上的蓝牙设备id
 				serviceId: '', // 通知uuid
 				writeServicweId: '', //写uuid
 				readServicweId: '', //通知uuid
@@ -248,6 +251,13 @@
 			// 		}
 			// 	}
 			// })
+
+			getappVersion({
+				appId: base.publicAppId
+			}).then(res => {
+				console.log('aba', res)
+				app.globalData.versionCode = res.versionCode;
+			})
 		},
 		onHide() {
 			let that = this
