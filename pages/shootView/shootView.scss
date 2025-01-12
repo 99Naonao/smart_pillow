@@ -16,8 +16,8 @@
 	.uni-common-mt123{
 		position: absolute;
 		z-index: 3;
-		top: var(--imgHeight);
-		margin-top: 100rpx;
+		top: var(--imgBottom);
+		// margin-top: 100rpx;
 		// bottom: 250rpx;
 	}
 	
@@ -45,9 +45,28 @@
 		    width: 100%;
 		    transform: translateX(-50%);
 		z-index: 3;
-		bottom: 80rpx;
+		bottom: 20rpx;
 		padding-bottom: constant(safe-area-inset-bottom);
 		padding-bottom: env(safe-area-inset-bottom);
+	}
+	
+	.btn-advise{
+		position: absolute;
+		    left: 50%;
+		    width: 350rpx;
+		    transform: translateX(-50%);
+		z-index: 3;
+		bottom: 250rpx;
+		
+		height: 80rpx;
+		background-color: #5B7897;
+		margin: 0 auto;
+		line-height: 80rpx;
+		text-align: center;
+		color: white;
+		border-radius: 20rpx;
+		letter-spacing: 5rpx;
+		font-size: 32rpx;
 	}
 	
 	.datainfo{

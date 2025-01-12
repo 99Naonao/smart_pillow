@@ -74,7 +74,9 @@
 					</view>
 				</view>
 			</view>
-
+			<view class="btn-advise" @click="gotoStudy">
+				建议您进行睡姿学习
+			</view>
 			<view class="btn-cnt flex" style="padding-top: 20rpx;">
 				<button class="normal-btn" @click="startCamera">{{bodyImgUrl==''?'开始测量':'重新测量'}}</button>
 				<button class="normal-btn" @click="handleClick">手动微调</button>
@@ -157,6 +159,9 @@
 					</view>
 				</view>
 			</view>
+			<view class="btn-advise" @click="gotoStudy">
+				建议您进行睡姿学习
+			</view>
 
 			<view class="btn-cnt flex" style="padding-top: 20rpx;">
 				<button class="normal-btn" @click="startSideCamera">{{bodyImgUrl==''?'开始测量':'重新测量'}}</button>
@@ -181,7 +186,7 @@
 					<text class="">名称</text>
 					<input v-model="inputName" class="flex1 input-area" placeholder="输入我的模式" />
 				</view>
-				<view class="send-btn" @click="closeAndSave">发送至枕头</view>
+				<view class="send-btn" @click="closeAndSave">{{jumpStudy?'保存后去学习':'发送至枕头'}}</view>
 				<image class="titleimg" src="../../static/adjust/SY_05_B001.png"></image>
 				<image class="close-btn" src="../../static/adjust/SY_05_buttonCOLa.png" mode="widthFix"
 					@click="closeSave">
@@ -231,8 +236,14 @@
 		},
 		onShow() {
 			this.createMaker()
-			this.checkBodyUrl()
-
+			this.checkBodyUrl();
+			const app = getApp();
+			let width = app.globalData.screenWidth;
+			console.log('show:width:', width)
+			this.$set(this.frontImageStyle, '--imgBottom', width / 375 * 460 +
+				'px')
+			this.$set(this.sideImageStyle, '--imgBottom', width / 375 * 460 +
+				'px')
 		},
 		onShareAppMessage() {
 
@@ -240,11 +251,13 @@
 		},
 		data() {
 			return {
+				jumpStudy: false,
 				inputName: '模式',
 				showFront: true, //是否显示正面信息
 				frontImageStyle: {
 					'--imgWidth': '750rpx',
 					'--imgHeight': '140rpx',
+					'--imgBottom': '100rpx',
 				},
 				shoulderLeftWrapStyle: {
 					'--left': '10rpx',
@@ -546,6 +559,12 @@
 			handleFrontClick() {
 				this.showFront = true
 			},
+			// 去学习
+			gotoStudy() {
+				this.jumpStudy = true;
+				console.log('===>this.jumpStudy', this.jumpStudy)
+				this.saveHandler();
+			},
 			closeAndSave() {
 				this.$refs.popup.close()
 				// let params = this.$refs.inputView.getParams();
@@ -591,7 +610,7 @@
 				// 	}
 				// }
 
-				console.log('params:', params)
+				console.log('params:', this.jumpStudy, params)
 				//
 
 				if (!storageObj) {
@@ -613,13 +632,21 @@
 				uni.setStorageSync('myMode', JSON.stringify(storageObj));
 
 				uni.setStorageSync('standard', JSON.stringify(params));
-
+				let that = this;
 				uni.showToast({
 					title: '发送中',
 					success() {
-						uni.switchTab({
-							url: "/pages/status/status"
-						})
+						if (that.jumpStudy) {
+							uni.navigateTo({
+								url: "/page_subject/study/study"
+							})
+						} else {
+							uni.switchTab({
+								url: "/pages/status/status"
+							})
+						}
+						that.jumpStudy = false;
+						console.log('===>that.jumpStudy')
 						// uni.navigateTo({
 						// 	url: "/page_subject/mode/setMode" + object2Query(params)
 						// })
@@ -664,6 +691,8 @@
 			},
 			closeSave() {
 				this.$refs.popup.close()
+				this.jumpStudy = false;
+				console.log('===>closeSave')
 			},
 			closeTipsSave() {
 				this.$refs.popupTips.close()
@@ -717,8 +746,6 @@
 			},
 			saveHandler() {
 				this.$refs.popup.open('bottom')
-				return
-
 			},
 			createMaker() {
 				//
