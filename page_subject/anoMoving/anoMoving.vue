@@ -3,7 +3,7 @@
 	<view class="container">
 		<view class="top-part">
 			<view class="linetips">请保持仰卧姿势</view>
-			<image class="topKV" :style="menuStyle" mode="widthFix" src="@/static/SY_01_000.png"></image>
+			<image class="topKV" :style="menuStyle" mode="widthFix" src="@/static/SY_03_001.png"></image>
 
 			<view class="headInfo" :style="menuStyle">
 				<view>颈枕高度</view>
@@ -16,9 +16,12 @@
 		</view>
 		<view class="bottom-part">
 			<image mode="widthFix" class="imgicon" :src="'../static/ano/SY_03_TimeLOGO.png'"></image>
+			<view class="time-part">
+				{{timeString}}
+			</view>
 			<view class="opt flex">
-				<view class="normal-btn">启动</view>
-				<view class="save">停止</view>
+				<view class="normal-btn" @click="startHandler">启动</view>
+				<view class="save" @click="stopHandler">停止</view>
 				<view class="normal-btn" @click="backHandle">返回</view>
 			</view>
 		</view>
@@ -26,9 +29,16 @@
 </template>
 
 <script>
+	import {
+		formatTime,
+		handleStartSpine,
+		handleStopSpine,
+	} from '../../common/util';
+	import blue_class from '../../utils/BlueManager';
 	export default {
 		data() {
 			return {
+				timeLimit: 2000,
 				pillowSideHeight: 60,
 				pillowHeight: 60,
 				menuStyle: {
@@ -37,15 +47,36 @@
 				tips: "测试数据"
 			}
 		},
+		computed: {
+			timeString() {
+				return formatTime(this.timeLimit);
+			}
+		},
 		onShow() {
 			let app = getApp();
 			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 20) + 'px');
+			uni.$on('update_pillow_spine_time', this.updateInfo);
+		},
+		onHide() {
+			uni.$off('update_pillow_spine_time', this.updateInfo);
 		},
 		methods: {
+			updateInfo() {
+				this.timeLimit = blue_class.getInstance().getPillowSpineTime();
+			},
 			backHandle() {
 				uni.navigateTo({
 					url: "/page_subject/ano/ano"
 				})
+			},
+			startHandler() {
+				let shake1 = handleStartSpine()
+				blue_class.getInstance().write2tooth(shake1)
+			},
+			stopHandler() {
+				let shake1 = handleStopSpine()
+				blue_class.getInstance().write2tooth(shake1)
+
 			},
 			nav1() {
 
@@ -72,6 +103,7 @@
 			color: #acacac;
 		}
 
+
 		.top-part {
 			position: relative;
 			background-color: #dddddd;
@@ -94,7 +126,7 @@
 
 		.headInfo {
 			position: absolute;
-			top: 480rpx;
+			top: 615rpx;
 			left: 45rpx;
 			color: white;
 			display: flex;
@@ -108,7 +140,7 @@
 
 		.neckInfo {
 			position: absolute;
-			top: 545rpx;
+			top: 615rpx;
 			right: 45rpx;
 			color: white;
 			display: flex;
@@ -124,6 +156,9 @@
 			position: relative;
 			background-color: #efefef;
 			flex: 1;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 
 			.imgicon {
 				width: 111rpx;
@@ -131,6 +166,12 @@
 				position: absolute;
 				top: 20rpx;
 				left: 20rpx;
+			}
+
+			.time-part {
+				font-size: 60rpx;
+				color: #354D5B;
+				margin-top: -50rpx;
 			}
 		}
 

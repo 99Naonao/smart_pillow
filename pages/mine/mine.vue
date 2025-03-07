@@ -12,7 +12,7 @@
 					</view>
 					<view class="usernameInfo">
 						<view class="userNickNameInfo" v-if="nickNameInputFlag">
-							<text class="username">{{ userInfo.nickName || '未知用户' }}</text>
+							<text class="username">{{ userInfo.nickName || '点击头像自动登录' }}</text>
 							<!-- <image src="../../static/icon/edit.png"></image> -->
 						</view>
 						<view class="username" v-else>

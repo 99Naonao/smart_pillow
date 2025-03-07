@@ -59,6 +59,12 @@
 					<image class="icon4" src="../../static/index/SY_00A_IconJZWT1.png" mode="widthFix"></image>
 					<!-- <label class="desc" for="">仰卧中</label> -->
 				</view>
+				<view class="item" @click="spineCheck()">
+					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
+					<label class="title" for="">脊柱微调</label>
+					<image class="icon4" src="../../static/index/SY_00A_IconJZWT.png" mode="widthFix"></image>
+					<!-- <label class="desc" for="">仰卧中</label> -->
+				</view>
 			</view>
 		</view>
 		<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" border-radius="40rpx 40rpx 0rpx 0rpx"
@@ -380,6 +386,12 @@
 			adjustHandler(item) {
 				this.connectHandler()
 			},
+			spineCheck() {
+				uni.navigateTo({
+					url: "/page_subject/ano/ano"
+				})
+			},
+
 			statusCheck() {
 				uni.navigateTo({
 					url: "/page_subject/study/study"
@@ -1053,7 +1065,7 @@
 			align-items: center;
 
 			.item-back {
-				width: 151rpx;
+				width: 127rpx;
 				height: 161rpx;
 			}
 
@@ -1063,6 +1075,7 @@
 				top: 0;
 				width: 100%;
 				color: white;
+				font-size: 26rpx;
 				text-align: center;
 				line-height: 60rpx;
 			}

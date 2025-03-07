@@ -345,6 +345,50 @@ var handleSendFormart = function(buffer) {
 	console.log('[handleSendFormart] n_buffer', n_buffer);
 	return n_buffer
 }
+// 8--脊柱调整功能（APP->设备）数据1--动作（U8）(0--停止，1--启动)，参数2 -- 头枕高度（U8）,参数3--颈部起始高度（U8）,参数4--颈部下调高度（U8）
+var handleStartSpine = function(head, startNeck, endNeck) {
+	// 向蓝牙设备发送一个0x00的2进制数据
+	let littleEdition = true
+	const n_buffer = new ArrayBuffer(8)
+	const n_dataView = new DataView(n_buffer)
+	n_dataView.setUint8(0, 1)
+	n_dataView.setUint8(1, head)
+	n_dataView.setUint8(2, startNeck)
+	n_dataView.setUint8(3, endNeck)
+	let withLengthBuffer = handleSendFormart(n_buffer)
+	const orign_buffer = new DataView(withLengthBuffer)
+	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
+	const dataView = new DataView(buffer)
+	// 指令码；1：2,3,4--手动调整 
+	dataView.setUint8(0, 8)
+	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
+		dataView.setUint8(index + 1, orign_buffer.getUint8(index))
+	}
+
+	return buffer
+}
+
+var handleStopSpine = function(head, startNeck, endNeck) {
+	// 向蓝牙设备发送一个0x00的2进制数据
+	let littleEdition = true
+	const n_buffer = new ArrayBuffer(8)
+	const n_dataView = new DataView(n_buffer)
+	n_dataView.setUint8(0, 0)
+	n_dataView.setUint8(1, head)
+	n_dataView.setUint8(2, startNeck)
+	n_dataView.setUint8(3, endNeck)
+	let withLengthBuffer = handleSendFormart(n_buffer)
+	const orign_buffer = new DataView(withLengthBuffer)
+	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
+	const dataView = new DataView(buffer)
+	// 指令码；1：2,3,4--手动调整 
+	dataView.setUint8(0, 8)
+	for (var index = 0; index < withLengthBuffer.byteLength; index++) {
+		dataView.setUint8(index + 1, orign_buffer.getUint8(index))
+	}
+
+	return buffer
+}
 
 var write2tooth = async function(deviceId, serviceId, characteristicId, buffer) {
 	return new Promise((resolve, reject) => {
@@ -744,6 +788,8 @@ export {
 	sideParseByShooting,
 	parsePillowRealState,
 	handPillowStatus,
+	handleStartSpine,
+	handleStopSpine,
 	handPillowSideState,
 	parsePillowState,
 	hexCharCodeToStr,

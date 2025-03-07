@@ -87,6 +87,14 @@ class blue_class {
 		this.pillowPower = value;
 		uni.$emit('update_pillow_info')
 	}
+	// 获取脊椎剩余时间
+	getPillowSpineTime() {
+		return this.pillowSpineTime;
+	}
+	setPillowSpineTime(value) {
+		this.pillowSpineTime = value;
+		uni.$emit('update_pillow_spine_time')
+	}
 
 	getPillowPower() {
 		return this.pillowPower;
@@ -196,6 +204,7 @@ class blue_class {
 		console.log('气囊1气压超高:', n6);
 		let n7 = (detail_status >> 7) & 0x01;
 		console.log('气囊2气压超高:', n7);
+
 		let headHeight = receive16.slice(4, 6);
 		let headHeight10 = parseInt('0x' + headHeight);
 		let neckHeight = receive16.slice(6, 8);
@@ -216,6 +225,13 @@ class blue_class {
 		console.log('头部气囊充气状态:', plastic_n1);
 		console.log('颈部气囊状态:', plastic_n2);
 
+		// 9：脊柱调整剩余时间（U16
+
+		let spine_status = receive16.slice(18, 20);
+		let spine_status16 = '0x' + spine_status;
+		let spine_status10 = parseInt(spine_status16);
+		console.log('脊柱调整剩余时间:', spine_status10, "秒");
+
 		// 0100970d030101f3
 		// dataView.setUint32(0, second | (minutes << 6) | (hours << 12) | (days << 17) | (months << 22) | ((year -
 		// 		2020) <<
@@ -227,6 +243,7 @@ class blue_class {
 		blue_class.getInstance().setPillowStatus(status10)
 		blue_class.getInstance().setPillowSideHeight(neckHeight10)
 		blue_class.getInstance().setPillowPower(press10)
+		blue_class.getInstance().setPillowSpineTime(spine_status10)
 		// work 枕头状态 mm=> 1 height:151mm neckheight:13mm version:3 校准:1 电池:1
 		// console.log('work 枕头状态 =>', 'height:' + headHeight, 'neckheight:' + neckHeight, vesrion, isright, press)
 		console.log('work 枕头状态 mm=>', status10, 'height:' + headHeight10 + 'mm', 'neckheight:' + neckHeight10 +
