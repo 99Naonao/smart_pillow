@@ -16,6 +16,8 @@
 		</view>
 		<view class="bottom-part">
 			<image mode="widthFix" class="imgicon" :src="'../static/ano/SY_03_TimeLOGO.png'"></image>
+			<canvas class="canvas-content" canvas-id="runCanvas" id="runCanvas">
+			</canvas>
 			<view class="time-part">
 				{{timeString}}
 			</view>
@@ -38,9 +40,13 @@
 	export default {
 		data() {
 			return {
-				timeLimit: 2000,
+				num: 0,
+				timeLimit: 1200,
 				pillowSideHeight: 60,
 				pillowHeight: 60,
+
+				startAngle: -Math.PI / 2, //canvas画圆的起始角度，默认为3点钟方向即90度 方向，定位位到12位置 0度
+				context: null,
 				menuStyle: {
 					'--menuButtonTop': '0'
 				},
@@ -56,11 +62,45 @@
 			let app = getApp();
 			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 20) + 'px');
 			uni.$on('update_pillow_spine_time', this.updateInfo);
+
+			//开始动画
+			var timer = setInterval(() => {
+				this.num += 0.005
+				// this.cartoon(this.num)
+				if (this.num > 1.99) {
+					clearInterval(timer)
+					this.num = 1.999;
+				}
+				this.cartoon(this.num)
+			}, 10)
+			// this.drawCircleByProgress();
 		},
 		onHide() {
 			uni.$off('update_pillow_spine_time', this.updateInfo);
 		},
 		methods: {
+			// 辅助函数，用于转换小程序中的rpx
+			convert_length(length) {
+				return Math.round(wx.getSystemInfoSync().windowWidth * length / 750);
+			},
+			cartoon(num) {
+				//新建一个画布
+				const ctx = uni.createCanvasContext('runCanvas')
+
+				var yuanxin1 = 120 //圆心
+				var yuanxin2 = 120
+				var r = 70 //半径
+
+				ctx.beginPath()
+				ctx.arc(yuanxin1, yuanxin2, r, -Math.PI * 0.5 + num * Math.PI, -Math.PI * 0.5)
+				//ctx.arc(yuanxin1, yuanxin2, r, -Math.PI * 0.5, -Math.PI * 0.5 + num * Math.PI)
+				ctx.setStrokeStyle('#5382dd')
+				ctx.setLineWidth(8)
+				ctx.stroke()
+				console.log(num, num * Math.PI)
+				ctx.draw()
+			},
+
 			updateInfo() {
 				this.timeLimit = blue_class.getInstance().getPillowSpineTime();
 			},
@@ -70,11 +110,11 @@
 				})
 			},
 			startHandler() {
-				let shake1 = handleStartSpine()
+				let shake1 = handleStartSpine(30, 100, 50)
 				blue_class.getInstance().write2tooth(shake1)
 			},
 			stopHandler() {
-				let shake1 = handleStopSpine()
+				let shake1 = handleStopSpine(30, 100, 50)
 				blue_class.getInstance().write2tooth(shake1)
 
 			},
@@ -95,6 +135,25 @@
 		height: 100%;
 		display: flex;
 		flex-direction: column;
+
+		.canvas {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 400rpx;
+			height: 400rpx;
+		}
+
+		.canvas-content {
+			position: absolute;
+			top: 100rpx;
+			left: 50%;
+			margin-left: -120px;
+			width: 240px;
+			height: 500rpx;
+			// background-color: #059cdd;
+		}
+
 
 		.linetips {
 			width: 100%;

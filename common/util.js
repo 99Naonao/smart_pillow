@@ -349,7 +349,7 @@ var handleSendFormart = function(buffer) {
 var handleStartSpine = function(head, startNeck, endNeck) {
 	// 向蓝牙设备发送一个0x00的2进制数据
 	let littleEdition = true
-	const n_buffer = new ArrayBuffer(8)
+	const n_buffer = new ArrayBuffer(4)
 	const n_dataView = new DataView(n_buffer)
 	n_dataView.setUint8(0, 1)
 	n_dataView.setUint8(1, head)
@@ -371,7 +371,7 @@ var handleStartSpine = function(head, startNeck, endNeck) {
 var handleStopSpine = function(head, startNeck, endNeck) {
 	// 向蓝牙设备发送一个0x00的2进制数据
 	let littleEdition = true
-	const n_buffer = new ArrayBuffer(8)
+	const n_buffer = new ArrayBuffer(4)
 	const n_dataView = new DataView(n_buffer)
 	n_dataView.setUint8(0, 0)
 	n_dataView.setUint8(1, head)
