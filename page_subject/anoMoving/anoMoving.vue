@@ -17,10 +17,10 @@
 		<view class="bottom-part">
 			<image mode="widthFix" class="imgicon" :src="'../static/ano/SY_03_TimeLOGO.png'"></image>
 			<canvas class="canvas-content" canvas-id="runCanvas" id="runCanvas">
+				<view class="time-part">
+					{{timeString}}
+				</view>
 			</canvas>
-			<view class="time-part">
-				{{timeString}}
-			</view>
 			<view class="opt flex">
 				<view class="normal-btn" @click="startHandler">启动</view>
 				<view class="save" @click="stopHandler">停止</view>
@@ -32,7 +32,7 @@
 
 <script>
 	import {
-		formatTime,
+		formatTimeByString,
 		handleStartSpine,
 		handleStopSpine,
 	} from '../../common/util';
@@ -55,7 +55,7 @@
 		},
 		computed: {
 			timeString() {
-				return formatTime(this.timeLimit);
+				return formatTimeByString(this.timeLimit);
 			}
 		},
 		onShow() {
@@ -86,19 +86,26 @@
 			cartoon(num) {
 				//新建一个画布
 				const ctx = uni.createCanvasContext('runCanvas')
+				const dpr = wx.getSystemInfoSync().pixelRatio
+				const query = wx.createSelectorQuery().in(this)
 
-				var yuanxin1 = 120 //圆心
-				var yuanxin2 = 120
-				var r = 70 //半径
+				var center_x = this.rpxToPx(240) / 2;
+				var center_y = this.rpxToPx(240) / 2;
+				var lineWdith = 8;
+				var r = (center_x - lineWdith) //半径
 
 				ctx.beginPath()
-				ctx.arc(yuanxin1, yuanxin2, r, -Math.PI * 0.5 + num * Math.PI, -Math.PI * 0.5)
+				ctx.arc(center_x, center_y, r, -Math.PI * 0.5 + num * Math.PI, -Math.PI * 0.5)
 				//ctx.arc(yuanxin1, yuanxin2, r, -Math.PI * 0.5, -Math.PI * 0.5 + num * Math.PI)
 				ctx.setStrokeStyle('#5382dd')
-				ctx.setLineWidth(8)
+				ctx.setLineWidth(lineWdith)
 				ctx.stroke()
-				console.log(num, num * Math.PI)
+				console.log(this.rpxToPx(240), center_x, center_y, num, dpr, num * Math.PI)
 				ctx.draw()
+			},
+			rpxToPx(rpx) {
+				const screenWidth = uni.getSystemInfoSync().screenWidth
+				return (screenWidth * Number.parseInt(rpx)) / 750
 			},
 
 			updateInfo() {
@@ -135,23 +142,18 @@
 		height: 100%;
 		display: flex;
 		flex-direction: column;
-
-		.canvas {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 400rpx;
-			height: 400rpx;
-		}
+		justify-content: center;
 
 		.canvas-content {
-			position: absolute;
-			top: 100rpx;
-			left: 50%;
-			margin-left: -120px;
-			width: 240px;
-			height: 500rpx;
-			// background-color: #059cdd;
+			position: relative;
+			// top: 50%;
+			// left: 50%;
+			width: 240rpx;
+			height: 240rpx;
+			// transform: translate(-25%, -25%);
+			// width: 320rpx;
+			// height: 500rpx;
+			// background-color: #ffaaff;
 		}
 
 
@@ -230,7 +232,11 @@
 			.time-part {
 				font-size: 60rpx;
 				color: #354D5B;
-				margin-top: -50rpx;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				// margin-top: -50rpx;
 			}
 		}
 
