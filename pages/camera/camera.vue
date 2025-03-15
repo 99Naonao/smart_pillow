@@ -1,5 +1,5 @@
 <template>
-	<canvas id="canvas1" class="canvas1" type="webgl" disable-scroll="true" @touchend="bindtouchend_callback">
+	<canvas id="canvas1" class="canvas1" type="webgl2" disable-scroll="true" @touchend="bindtouchend_callback">
 		<cover-view class="cover">
 			<cover-image @click="backBtn_callback" aria-role="button" src="/static/camera/back.png" class="back-btn"
 				:style="backBtnStyle">

@@ -22,7 +22,7 @@
 			}
 		},
 		{
-			"path": "pages/shoot/shooting",
+			"path": "pages/shoot/shootingNew",
 			"style": {
 				"navigationStyle": "custom"
 			}

@@ -319,17 +319,17 @@ function initTHREE() {
 	// 半球光
 	const light1 = new THREE.HemisphereLight(0xffffff, 0x333333)
 	light1.position.set(0, 0.2, 0)
-	scene.add(light1)
+	// scene.add(light1)
 
 	// 平行光
 	const light2 = new THREE.DirectionalLight(0xffffff)
 	light2.position.set(0, 0.2, 0.1)
-	scene.add(light2)
+	// scene.add(light2)
 
 	// 渲染层
 	renderer = new THREE.WebGLRenderer({
-		antialias: true,
-		alpha: true,
+		antialias: false,
+		alpha: false,
 	})
 
 	// gamma色彩空间校正，以适应人眼对亮度的感觉。
@@ -415,6 +415,11 @@ function initEnvironment(canvasDom) {
 		}
 		session.requestAnimationFrame(onFrame)
 	})
+}
+
+function renderFrame() {
+	const imgUrl = renderer.domElement.toDataURL("");
+	return imgUrl;
 }
 
 // 在光标的位置放置3D模型
@@ -541,6 +546,7 @@ const cameraBusiness = {
 	initWorldTrack,
 	initEnvironment,
 	initTHREE,
+	renderFrame,
 	createAnimation,
 	updateAnimation,
 	addModelByReticle,

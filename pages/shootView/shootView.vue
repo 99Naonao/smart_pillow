@@ -782,7 +782,7 @@
 			startCamera() {
 				// 重新测量
 				uni.navigateTo({
-					url: "/pages/shoot/shooting"
+					url: "/pages/shoot/shootingNew"
 				})
 				return;
 				uni.chooseImage({
@@ -830,7 +830,7 @@
 			startSideCamera() {
 				// 重新测量
 				uni.navigateTo({
-					url: "/pages/shoot/shooting"
+					url: "/pages/shoot/shootingNew"
 				})
 				return;
 				uni.chooseImage({
@@ -882,7 +882,7 @@
 					url: tempUrl
 				});
 
-				console.log('detecting:', tempUrl, isSide, base64)
+				console.log('detecting:', tempUrl, isSide)
 
 				const uploadTask = uni.uploadFile({
 					url: 'https://dev.ic1101.top/new_battle/zhBaiduAip',

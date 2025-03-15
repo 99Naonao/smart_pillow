@@ -129,7 +129,7 @@
 				uni.setStorageSync('user_measure', JSON.stringify(this.form))
 
 				uni.navigateTo({
-					url: '/pages/shoot/shooting'
+					url: '/pages/shoot/shootingNew'
 				})
 			},
 			formReset: function(e) {

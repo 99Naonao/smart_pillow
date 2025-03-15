@@ -1,6 +1,6 @@
 <template>
 	<view>
-		<canvas type="webgl" canvas-id="canvas1" id="canvas1" class="canvas1" disable-scroll="true">
+		<canvas type="webgl2" canvas-id="canvas1" id="canvas1" class="canvas1" disable-scroll="true">
 			<cover-view class="cover">
 				<cover-image @touchend="backBtn_callback" aria-role="button" src="/static/camera/back.png"
 					class="back-btn" :style="backBtnStyle">
@@ -153,7 +153,7 @@
 			// this.menuButtonTop = menuButton.top
 			// 胶囊按钮的高度
 			// this.menuButtonHeight = menuButton.height
-			console.log('onready2:', canvasId, menuButton)
+			// console.log('onready2:', canvasId, menuButton)
 			// 获取画布组件
 			const query = wx.createSelectorQuery()
 			const selectCanvas = query.select('#' + canvasId)
@@ -192,9 +192,9 @@
 				// 这里角度就可以赋值到data上，视图层就可以调这个角度了
 				this.$set(this.leftBtnStyle, '--left', this.screenWidth / 2 + this.screenWidth / 2 * x + 'px')
 				this.$set(this.topBtnStyle, '--top', this.screenHeight / 2 + this.screenHeight / 2 * z + 'px')
-				console.log('refreshAcc', this.screenWidth, this.screenHeight, this.screenWidth / 2 + this.screenWidth /
-					2 * x, this.screenHeight / 2 + this
-					.screenHeight / 2 * z);
+				// console.log('refreshAcc', this.screenWidth, this.screenHeight, this.screenWidth / 2 + this.screenWidth /
+				// 	2 * x, this.screenHeight / 2 + this
+				// 	.screenHeight / 2 * z);
 			},
 			playAudioEffect() {
 				const innerAudioContext = uni.createInnerAudioContext();
@@ -332,25 +332,80 @@
 					}
 				}, that);
 			},
+			shootAndriod(pixel, canvas) {
+				let that = this;
+				uni.canvasToTempFilePath({
+					x: 0,
+					y: 0,
+					width: that.canvasWidth,
+					height: that.canvasHeight,
+					destWidth: pixel * that.canvasWidth,
+					destHeight: pixel * that.canvasHeight,
+					canvasId: that.canvasID,
+					fileType: 'jpg',
+					success: (res) => {
+						console.log('this.frontImage:', that.frontImage)
+						if (this.frontImage) {
+							this.playAudioEffect()
+							this.sideImage = res.tempFilePath;
+							var url_ = '/pages/shootView/shootView' +
+								object2Query({
+									sideImage: this.sideImage,
+									frontImage: this.frontImage
+								})
+
+							uni.redirectTo({
+								url: url_
+							})
+						} else {
+							this.playAudioEffect()
+							this.frontImage = res.tempFilePath;
+							console.log('1234', res.tempFilePath, this
+								.frontImage)
+							this.shootingTips = "请拍摄侧面照片"
+							this.showTips = true;
+							// uni.showToast({
+							// 	title: '请拍摄侧面照片',
+							// 	duration: 3000
+							// })
+
+							// wx.previewImage({
+							// 	urls: [this.frontImage],
+							// 	current: this.frontImage
+							// })
+						}
+					},
+					fail(err) {
+						console.error(err)
+					}
+				}, that);
+			},
 			shootBtnAndroid(pixel) {
 				let that = this;
 				const query = wx.createSelectorQuery()
 				const selectCanvas = query.select('#canvas1')
-				console.log('selectCanvas:', selectCanvas)
+				// console.log('selectCanvas:', selectCanvas)
+				let start = Date.now();
 				selectCanvas.node().exec((res) => {
 					const canvas = res[0].node
-					const gl = canvas.getContext('webgl')
+					const gl = canvas.getContext('webgl2')
 					gl.canvas.id = res[0].node.id
-					console.log('gl:', gl)
+					console.log('time lap 0:', Date.now() - start);
+					const imageData = cameraBusiness.renderFrame();
+					console.log('time lap 01111:', Date.now() - start);
 					// console.log('gltodataurl:', gl.canvas.toDataURL())
-					const imageData = gl.canvas.toDataURL();
+					// const imageData = gl.canvas.toDataURL();
+					// that.shootAndriod(pixel, canvas);
+					// return;
+					console.log('time lap 1:', Date.now() - start);
 					const imageData2 = imageData.replace(/^data:image\/\w+;base64,/, "");
-					console.log(imageData2)
+					console.log('time lap 2:', Date.now() - start);
 					const time = new Date().getTime();
 					let imgPath = wx.env.USER_DATA_PATH + "/poster_" + time + "_shoot" + ".png";
 					const fs = wx.getFileSystemManager();
 					fs.writeFileSync(imgPath, imageData2, "base64");
-					console.log('writeFileSync123:', imgPath)
+					console.log('time lap 3:', Date.now() - start);
+					// console.log('writeFileSync123:', imgPath)
 					fs.close()
 
 					wx.getImageInfo({
@@ -359,7 +414,7 @@
 							console.error('success', res)
 						},
 						fail(res) {
-							console.error(res)
+							console.error("getImageInfo:", res)
 						}
 					})
 
@@ -411,10 +466,10 @@
 						} else {
 							this.shootBtnAndroid(pixel)
 						}
-						console.log("shootBtnHandler11:", platform, that.canvasInstance, that.canvasID, pixel,
-							that
-							.canvasWidth, that
-							.canvasHeight)
+						// console.log("shootBtnHandler11:", platform, that.canvasInstance, that.canvasID, pixel,
+						// 	that
+						// 	.canvasWidth, that
+						// 	.canvasHeight)
 					}
 				})
 			}
