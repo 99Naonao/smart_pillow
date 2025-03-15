@@ -122,8 +122,9 @@
 					}
 				})
 			} else {
-				// 如果连接过
+				// 如果正在连接
 				if (blue_class.getInstance().deviceId != '') {
+					console.log("fuck", blue_class.getInstance().deviceName, blue_class.getInstance().deviceId)
 					this.deviceIdList.push({
 						name: blue_class.getInstance().deviceName,
 						deviceId: blue_class.getInstance().deviceId
@@ -737,6 +738,7 @@
 						app.globalData.deviceId = deviceId;
 
 						blue_class.getInstance().deviceId = deviceId;
+						blue_class.getInstance().deviceName = item.name;
 
 
 						console.log('connectBluetooth success!:', deviceId, res)
