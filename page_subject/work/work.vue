@@ -6,8 +6,8 @@
 	<view class="">
 		<image class="topKV" :style="menuStyle" mode="widthFix" src="@/static/SY_01_000.png"></image>
 		<view class="tips" for="">监测到以下设备</view>
-		<view class="tips" v-if="deviceIdList.length == 0">暂无设备</view>
-		<view v-for="(item,index) in deviceIdList" :key="index">
+		<view class="tips" v-if="tempDeviceIdList.length == 0">暂无设备</view>
+		<view v-for="(item,index) in tempDeviceIdList" :key="index">
 			<view class="device-item">
 				<view class="item-name">
 					{{item.name}}
@@ -101,37 +101,62 @@
 			loginDeviceId() {
 				return blue_class.getInstance().deviceId;
 			},
+			blueDeviceIdList() {
+				return blue_class.getInstance().deviceIdList;
+			}
 		},
 		components: {
 
 		},
 		onShow() {
+			this.checkBlueToothSetting();
+			this.refreshDeviceList();
+			// this.stopBlueTooth();
+			// uni.getSystemInfo({
+			// 	success: (res) => {
+			// 		let pixel = res.pixelRatio
+			// 		let platform = res.platform;
+			// 		console.log("getSystemInfo", res)
+			// 		if (platform == 'ios') {
+			// 			uni.openAppAuthorizeSetting({
+			// 				success() {
+			// 					console.log("res2", res)
+			// 				}
+			// 			})
+			// 		} else {
+			// 			uni.openSystemBluetoothSetting({
+			// 				success: res => {
+			// 					console.log("res", res)
+			// 				}
+			// 			})
+			// 		}
+			// 	}
+			// })
+
+
 			this.onShowing = true;
 			let app = getApp();
 			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 80) + 'px');
-			// let app = getApp();
-			// this.deviceId = app.globalData.deviceId;
-			// this.characteristicId = app.globalData.characteristicId;
-			// this.serviceId = app.globalData.serviceId;
-			this.deviceIdList = [];
+
+			// this.deviceIdList = [];
 			// 如果正在搜索中
 			if (this.searching) {
-				uni.closeBluetoothAdapter({
-					complete: () => {
-						this.searching = false
-					}
-				})
+				// uni.closeBluetoothAdapter({
+				// 	complete: () => {
+				// 		this.searching = false
+				// 	}
+				// })
 			} else {
 				// 如果正在连接
 				if (blue_class.getInstance().deviceId != '') {
-					console.log("fuck", blue_class.getInstance().deviceName, blue_class.getInstance().deviceId)
-					this.deviceIdList.push({
-						name: blue_class.getInstance().deviceName,
-						deviceId: blue_class.getInstance().deviceId
-					});
+					// console.log(blue_class.getInstance().deviceName, blue_class.getInstance().deviceId)
+					// blue_class.getInstance().deviceIdList.push({
+					// 	name: blue_class.getInstance().deviceName,
+					// 	deviceId: blue_class.getInstance().deviceId
+					// });
 				} else {
 					if (app.globalData.versionCode == 0) {
-						this.deviceIdList.push({
+						blue_class.getInstance().deviceIdList.push({
 							name: this.testName,
 							deviceId: 'deviceId'
 						})
@@ -146,6 +171,8 @@
 			// uni.offBLECharacteristicValueChange(this.handleMessage)
 			this.onShowing = false;
 			uni.$off('xx', this.handleMessage)
+			this.stopBlueTooth();
+			uni.onBluetoothDeviceFound(null)
 			// if (this.searching) {
 			// uni.stopBluetoothDevicesDiscovery({
 			// 	success: function(res) {
@@ -162,107 +189,73 @@
 		onLoad() {
 			// 监听设备发现
 			let that = this
-			uni.onBluetoothDeviceFound((result) => {
-				//剔除重复设备，兼容不同设备API的不同返回值
-				var isnotexist = true
-				let devices = result.devices
-				// 1
-				if (result.deviceId) {
+			console.log("onload!!!!!!")
 
-				} else if (result.devices) {
-					if (result.devices[0].advertisData) {
-						result.devices[0].advertisData = ab2hex(result.devices[0].advertisData)
-					} else {
-						result.devices[0].advertisData = ''
-					}
+			// uni.onBluetoothDeviceFound((result) => {
+			// 	//剔除重复设备，兼容不同设备API的不同返回值
+			// 	var isnotexist = true
+			// 	let devices = result.devices
+			// 	console.log("onBluetoothDeviceFound:", result)
+			// 	// 1
+			// 	if (result.deviceId) {
 
-					for (var i = 0; i < that.deviceIdList.length; i++) {
-						if (result.devices[0].deviceId == that.deviceIdList[i].deviceId) {
-							isnotexist = false
-						}
-					}
-					if (isnotexist && result.devices[0].name != '') {
-						if (result.devices[0].name.indexOf('Minga') > -1) {
-							that.deviceIdList.push(result.devices[0])
-						}
-						console.log('result.devices[0].name:', result.devices[0].name)
-						// }
-					}
-					// if (isnotexist && result.devices[0].name != '' && result.devices[0].name.indexOf('Minga') > -
-					// 	1) {
-					// 	that.deviceIdList.push(result.devices[0])
-					// }
-				} else if (result[0]) {
-					if (result[0].advertisData) {
-						result[0].advertisData = ab2hex(result[0].advertisData)
-					} else {
-						result[0].advertisData = ''
-					}
+			// 	} else if (result.devices) {
+			// 		if (result.devices[0].advertisData) {
+			// 			result.devices[0].advertisData = ab2hex(result.devices[0].advertisData)
+			// 		} else {
+			// 			result.devices[0].advertisData = ''
+			// 		}
 
-					for (var i = 0; i < that.deviceIdList.length; i++) {
-						if (result[0].deviceId == that.deviceIdList[i].deviceId) {
-							isnotexist = false
-						}
-					}
-					if (isnotexist && result[0].name != '' && result[0].name.indexOf('Minga') > -1) {
-						that.deviceIdList.push(result[0])
-					}
-				}
+			// 		for (var i = 0; i < deviceIdList.length; i++) {
+			// 			if (result.devices[0].deviceId == deviceIdList[i].deviceId) {
+			// 				isnotexist = false
+			// 			}
+			// 		}
+			// 		if (isnotexist && result.devices[0].name != '') {
+			// 			if (result.devices[0].name.indexOf('Minga') > -1) {
+			// 				deviceIdList.push(result.devices[0])
+			// 			}
+			// 			console.log('result.devices[0].name:', result.devices[0].name)
+			// 			// }
+			// 		}
+			// 		// if (isnotexist && result.devices[0].name != '' && result.devices[0].name.indexOf('Minga') > -
+			// 		// 	1) {
+			// 		// 	that.deviceIdList.push(result.devices[0])
+			// 		// }
+			// 	} else if (result[0]) {
+			// 		if (result[0].advertisData) {
+			// 			result[0].advertisData = ab2hex(result[0].advertisData)
+			// 		} else {
+			// 			result[0].advertisData = ''
+			// 		}
 
-				let first_device = devices[0]
-				for (var i = 0; i < that.deviceIdList.length; i++) {
-					if (devices.deviceId == that.deviceIdList[i].deviceId) {
-						isnotexist = false
-					}
-				}
-				console.log('new device list has founded', devices.length, devices)
-			})
+			// 		for (var i = 0; i < deviceIdList.length; i++) {
+			// 			if (result[0].deviceId == deviceIdList[i].deviceId) {
+			// 				isnotexist = false
+			// 			}
+			// 		}
+			// 		if (isnotexist && result[0].name != '' && result[0].name.indexOf('Minga') > -1) {
+			// 			deviceIdList.push(result[0])
+			// 		}
+			// 	}
 
-			uni.openBluetoothAdapter({
-				success: (res) => {
-					console.log('startBluetoothDevicesDiscovery')
-					// 开始搜索蓝牙设备
-					uni.startBluetoothDevicesDiscovery({
-						services: [],
-						success(res) {
-							console.log('startBluetoothDevicesDiscovery success:', res)
-							this.searching = true
-						}
-					})
+			// 	let first_device = devices[0]
+			// 	for (var i = 0; i < deviceIdList.length; i++) {
+			// 		if (devices.deviceId == deviceIdList[i].deviceId) {
+			// 			isnotexist = false
+			// 		}
+			// 	}
+			// 	console.log('new device list has founded', devices.length, devices)
+			// })
 
-					uni.getBluetoothAdapterState({
-						success: (res) => {
-							console.log('getBluetoothAdapterState success!', res)
-						}
-					})
-					// //  50s扫描结束
-					// setTimeout(function() {
-					// 	that.stopBlueTooth()
-					// }, 500000);
-				},
-				fail(res) {
-					// if (res.errCode == 10001) {
-					// 	uni.showToast({
-					// 		duration: 3000,
-					// 		title: '请打开蓝牙'
-					// 	})
-					// }
-					uni.showModal({
-						title: '提示',
-						content: '请检查手机蓝牙是否打开',
-						showCancel: false,
-						success: (res) => {
-							this.searching = false
-						}
-					})
-				}
-			})
+			// this.openBlueTooth();
 		},
 		data() {
 			return {
 				menuStyle: {
 					'--menuButtonTop': "0",
 				},
+				tempDeviceIdList: [],
 				currentItem: {},
 				onShowing: false, //页面是否显示
 				show: false,
@@ -272,13 +265,169 @@
 				searching: false, // 搜索中
 				deviceId: '', // 连接的蓝牙id
 				serviceId: '', // 连接的服务id
-				deviceIdList: [], // 检测列表
+				// deviceIdList: [], // 检测列表
 				testName: '测试专用',
-				// deviceIdList: [],
 				connectList: [], // 连接列表
 			}
 		},
 		methods: {
+			refreshDeviceList() {
+				this.tempDeviceIdList.length = 0;
+				for (var item in blue_class.getInstance().deviceIdList) {
+					this.tempDeviceIdList.push(blue_class.getInstance().deviceIdList[item]);
+				}
+				// this.tempDeviceIdList = blue_class.getInstance().deviceIdList;
+				console.log("refreshDeviceList:", this.tempDeviceIdList)
+			},
+			addCallBack() {
+				let that = this
+				let deviceIdList = blue_class.getInstance().deviceIdList;
+				uni.onBluetoothDeviceFound((result) => {
+					//剔除重复设备，兼容不同设备API的不同返回值
+					var isnotexist = true
+					let devices = result.devices
+					console.log("onBluetoothDeviceFound:", result)
+					// 1
+					if (result.deviceId) {
+
+					} else if (result.devices) {
+						if (result.devices[0].advertisData) {
+							result.devices[0].advertisData = ab2hex(result.devices[0].advertisData)
+						} else {
+							result.devices[0].advertisData = ''
+						}
+
+						for (var i = 0; i < deviceIdList.length; i++) {
+							if (result.devices[0].deviceId == deviceIdList[i].deviceId) {
+								isnotexist = false
+							}
+						}
+						if (isnotexist && result.devices[0].name != '') {
+							if (result.devices[0].name.indexOf('Minga') > -1) {
+								deviceIdList.push(result.devices[0]);
+								that.refreshDeviceList()
+							}
+							console.log('result.devices[0].name:', result.devices[0].name)
+							// }
+						}
+						// if (isnotexist && result.devices[0].name != '' && result.devices[0].name.indexOf('Minga') > -
+						// 	1) {
+						// 	that.deviceIdList.push(result.devices[0])
+						// }
+					} else if (result[0]) {
+						if (result[0].advertisData) {
+							result[0].advertisData = ab2hex(result[0].advertisData)
+						} else {
+							result[0].advertisData = ''
+						}
+
+						for (var i = 0; i < deviceIdList.length; i++) {
+							if (result[0].deviceId == deviceIdList[i].deviceId) {
+								isnotexist = false
+							}
+						}
+						if (isnotexist && result[0].name != '' && result[0].name.indexOf('Minga') > -1) {
+							deviceIdList.push(result[0])
+							that.refreshDeviceList()
+						}
+					}
+
+					let first_device = devices[0]
+					for (var i = 0; i < deviceIdList.length; i++) {
+						if (devices.deviceId == deviceIdList[i].deviceId) {
+							isnotexist = false
+						}
+					}
+					console.log('new device list has founded', deviceIdList.length, devices.length, devices)
+				})
+			},
+			stopBlueTooth() {
+				uni.closeBluetoothAdapter({
+					complete: () => {
+						this.searching = false
+						console.log("stopBlueTooth")
+					}
+				})
+			},
+			checkBlueToothSetting() {
+				console.log("checkBlueToothSetting")
+				let that = this;
+				uni.getSetting({
+					success(res) {
+						console.log("getSetting", res)
+						if (!res.authSetting["scope.bluetooth"]) {
+							uni.authorize({
+								scope: 'scope.bluetooth',
+								success() {
+									that.openBlueTooth()
+								},
+								fail() {
+									console.log("authorize error!!!!")
+								}
+							})
+						} else {
+							if (!res.authSetting["scope.userLocation"]) {
+								uni.authorize({
+									scope: 'scope.userLocation',
+									success() {
+										that.openBlueTooth()
+									},
+									fail(res) {
+										console.log("authorize scope.userLocation error!!!!", res)
+										that.openBlueTooth()
+									}
+								})
+							} else {
+								console.log("openBlueToothopenBlueTooth", res)
+								that.openBlueTooth()
+							}
+						}
+					}
+				})
+			},
+			openBlueTooth() {
+				this.addCallBack();
+				uni.openBluetoothAdapter({
+					success: (res) => {
+						console.log('startBluetoothDevicesDiscovery')
+						// 开始搜索蓝牙设备
+						uni.startBluetoothDevicesDiscovery({
+							services: [],
+							success(res) {
+								console.log('startBluetoothDevicesDiscovery success:', res)
+								this.searching = true
+							}
+						})
+
+						uni.getBluetoothAdapterState({
+							success: (res) => {
+								console.log('getBluetoothAdapterState success!', res)
+							}
+						})
+						// //  50s扫描结束
+						// setTimeout(function() {
+						// 	that.stopBlueTooth()
+						// }, 500000);
+					},
+					fail(res) {
+						// if (res.errCode == 10001) {
+						// 	uni.showToast({
+						// 		duration: 3000,
+						// 		title: '请打开蓝牙'
+						// 	})
+						// }
+						uni.showModal({
+							title: '提示',
+							content: '请检查手机蓝牙是否打开',
+							showCancel: false,
+							success: (res) => {
+								this.searching = false
+							}
+						})
+					}
+				})
+
+			},
 			handleMessage(res) {
 				if (this.onShowing) {
 

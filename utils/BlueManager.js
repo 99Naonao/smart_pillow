@@ -20,6 +20,7 @@ class blue_class {
 	pillowPlasticNeck = 0;
 	pillowStatus = 0; // 0--空闲，1--平躺，2--侧卧；
 	chargingStatus = 0; // 0--空闲，1--充电中，2--充电完成
+	deviceIdList = [];
 	constructor() {
 		// 初始化蓝牙相关的状态或变量  
 		this.bluetoothStatus = null; // 蓝牙状态  
