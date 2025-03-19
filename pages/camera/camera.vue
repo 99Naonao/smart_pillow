@@ -63,7 +63,6 @@
 					this.canvasInstance = canvas
 					this.canvasWidth = canvas.width
 					this.canvasHeight = canvas.height
-					console.log('fuck:', canvas.width, canvas.height)
 					// 启动AR会话
 					cameraBusiness.initEnvironment(canvas)
 					// 加载3D模型

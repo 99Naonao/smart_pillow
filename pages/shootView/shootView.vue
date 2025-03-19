@@ -1247,8 +1247,6 @@
 				this.shoulderSpace = Math.max(this.shoulderSpace, 30)
 				// 不高于130mm
 				this.shoulderSpace = Math.min(this.shoulderSpace, 130)
-				// console.log('fuck:', space, speSpace, this.shoulderSpace)
-				// console.log('fuck obj:', obj)
 
 				space = Math.abs(this.frontLeftEarX - this.frontRightEarX);
 				space = space * this.unit / this.factor
