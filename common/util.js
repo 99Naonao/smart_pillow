@@ -363,15 +363,20 @@ var handleSendFormart = function(buffer) {
 	return n_buffer
 }
 // 8--脊柱调整功能（APP->设备）数据1--动作（U8）(0--停止，1--启动)，参数2 -- 头枕高度（U8）,参数3--颈部起始高度（U8）,参数4--颈部下调高度（U8）
-var handleStartSpine = function(head, startNeck, endNeck) {
+// 8--脊柱调整功能（APP->设备）数据1--动作（U8）(0--停止，1--启动)，参数2 -- 头枕高度（U8）,参数3--颈部起始高度（U8）,参数4--颈部下调高度（U8），
+// 参数5高度1保持时间秒(U16)，参数6高度2保持时间秒（U16），参数7调整圈数（U8）
+var handleStartSpine = function(head, startNeck, endNeck, timeSeconds1, timeSeconds2, rounds) {
 	// 向蓝牙设备发送一个0x00的2进制数据
 	let littleEdition = true
-	const n_buffer = new ArrayBuffer(4)
+	const n_buffer = new ArrayBuffer(7)
 	const n_dataView = new DataView(n_buffer)
 	n_dataView.setUint8(0, 1)
 	n_dataView.setUint8(1, head)
 	n_dataView.setUint8(2, startNeck)
 	n_dataView.setUint8(3, endNeck)
+	n_dataView.setUint8(4, timeSeconds1)
+	n_dataView.setUint8(5, timeSeconds2)
+	n_dataView.setUint8(6, rounds)
 	let withLengthBuffer = handleSendFormart(n_buffer)
 	const orign_buffer = new DataView(withLengthBuffer)
 	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
@@ -385,15 +390,18 @@ var handleStartSpine = function(head, startNeck, endNeck) {
 	return buffer
 }
 
-var handleStopSpine = function(head, startNeck, endNeck) {
+var handleStopSpine = function(head, startNeck, endNeck, timeSeconds1, timeSeconds2, rounds) {
 	// 向蓝牙设备发送一个0x00的2进制数据
 	let littleEdition = true
-	const n_buffer = new ArrayBuffer(4)
+	const n_buffer = new ArrayBuffer(7)
 	const n_dataView = new DataView(n_buffer)
 	n_dataView.setUint8(0, 0)
 	n_dataView.setUint8(1, head)
 	n_dataView.setUint8(2, startNeck)
 	n_dataView.setUint8(3, endNeck)
+	n_dataView.setUint8(4, timeSeconds1)
+	n_dataView.setUint8(5, timeSeconds2)
+	n_dataView.setUint8(6, rounds)
 	let withLengthBuffer = handleSendFormart(n_buffer)
 	const orign_buffer = new DataView(withLengthBuffer)
 	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)

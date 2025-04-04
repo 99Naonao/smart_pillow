@@ -15,18 +15,41 @@
 			</view>
 		</view>
 		<view class="bottom-part">
-			<image mode="widthFix" class="imgicon" :src="'../static/ano/SY_03_TimeLOGO.png'"></image>
-			<canvas class="canvas-content" canvas-id="runCanvas" id="runCanvas">
+			<view class="desc flex">
+				<image mode="widthFix" class="imgicon" src="@/static/index/SY_00A_IconJZWT.png"></image>
+				<view class="desc-info">介绍</view>
+			</view>
+			<view class="mode-part">
+				<view class="uni-form-item uni-column">
+					<view class="flex mode-title">
+						<view>请选择您喜欢的强度</view>
+						<view>剩余次数：3</view>
+					</view>
+					<view class="slide-part">
+						<slider value="50" @change="sliderChange" activeColor="#ed6546" backgroundColor="#f9cec6"
+							block-color="#ed6546" block-size="20" />
+						<view class="flex"
+							style="justify-content:space-between;padding-left: 30rpx;padding-right: 30rpx;">
+							<view>低</view>
+							<view>中</view>
+							<view>高</view>
+						</view>
+					</view>
+				</view>
+
+			</view>
+			<!-- <canvas class="canvas-content" canvas-id="runCanvas" id="runCanvas">
 				<view class="time-part">
 					{{timeString}}
 				</view>
-			</canvas>
+			</canvas> -->
 			<view class="opt flex">
 				<view class="normal-btn" @click="startHandler">启动</view>
 				<view class="save" @click="stopHandler">停止</view>
 				<view class="normal-btn" @click="backHandle">返回</view>
 			</view>
 		</view>
+		<debug-info class="debug-info" ref="debugInfo"></debug-info>
 	</view>
 </template>
 
@@ -37,7 +60,11 @@
 		handleStopSpine,
 	} from '../../common/util';
 	import blue_class from '../../utils/BlueManager';
+	import debugInfo from './debugInfo.vue';
 	export default {
+		components: {
+			debugInfo
+		},
 		data() {
 			return {
 				num: 0,
@@ -63,16 +90,16 @@
 			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 20) + 'px');
 			uni.$on('update_pillow_spine_time', this.updateInfo);
 
-			//开始动画
-			var timer = setInterval(() => {
-				this.num += 0.005
-				// this.cartoon(this.num)
-				if (this.num > 1.99) {
-					clearInterval(timer)
-					this.num = 1.999;
-				}
-				this.cartoon(this.num)
-			}, 10)
+			// //开始动画
+			// var timer = setInterval(() => {
+			// 	this.num += 0.005
+			// 	// this.cartoon(this.num)
+			// 	if (this.num > 1.99) {
+			// 		clearInterval(timer)
+			// 		this.num = 1.999;
+			// 	}
+			// 	this.cartoon(this.num)
+			// }, 10)
 			// this.drawCircleByProgress();
 		},
 		onHide() {
@@ -117,11 +144,25 @@
 				})
 			},
 			startHandler() {
-				let shake1 = handleStartSpine(30, 100, 50)
+				let params = this.$refs.debugInfo.getParams();
+				// let params = {
+				// headHeight
+				// 	headUpHeight: this.headUpHeight,
+				// 	headDownHeight: this.headDownHeight,
+				// 	Time1: this.Time1,
+				// 	Time2: this.Time2,
+				// 	round: this.round,
+				// }
+				console.log("start:", params)
+				let shake1 = handleStartSpine(params.headHeight, params.headUpHeight, params.headDownHeight, params
+					.Time1, params.Time2, params.round)
 				blue_class.getInstance().write2tooth(shake1)
 			},
 			stopHandler() {
-				let shake1 = handleStopSpine(30, 100, 50)
+				let params = this.$refs.debugInfo.getParams();
+				console.log("stop:", params)
+				let shake1 = handleStopSpine(params.headHeight, params.headUpHeight, params.headDownHeight, params
+					.Time1, params.Time2, params.round)
 				blue_class.getInstance().write2tooth(shake1)
 
 			},
@@ -136,9 +177,12 @@
 </script>
 
 <style lang="scss" scoped>
+	.debug-info {}
+
 	.container {
 		// margin-left: 41rpx;
 		// margin-right: 41rpx;
+		background-color: #dddddd;
 		height: 100%;
 		display: flex;
 		flex-direction: column;
@@ -216,15 +260,47 @@
 		.bottom-part {
 			position: relative;
 			background-color: #efefef;
+			border-top-left-radius: 30rpx;
+			border-top-right-radius: 30rpx;
 			flex: 1;
-			display: flex;
-			align-items: center;
-			justify-content: center;
+
+
+			.desc {
+				display: flex;
+				padding: 25rpx;
+				margin: 30rpx;
+			}
+
+			.desc-info {
+				flex: 1;
+				padding: 10rpx;
+			}
+
+			.slide-part {
+				background-color: #ffffff;
+				border-radius: 10rpx;
+				padding-bottom: 10rpx;
+			}
+
+
+			.mode-part {
+				background-color: #ffffff;
+				border-radius: 30rpx;
+				padding: 30rpx;
+				margin: 30rpx;
+
+
+				.mode-title {
+					justify-content: space-between;
+					padding: 20rpx;
+				}
+			}
+
 
 			.imgicon {
-				width: 111rpx;
-				height: 76rpx;
-				position: absolute;
+				width: 70rpx;
+				// height: 76rpx;
+				display: block;
 				top: 20rpx;
 				left: 20rpx;
 			}
