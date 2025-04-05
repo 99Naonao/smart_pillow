@@ -7,11 +7,11 @@
 
 			<view class="headInfo" :style="menuStyle">
 				<view>颈枕高度</view>
-				<view>{{pillowSideHeight}}mm</view>
+				<view>{{pillowSideComputeHeight}}mm</view>
 			</view>
 			<view class="neckInfo" :style="menuStyle">
 				<view>头枕高度</view>
-				<view>{{pillowHeight}}mm</view>
+				<view>{{pillowComputeHeight}}mm</view>
 			</view>
 		</view>
 		<view class="bottom-part">
@@ -71,7 +71,6 @@
 				timeLimit: 1200,
 				pillowSideHeight: 60,
 				pillowHeight: 60,
-
 				startAngle: -Math.PI / 2, //canvas画圆的起始角度，默认为3点钟方向即90度 方向，定位位到12位置 0度
 				context: null,
 				menuStyle: {
@@ -83,12 +82,19 @@
 		computed: {
 			timeString() {
 				return formatTimeByString(this.timeLimit);
-			}
+			},
+			pillowComputeHeight() {
+				return this.pillowHeight;
+			},
+			pillowSideComputeHeight() {
+				return this.pillowSideHeight;
+			},
 		},
 		onShow() {
 			let app = getApp();
 			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 20) + 'px');
 			uni.$on('update_pillow_spine_time', this.updateInfo);
+			uni.$on('update_pillow_info', this.updateHeightInfo);
 
 			// //开始动画
 			// var timer = setInterval(() => {
@@ -103,9 +109,14 @@
 			// this.drawCircleByProgress();
 		},
 		onHide() {
+			uni.$off('update_pillow_info', this.updateHeightInfo);
 			uni.$off('update_pillow_spine_time', this.updateInfo);
 		},
 		methods: {
+			updateHeightInfo() {
+				this.$set(this, 'pillowHeight', blue_class.getInstance().pillowHeight);
+				this.$set(this, 'pillowSideHeight', blue_class.getInstance().pillowSideHeight);
+			},
 			// 辅助函数，用于转换小程序中的rpx
 			convert_length(length) {
 				return Math.round(wx.getSystemInfoSync().windowWidth * length / 750);
