@@ -387,11 +387,11 @@
 				this.connectHandler()
 			},
 			spineCheck() {
-				uni.showToast({
-					title: "暂未开放!"
-				})
+				// uni.showToast({
+				// 	title: "暂未开放!"
+				// })
 
-				return;
+				// return;
 				uni.navigateTo({
 					url: "/page_subject/ano/ano"
 				})

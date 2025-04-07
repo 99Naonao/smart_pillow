@@ -78,6 +78,7 @@
 			}
 
 			.opt-item1 {
+				border: none;
 				background-color: rgb(77, 127, 201);
 				border-radius: 15rpx;
 				color: white;
