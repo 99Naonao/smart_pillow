@@ -368,15 +368,15 @@ var handleSendFormart = function(buffer) {
 var handleStartSpine = function(head, startNeck, endNeck, timeSeconds1, timeSeconds2, rounds) {
 	// 向蓝牙设备发送一个0x00的2进制数据
 	let littleEdition = true
-	const n_buffer = new ArrayBuffer(7)
+	const n_buffer = new ArrayBuffer(9)
 	const n_dataView = new DataView(n_buffer)
 	n_dataView.setUint8(0, 1)
 	n_dataView.setUint8(1, head)
 	n_dataView.setUint8(2, startNeck)
 	n_dataView.setUint8(3, endNeck)
-	n_dataView.setUint8(4, timeSeconds1)
-	n_dataView.setUint8(5, timeSeconds2)
-	n_dataView.setUint8(6, rounds)
+	n_dataView.setUint16(4, timeSeconds1)
+	n_dataView.setUint16(6, timeSeconds2)
+	n_dataView.setUint8(8, rounds)
 	let withLengthBuffer = handleSendFormart(n_buffer)
 	const orign_buffer = new DataView(withLengthBuffer)
 	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)
@@ -393,15 +393,15 @@ var handleStartSpine = function(head, startNeck, endNeck, timeSeconds1, timeSeco
 var handleStopSpine = function(head, startNeck, endNeck, timeSeconds1, timeSeconds2, rounds) {
 	// 向蓝牙设备发送一个0x00的2进制数据
 	let littleEdition = true
-	const n_buffer = new ArrayBuffer(7)
+	const n_buffer = new ArrayBuffer(9)
 	const n_dataView = new DataView(n_buffer)
 	n_dataView.setUint8(0, 0)
 	n_dataView.setUint8(1, head)
 	n_dataView.setUint8(2, startNeck)
 	n_dataView.setUint8(3, endNeck)
-	n_dataView.setUint8(4, timeSeconds1)
-	n_dataView.setUint8(5, timeSeconds2)
-	n_dataView.setUint8(6, rounds)
+	n_dataView.setUint16(4, timeSeconds1)
+	n_dataView.setUint16(6, timeSeconds2)
+	n_dataView.setUint8(8, rounds)
 	let withLengthBuffer = handleSendFormart(n_buffer)
 	const orign_buffer = new DataView(withLengthBuffer)
 	const buffer = new ArrayBuffer(withLengthBuffer.byteLength + 1)

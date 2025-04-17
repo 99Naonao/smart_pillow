@@ -39,6 +39,10 @@
 </script>
 
 <style lang="scss" scoped>
+	.wx-button:after {
+		border: none;
+	}
+
 	.container {
 		margin-left: 41rpx;
 		margin-right: 41rpx;
@@ -89,6 +93,10 @@
 				letter-spacing: 5rpx;
 				justify-content: space-around;
 				align-items: center;
+
+				::after {
+					border: none !important;
+				}
 			}
 
 			.opt-item {
