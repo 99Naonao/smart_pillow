@@ -15,7 +15,7 @@
 			</view>
 		</view>
 		<view class="bottom-part">
-			<view class="desc flex">
+<!-- 			<view class="desc flex">
 				<image mode="widthFix" class="imgicon" src="@/static/index/SY_00A_IconJZWT.png"></image>
 				<view class="desc-info">介绍</view>
 			</view>
@@ -37,19 +37,35 @@
 					</view>
 				</view>
 
+			</view> -->
+			<!-- 脊柱调整信息显示 -->
+			<view class="spine-info">
+				<view class="info-item">
+					<text class="info-label">脊柱调整次数：</text>
+					<text class="info-value">{{round}} 次</text>
+				</view>
+				<view class="info-item">
+					<text class="info-label">脊柱支撑高度保持时间：</text>
+					<text class="info-value">{{Time1}} 秒</text>
+				</view>
+				<view class="info-item">
+					<text class="info-label">脊柱放松高度保持时间：</text>
+					<text class="info-value">{{Time2}} 秒</text>
+				</view>
 			</view>
+			
 			<!-- <canvas class="canvas-content" canvas-id="runCanvas" id="runCanvas">
 				<view class="time-part">
 					{{timeString}}
 				</view>
 			</canvas> -->
 			<view class="opt flex">
-				<view class="normal-btn" @click="startHandler">启动</view>
-				<view class="save" @click="stopHandler">停止</view>
-				<view class="normal-btn" @click="backHandle">返回</view>
+				<view :class="['normal-btn', selectedButton === 'start' ? 'selected' : '']" @click="startHandler">启动</view>
+				<view :class="['normal-btn', selectedButton === 'stop' ? 'selected' : '']" @click="stopHandler">停止</view>
+				<view :class="['normal-btn', selectedButton === 'back' ? 'selected' : '']" @click="backHandle">返回</view>
 			</view>
 		</view>
-		<debug-info class="debug-info" ref="debugInfo"></debug-info>
+		<!-- <debug-info class="debug-info" ref="debugInfo"></debug-info> -->
 	</view>
 </template>
 
@@ -76,7 +92,21 @@
 				menuStyle: {
 					'--menuButtonTop': '0'
 				},
-				tips: "测试数据"
+				tips: "测试数据",
+				selectedButton: '', // 追蹤選中的按鈕：'start', 'stop', 'back'
+				// 脊柱調整參數
+				headHeight: 30,           // 頭枕高度(mm)
+				headUpHeight: 60,         // 頸部起始高度(mm) 
+				headDownHeight: 30,      // 頸部下調高度(mm)
+				Time1: 60,               // 起始高度保持時間(秒)
+				Time2: 15,               // 下調高度保持時間(秒)
+				round: 15,                 // 調整圈數
+				// 睡姿监控相关
+				isSpineAdjusting: false,    // 是否正在进行脊柱调整
+				postureTimer: null,        // 睡姿监控定时器
+				lastPostureStatus: 1,      // 上次的睡姿状态（1=仰卧）
+				postureChangeTime: null,   // 睡姿改变的时间
+				postureWarningShown: false, // 是否已显示警告对话框
 			}
 		},
 		computed: {
@@ -95,6 +125,7 @@
 			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 20) + 'px');
 			uni.$on('update_pillow_spine_time', this.updateInfo);
 			uni.$on('update_pillow_info', this.updateHeightInfo);
+			// this.checkModeSwitch(); // 已用切换时停止策略，保留旧逻辑为屏蔽代码
 
 			// //开始动画
 			// var timer = setInterval(() => {
@@ -111,6 +142,14 @@
 		onHide() {
 			uni.$off('update_pillow_info', this.updateHeightInfo);
 			uni.$off('update_pillow_spine_time', this.updateInfo);
+			
+			// 检查是否切换到模式相关页面，如果是则停止脊柱微调
+			this.checkIfSwitchingToModePages();
+			
+			// 睡姿状态监控
+			// this.isSpineAdjusting = false;
+			// this.postureChangeTime = null;
+			// this.postureWarningShown = false;
 		},
 		methods: {
 			updateHeightInfo() {
@@ -148,34 +187,207 @@
 
 			updateInfo() {
 				this.timeLimit = blue_class.getInstance().getPillowSpineTime();
+				
+				// 如果正在进行脊柱调整，监控睡姿变化
+				if (this.isSpineAdjusting) {
+					this.monitorPosture();
+				}
+			},
+			
+			// 监控睡姿变化
+			monitorPosture() {
+				const currentStatus = blue_class.getInstance().getPillowStatus();
+				
+				// 如果睡姿发生变化
+				if (currentStatus !== this.lastPostureStatus) {
+					console.log('睡姿发生变化:', this.lastPostureStatus, '->', currentStatus);
+					
+					// 如果从仰卧变为侧卧或空闲
+					if (this.lastPostureStatus === 1 && (currentStatus === 0 || currentStatus === 2)) {
+						this.postureChangeTime = Date.now();
+						console.log('开始计时，睡姿变为:', currentStatus === 0 ? '空闲' : '侧卧');
+					}
+					// 如果从侧卧或空闲变回仰卧
+					else if ((this.lastPostureStatus === 0 || this.lastPostureStatus === 2) && currentStatus === 1) {
+						this.postureChangeTime = null;
+						console.log('恢复仰卧，取消计时');
+					}
+					
+					this.lastPostureStatus = currentStatus;
+				}
+				
+				// 检查是否需要弹出提示框
+				if (this.postureChangeTime && (currentStatus === 0 || currentStatus === 2)) {
+					const elapsedTime = Date.now() - this.postureChangeTime;
+					if (elapsedTime >= 30000) { // 30秒
+						this.showPostureWarningDialog();
+					}
+				}
+			},
+			
+			// 显示睡姿警告对话框
+			showPostureWarningDialog() {
+				// 防止重复弹出
+				if (this.postureWarningShown) return;
+				this.postureWarningShown = true;
+				
+				const currentStatus = blue_class.getInstance().getPillowStatus();
+				const postureText = currentStatus === 0 ? '空闲' : '侧卧';
+				
+				uni.showModal({
+					title: '睡姿提醒',
+					content: `检测到您当前处于${postureText}状态已超过30秒，是否停止脊柱微调？`,
+					showCancel: true,
+					cancelText: '继续微调',
+					confirmText: '停止微调',
+					success: (res) => {
+						this.postureWarningShown = false;
+						
+						if (res.confirm) {
+							// 用户选择停止微调
+							console.log('用户选择停止脊柱微调');
+							this.stopHandler();
+						} else {
+							// 用户选择继续微调，重置计时
+							console.log('用户选择继续脊柱微调');
+							this.postureChangeTime = Date.now();
+						}
+					}
+				});
+			},
+			// 保存脊柱调整状态（息屏/切换应用继续执行）
+			saveSpineAdjustmentStatus(){
+				try{
+					const status = {
+						isSpineAdjusting: this.isSpineAdjusting,
+						lastPostureStatus: this.lastPostureStatus,
+						postureChangeTime: this.postureChangeTime,
+						timeLimit: this.timeLimit,
+						timestamp: Date.now()
+					}
+					uni.setStorageSync('spine_adjustment_status', status)
+				}catch(e){}
+			},
+			// 检查是否切换到模式相关页面
+			checkIfSwitchingToModePages(){
+				try{
+					if(!this.isSpineAdjusting) return;
+					
+					// 获取当前页面栈
+					const pages = getCurrentPages();
+					if(pages && pages.length > 0){
+						const currentPage = pages[pages.length - 1];
+						const currentRoute = currentPage && currentPage.route ? currentPage.route : '';
+						
+						// 如果切换到模式相关页面，立即停止脊柱微调
+						if(currentRoute.indexOf('page_subject/mode/mode') >= 0 || 
+						   currentRoute.indexOf('page_subject/mode/setMode') >= 0 || 
+						   currentRoute.indexOf('page_subject/adjust/adjust') >= 0){
+							console.log('检测到切换到模式页面，停止脊柱微调');
+							this.stopSpineAdjustment();
+							uni.showModal({
+								title: '温馨提示',
+								content: '已退出脊柱微调模式',
+								showCancel: false
+							});
+						}
+					}
+				}catch(e){
+					console.error('检查页面切换失败:', e);
+				}
+			},
+			// 内部停止方法
+			stopSpineAdjustment(){
+				let params = {
+					headHeight: this.headHeight,
+					headUpHeight: this.headUpHeight,
+					headDownHeight: this.headDownHeight,
+					Time1: this.Time1,
+					Time2: this.Time2,
+					round: this.round,
+				};
+				let shake1 = handleStopSpine(params.headHeight, params.headUpHeight, params.headDownHeight, params.Time1, params.Time2, params.round)
+				blue_class.getInstance().write2tooth(shake1)
+				this.isSpineAdjusting = false;
+				blue_class.getInstance().setSpineAdjusting(false);
+				this.postureChangeTime = null;
+				this.postureWarningShown = false;
 			},
 			backHandle() {
-				uni.navigateTo({
-					url: "/page_subject/ano/ano"
+				this.selectedButton = 'back';
+				uni.navigateBack({
+					delta: 1
 				})
 			},
 			startHandler() {
-				let params = this.$refs.debugInfo.getParams();
-				// let params = {
-				// headHeight
-				// 	headUpHeight: this.headUpHeight,
-				// 	headDownHeight: this.headDownHeight,
-				// 	Time1: this.Time1,
-				// 	Time2: this.Time2,
-				// 	round: this.round,
-				// }
+				this.selectedButton = 'start';
+				
+				// 检测当前睡姿状态
+				const currentStatus = blue_class.getInstance().getPillowStatus();
+				console.log("当前睡姿状态:", currentStatus);
+				
+				// 检查是否处于仰卧状态（状态值为1表示平躺/仰卧）
+				if (currentStatus !== 1) {
+					// 不是仰卧状态，弹出提示框
+					uni.showModal({
+						title: '睡姿提醒',
+						content: '请保持仰卧姿势后再启动脊柱微调功能',
+						showCancel: true,
+						cancelText: '取消',
+						confirmText: '我知道了',
+						success: (res) => {
+							if (res.confirm) {
+								console.log('用户确认了睡姿提醒');
+							}
+							// 重置按钮状态
+							this.selectedButton = '';
+						}
+					});
+					return; // 不执行启动逻辑
+				}
+				
+				// 处于仰卧状态，正常启动
+				let params = {
+					headHeight: this.headHeight,
+					headUpHeight: this.headUpHeight,
+					headDownHeight: this.headDownHeight,
+					Time1: this.Time1,
+					Time2: this.Time2,
+					round: this.round,
+				}
 				console.log("start:", params)
 				let shake1 = handleStartSpine(params.headHeight, params.headUpHeight, params.headDownHeight, params
 					.Time1, params.Time2, params.round)
 				blue_class.getInstance().write2tooth(shake1)
+				
+				// 设置脊柱调整状态
+				this.isSpineAdjusting = true;
+				blue_class.getInstance().setSpineAdjusting(true);
+				this.lastPostureStatus = currentStatus;
+				this.postureChangeTime = null;
+				this.postureWarningShown = false;
 			},
 			stopHandler() {
-				let params = this.$refs.debugInfo.getParams();
+				this.selectedButton = 'stop';
+				// let params = this.$refs.debugInfo.getParams();
+				let params = {
+					headHeight: this.headHeight,
+					headUpHeight: this.headUpHeight,
+					headDownHeight: this.headDownHeight,
+					Time1: this.Time1,
+					Time2: this.Time2,
+					round: this.round,
+				};
 				console.log("stop:", params)
 				let shake1 = handleStopSpine(params.headHeight, params.headUpHeight, params.headDownHeight, params
 					.Time1, params.Time2, params.round)
 				blue_class.getInstance().write2tooth(shake1)
-
+				
+				// 重置脊柱调整状态
+				this.isSpineAdjusting = false;
+				blue_class.getInstance().setSpineAdjusting(false);
+				this.postureChangeTime = null;
+				this.postureWarningShown = false;
 			},
 			nav1() {
 
@@ -188,7 +400,7 @@
 </script>
 
 <style lang="scss" scoped>
-	.debug-info {}
+	/* .debug-info {} */
 
 	.container {
 		// margin-left: 41rpx;
@@ -275,6 +487,37 @@
 			border-top-right-radius: 30rpx;
 			flex: 1;
 
+			.spine-info {
+				background-color: #ffffff;
+				margin: 30rpx;
+				padding: 30rpx;
+				border-radius: 20rpx;
+				box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+
+				.info-item {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					padding: 15rpx 0;
+					border-bottom: 1rpx solid #f0f0f0;
+
+					&:last-child {
+						border-bottom: none;
+					}
+
+					.info-label {
+						font-size: 28rpx;
+						color: #666;
+					}
+
+					.info-value {
+						font-size: 32rpx;
+						color: #333;
+						font-weight: bold;
+					}
+				}
+			}
+
 
 			.desc {
 				display: flex;
@@ -358,6 +601,13 @@
 				border-radius: 20rpx;
 				letter-spacing: 5rpx;
 				font-size: 32rpx;
+				transition: all 0.3s ease;
+			}
+
+			.normal-btn.selected {
+				background-color: #ed6546;
+				transform: scale(1.05);
+				box-shadow: 0 4rpx 12rpx rgba(237, 101, 70, 0.3);
 			}
 
 			.save {

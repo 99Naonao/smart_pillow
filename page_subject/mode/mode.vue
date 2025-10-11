@@ -240,22 +240,48 @@
 				// }
 			},
 			sendItemHandler() {
+				if(!blue_class.getInstance().loginSuccess){
+					uni.showModal({
+						title:"未连接枕头提示",
+						content:"请检查是否已连接到枕头",
+						showCancel:false
+					});
+					return;
+				}
 				addUseLog(this.selectItem);
+				console.log("mode已连接至枕头，发送数据",JSON.stringify(this.selectItem))
+				
+				var headSafeHeight;
+				var sideHeadSafeHeight;
+				// if(this.selectItem.headHeight >= 60){
+				// 	headSafeHeight = this.selectItem.headHeight -15
+				// }else{
+				// 	headSafeHeight = this.selectItem.headHeight < 30 ? 30 : this.selectItem.headHeight 
+				// }
+				// if(this.selectItem.sideHeadHeight >= 60){
+				// 	sideHeadSafeHeight = this.selectItem.sideHeadHeight - 15
+				// }else{
+				// 	sideHeadSafeHeight = this.selectItem.sideHeadHeight  < 30 ? 30 : this.selectItem.sideHeadHeight 
+				// }
+				headSafeHeight = this.selectItem.headHeight < 30 ? 30 : this.selectItem.headHeight 
+				sideHeadSafeHeight = this.selectItem.sideHeadHeight  < 30 ? 30 : this.selectItem.sideHeadHeight 
 				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
-				let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : this.selectItem.headHeight, this
-					.selectItem
-					.neckHeight > 100 ? 100 : this.selectItem.neckHeight, 200, this
-					.selectItem.sideHeadHeight > 100 ? 100 : this.selectItem.sideHeadHeight, this.selectItem
-					.sideNeckHeight >
-					100 ?
-					100 :
-					this.selectItem.sideNeckHeight, 200);
-				// 如果有数据，默认调整枕头
-				// let init_arraybuffer = initPillow(this.selectItem.headHeight, this.selectItem.neckHeight, 200, this
-				// 	.selectItem
-				// 	.sideHeadHeight, this.selectItem.sideNeckHeight, 200);
-				// let app = getApp()
+				// let headSafeHeight = this.selectItem.headHeight  < 30 ? 30 : this.selectItem.headHeight 
+				let neckSafeHeight = this.selectItem.neckHeight - 30 < 30 ? 30 : this.selectItem.neckHeight - 30
+				let sideNeckSafeHeight = this.selectItem.sideNeckHeight - 30 < 30 ? 30 : this.selectItem.sideNeckHeight - 30
+	
+				// let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : this.selectItem.headHeight,
+				// this.selectItem.neckHeight > 100 ? 100 : this.selectItem.neckHeight, 200, 
+				// this.selectItem.sideHeadHeight > 100 ? 100 : this.selectItem.sideHeadHeight, 
+				// this.selectItem.sideNeckHeight >100 ?100 :this.selectItem.sideNeckHeight, 200);
+				
+				let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : headSafeHeight, 
+				this.selectItem.neckHeight > 100 ? 100 : neckSafeHeight, 200, 
+				this.selectItem.sideHeadHeight > 100 ? 100 : sideHeadSafeHeight, 
+				this.selectItem.sideNeckHeight >100 ?100 :sideNeckSafeHeight, 200);
 				blue_class.getInstance().write2tooth(init_arraybuffer);
+
+				// uni.setStorageSync('mode_switch_flag', true); // 旧标记逻辑，已改为切换时即停，保留为屏蔽
 
 				uni.switchTab({
 					url: "/pages/status/status"
@@ -263,12 +289,9 @@
 			},
 			// 发送模式设置
 			sendHandler(item) {
-				// uni.switchTab({
-				// 	url: '/pages/status/status'
-				// })
 				let params = this.modeList[item];
 				this.selectItem = params;
-
+				console.log("发送个人数据")
 				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
 				let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : this.selectItem.headHeight, this
 					.selectItem

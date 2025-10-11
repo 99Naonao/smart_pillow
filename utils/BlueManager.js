@@ -20,6 +20,8 @@ class blue_class {
 	pillowPlasticNeck = 0;
 	pillowStatus = 0; // 0--空闲，1--平躺，2--侧卧；
 	chargingStatus = 0; // 0--空闲，1--充电中，2--充电完成
+	manualDisconnecting = false; // 是否为手动断开流程中
+	isSpineAdjusting = false; // 是否正在进行脊柱调整
 	deviceIdList = [];
 	constructor() {
 		// 初始化蓝牙相关的状态或变量  
@@ -49,6 +51,20 @@ class blue_class {
 	}
 	getPillowStatus() {
 		return this.pillowStatus;
+	}
+
+	setManualDisconnecting(value){
+		this.manualDisconnecting = !!value;
+	}
+	getManualDisconnecting(){
+		return this.manualDisconnecting;
+	}
+
+	setSpineAdjusting(value) {
+		this.isSpineAdjusting = value;
+	}
+	getSpineAdjusting() {
+		return this.isSpineAdjusting;
 	}
 
 	setPillowCharging(value) {
@@ -145,20 +161,38 @@ class blue_class {
 				that.deviceId = '';
 				that.deviceName = '';
 				//清空缓存
-				uni.$emit('status_change')
-				uni.showToast({
-					title: '连接断开'
-				})
+				uni.$emit('bluetooth_status_change')
+				if(!that.manualDisconnecting){
+					uni.showModal({
+						title:'蓝牙断开提示',
+						content:'设备蓝牙意外断开，是否回到首页重新连接蓝牙？',
+						showCancel:'稍后',
+						confirmText:'回到首页',
+						success:(res)=>{
+							if(res.confirm){
+								uni.switchTab({
+									url:'/pages/status/status'
+								})
+							}else if(res.cancel){
+								console.log('用户选择了稍后处理');
+							}
+						}
+					})
+				}else{
+					console.log('检测到手动断开，跳过意外断开提示');
+				}
+				that.manualDisconnecting = false;
 			}
 		})
 	}
+
 	updateDeviceName(dname) {
 		this.deviceName = dname;
 	}
 	updateVersion(v) {
 		this.version = v;
 	}
-	// 解析枕头状态
+	// 解析枕头状态  06 0b 01 01 21 49 10 01 03 e8 04 00 00 
 	parsePillowStatus(arraybuffer) {
 		// //默认是枕头状态 5s收到一次
 		let receive16 = ab2hex(arraybuffer);
@@ -173,7 +207,7 @@ class blue_class {
 				break;
 			case 1:
 				console.log('枕头平躺状态')
-				break;
+				break; 
 			case 2:
 				console.log('枕头侧卧状态')
 				break;
@@ -209,7 +243,7 @@ class blue_class {
 		let headHeight = receive16.slice(4, 6);
 		let headHeight10 = parseInt('0x' + headHeight);
 		let neckHeight = receive16.slice(6, 8);
-		let neckHeight10 = parseInt('0x' + neckHeight);
+		let neckHeight10 = parseInt('0x' + neckHeight) +30;
 		let vesrion = receive16.slice(8, 10);
 		let vesrion10 = parseInt('0x' + vesrion);
 		let isright = receive16.slice(10, 12);
@@ -231,12 +265,9 @@ class blue_class {
 		let spine_status = receive16.slice(18, 20);
 		let spine_status16 = '0x' + spine_status;
 		let spine_status10 = parseInt(spine_status16);
+		console.log('脊柱调整16进制剩余时间:', spine_status16);
 		console.log('脊柱调整剩余时间:', spine_status10, "秒");
 
-		// 0100970d030101f3
-		// dataView.setUint32(0, second | (minutes << 6) | (hours << 12) | (days << 17) | (months << 22) | ((year -
-		// 		2020) <<
-		// 	26))
 
 		blue_class.getInstance().setPillowPlasticStatus(plastic_n1, plastic_n2)
 		blue_class.getInstance().setPillowCharging(n1)
@@ -247,38 +278,56 @@ class blue_class {
 		blue_class.getInstance().setPillowSpineTime(spine_status10)
 		// work 枕头状态 mm=> 1 height:151mm neckheight:13mm version:3 校准:1 电池:1
 		// console.log('work 枕头状态 =>', 'height:' + headHeight, 'neckheight:' + neckHeight, vesrion, isright, press)
-		console.log('work 枕头状态 mm=>', status10, 'height:' + headHeight10 + 'mm', 'neckheight:' + neckHeight10 +
-			'mm', 'version:' +
-			vesrion10,
+		console.log('work 枕头状态 mm=>', status10, 'height:' + headHeight10 + 'mm', 'neckheight:' + (neckHeight10 -30) +
+			'mm', 'version:' + vesrion10,
 			'校准:' + isright10,
 			'电池:' + press10)
 	}
 	// 启用 notify 功能
 	startNotice(uuid) {
 		// 预防重复启动
-		if (this.isNotify) {
-			console.log('已经启用过 notify 功能');
-		} else {
-			uni.notifyBLECharacteristicValueChange({
-				state: true, // 启用 notify 功能
-				deviceId: uuid.deviceUUID,
-				serviceId: uuid.serviceUUID,
-				characteristicId: uuid.notifyUUID,
-				success: (res) => {
-					// store.state.notyfiyFlagList.push(uuid);
-					console.log('成功启用 notify 功能', uuid);
-					this.isNotify = true;
-					// 启动一次notify，就加1
-					this.notifyCount = this.notifyCount + 1;
-					this.serviceId = uuid.serviceUUID;
-					this.deviceId = uuid.deviceUUID;
-					this.onBLECharacteristicValueChange();
-				},
-				fail: (res) => {
-					console.log('启用 notify 功能失败', res)
-				}
-			});
-		}
+		// if (this.isNotify) {
+		// 	console.log('已经启用过 notify 功能');
+		// } else {
+		// 	uni.notifyBLECharacteristicValueChange({
+		// 		state: true, // 启用 notify 功能
+		// 		deviceId: uuid.deviceUUID,
+		// 		serviceId: uuid.serviceUUID,
+		// 		characteristicId: uuid.notifyUUID,
+		// 		success: (res) => {
+		// 			// store.state.notyfiyFlagList.push(uuid);
+		// 			console.log('成功启用 notify 功能', uuid);
+		// 			this.isNotify = true;
+		// 			// 启动一次notify，就加1
+		// 			this.notifyCount = this.notifyCount + 1;
+		// 			this.serviceId = uuid.serviceUUID;
+		// 			this.deviceId = uuid.deviceUUID;
+		// 			this.onBLECharacteristicValueChange();
+		// 		},
+		// 		fail: (res) => {
+		// 			console.log('启用 notify 功能失败', res)
+		// 		}
+		// 	});
+		// }
+		uni.notifyBLECharacteristicValueChange({
+			state: true, // 启用 notify 功能
+			deviceId: uuid.deviceUUID,
+			serviceId: uuid.serviceUUID,
+			characteristicId: uuid.notifyUUID,
+			success: (res) => {
+				// store.state.notyfiyFlagList.push(uuid);
+				console.log('成功启用 notify 功能', uuid);
+				this.isNotify = true;
+				// 启动一次notify，就加1
+				this.notifyCount = this.notifyCount + 1;
+				this.serviceId = uuid.serviceUUID;
+				this.deviceId = uuid.deviceUUID;
+				this.onBLECharacteristicValueChange();
+			},
+			fail: (res) => {
+				console.log('启用 notify 功能失败', res)
+			}
+		});
 	}
 	write2tooth(buffer) {
 		let deviceId = this.deviceId;

@@ -153,21 +153,6 @@ export function autoLogin(callback) {
 						callback()
 				}
 			});
-
-			//更新用户信息
-			// updateUserInfo().then((res) => {
-			// 	uni.showToast({
-			// 		title: '登录成功',
-			// 		duration: 2000,
-			// 		success() {
-			// 			if (callback)
-			// 				callback()
-			// 		}
-			// 	});
-			// })
-
-			// socket.init();
-			// userInfo.token = userInfo.token;
 		})
 	})
 }
@@ -447,60 +432,6 @@ function request_(url, sortData) {
 					store.commit("setLoadingShow", false);
 			}
 		})
-		// uni.request({
-		// 	url,
-		// 	method,
-		// 	{
-		// 		'Content-Type': 'application/json;charset=UTF-8',
-		// 		// 'project_token': base.projectToken, //项目token（可删除）
-		// 	},
-		// 	data: sortData,
-		// 	success: res => {
-		// 		console.log('====== params ======')
-		// 		console.log(sortData)
-		// 		console.log('====== result ======')
-		// 		console.log(res.data)
-
-		// 		const {
-		// 			code,
-		// 			data,
-		// 			message
-		// 		} = res.data
-
-		// 		/**
-		// 		 * 200 - 成功
-		// 		 * 401 - 未登录
-		// 		 * 400012 - 仅限公众号新粉丝参与
-		// 		 * 40013 - 未注册
-		// 		 * 40092 - 新人抽奖未中奖
-		// 		 * 40098 - 新人抽奖无抽奖次数
-		// 		 * 601 - 抽奖团前置校验未关注公众号
-		// 		 */
-		// 		if ([200, 40013, 40092].includes(code)) {
-		// 			return resolve(wholeData ? res.data : data)
-		// 		}
-		// 		if ([601, 40098].includes(code)) {
-		// 			return resolve(code)
-		// 		}
-		// 		// 仅限公众号新粉丝参与错误弹窗提示
-		// 		if (code === 400012) {
-		// 			return reject(res.data)
-		// 		}
-
-		// 		if (code === 401) { // 未登录清除用户信息
-		// 			store.commit('LOGOUT')
-		// 		}
-
-		// 		!noToast && uni.showToast({
-		// 			icon: 'none',
-		// 			title: msg || '服务繁忙'
-		// 		})
-		// 		reject(res.data)
-		// 	},
-		// 	fail: err => {
-		// 		reject(err)
-		// 	}
-		// })
 	})
 }
 

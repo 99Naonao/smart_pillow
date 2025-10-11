@@ -20,7 +20,7 @@
 				<label class='desc2'>颈枕部</label>
 				<label class='desc2size'>{{this.selectIndex==1?this.neck:this.sideNeck}}mm</label>
 				<image class="human-icon" :src="'../static/adjust/SY_11_bg01YW.png'"></image>
-				<image class="main-icon" :src="'../static/adjust/SY_11_bg02TZ.png'"></image>
+				<image class="main-icon" :src="'../static/adjust/SY_11_bg.png'"></image>
 				<image class="down-icon" :class="touchingDown?['show-icon','down-icon-effect']:[]"
 					:src="'../static/adjust/SY_11_DOW.png'"></image>
 				<image class="up-icon" :class="touchingUp?['show-icon','up-icon-effect']:[]"
@@ -213,11 +213,13 @@
 			})
 		},
 		onShow() {
+			// uni.setStorageSync('mode_switch_flag', true); // 旧标记逻辑，已改为切换时即停，保留为屏蔽
 			this.step = 0;
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
 			// uni.onBLECharacteristicValueChange(this.handleMessage)
 			uni.$on('xx', this.handleMessage);
 			uni.$on('update_pillow_info', this.updateInfo);
+			uni.$on('bluetooth_status_change', this.handleDisconnect);
 
 			// let arraybuffer = changeAdjustMode();
 			// blue_class.getInstance().write2tooth(arraybuffer)
@@ -272,8 +274,21 @@
 			uni.$on('update_pillow_info', this.updateInfo);
 
 			uni.$off('xx', this.handleMessage);
+			uni.$off('bluetooth_status_change', this.handleDisconnect);
 		},
 		methods: {
+			// 处理蓝牙断开连接
+			handleDisconnect() {
+				// 检查是否真的断开了
+				if (!blue_class.getInstance().loginSuccess) {
+					this.pillowStatus = '未连接';
+					console.log('调整页面检测到蓝牙断开');
+					
+					// 停止调整动画
+					this.touchingDown = false;
+					this.touchingUp = false;
+				}
+			},
 			changeHandMode() {
 				let arraybuffer = changeAdjustMode();
 				blue_class.getInstance().write2tooth(arraybuffer)
@@ -359,26 +374,46 @@
 				let shake1 = handPillowStatus()
 				blue_class.getInstance().write2tooth(shake1)
 			},
+			//带缓冲机制的发送高度
 			send2Pillow(headHeight, neckHeight, sideHeadHeight, sideNeckHeight, step) {
 				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
 				// 默认发送高度减2cm 或者3 cm
-				let headSafeHeight = headHeight - 20 > 0 ? headHeight - 20 : 1
-				let neckSafeHeight = neckHeight - 20 > 0 ? neckHeight - 20 : 1
-				let sideHeadSafeHeight = sideHeadHeight - 30 > 0 ? sideHeadHeight - 30 : 1
-				let sideNeckSafeHeight = sideNeckHeight - 30 > 0 ? sideNeckHeight - 30 : 1
-				let init_arraybuffer = initPillow(headHeight > 100 ? 100 : headSafeHeight, neckHeight > 100 ? 100 :
-					neckSafeHeight,
-					200, sideHeadHeight > 100 ? 100 : sideHeadSafeHeight, sideNeckHeight >
-					100 ?
-					100 :
-					sideNeckSafeHeight, 200);
+				var headSafeHeight; //仰卧头部
+				var sideHeadSafeHeight; //侧卧头部
+				// if(headHeight >= 60){
+				// 	headSafeHeight = headHeight -15
+				// }else{
+				// 	headSafeHeight = headHeight < 30 ? 30 : headHeight 
+				// }
+				// if(sideHeadHeight >= 60){
+				// 	sideHeadSafeHeight = sideHeadHeight - 15
+				// }else{
+				// 	sideHeadSafeHeight = sideHeadHeight  < 30 ? 30 : sideHeadHeight 
+				// }
+				headSafeHeight = headHeight < 30 ? 30 : headHeight 
+				sideHeadSafeHeight = sideHeadHeight  < 30 ? 30 : sideHeadHeight 
+				let neckSafeHeight = neckHeight - 30 < 30 ? 30 : neckHeight - 30 //仰卧颈部
+				let sideNeckSafeHeight = sideNeckHeight - 30 < 30 ? 30 : sideNeckHeight - 30 //侧卧颈部
+				let init_arraybuffer = initPillow(headHeight > 100 ? 80 : headSafeHeight, neckHeight > 100 ? 100 :
+					neckSafeHeight,200, sideHeadHeight > 100 ? 100 : sideHeadSafeHeight, 
+					sideNeckHeight > 100 ? 100 :sideNeckSafeHeight, 200);
 				blue_class.getInstance().write2tooth(init_arraybuffer);
-				// uni.showLoading({
-				// 	title: '调整中'
-				// })
-
 				this.step = step;
 			},
+			//AI计算得出的高度
+			// send2Pillow(headHeight, neckHeight, sideHeadHeight, sideNeckHeight, step) {
+			//     // 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
+			//     let init_arraybuffer = initPillow(
+			//         headHeight > 100 ? 100 : headHeight, 
+			//         neckHeight > 100 ? 100 : neckHeight,
+			//         200, 
+			//         sideHeadHeight > 100 ? 100 : sideHeadHeight, 
+			//         sideNeckHeight > 100 ? 100 : sideNeckHeight, 
+			//         200
+			//     );			    
+			//     blue_class.getInstance().write2tooth(init_arraybuffer);
+			//     this.step = step;
+			// },
 			// 不保存
 			cancelSaveHandle() {
 				//  还原数据
@@ -503,7 +538,7 @@
 				for (var index = 0; index < arrayBuffer.byteLength; index++) {
 					receive_dataView.setUint8(index, arrayBuffer_res[index + 2])
 				}
-				console.log('handleMessage adjust 接收到数据', ab2hex(res.value), mark, arrayBuffer.length);
+				console.log('handleMessage adjust 接收到数据', ab2hex(res.value), mark);
 				switch (parseInt(mark)) {
 					case 1:
 						let result = receive_dataView.getUint8(0)
@@ -996,7 +1031,8 @@
 
 			.bo-left {
 				position: absolute;
-				left: 55rpx;
+				left: 45%;
+				transform: translateX(-45%);
 				top: 193rpx;
 				z-index: 10;
 			}

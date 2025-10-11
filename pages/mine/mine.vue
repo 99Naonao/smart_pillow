@@ -73,7 +73,9 @@
 						<view class="opt-btn" @click="uploadDataHandle" v-if="false">
 							<label>上报数据</label>
 						</view>
-
+<!-- 						<view class="opt-btn" @click="sleepQuestions">
+							<label>问卷调查</label>
+						</view> -->
 						<view class="opt-btn" @click="resetHandle">
 							<label>设备校准</label>
 						</view>
@@ -174,6 +176,11 @@
 			resetHandle() {
 				let reset_data = resetPillow(88);
 				blue_class.getInstance().write2tooth(reset_data)
+			},
+			sleepQuestions(){
+				uni.navigateTo({
+					url:"/pages/PSQI/NewPSQI"
+				})
 			},
 			refreshUserInfo() {
 				let userInfo = uni.getStorageSync('userInfo')
@@ -393,6 +400,7 @@
 			.opt-btn {
 				width: 284rpx;
 				height: 90rpx;
+				margin-right: 10rpx;
 				display: flex;
 				justify-content: space-around;
 				align-items: center;
@@ -400,10 +408,6 @@
 				border-radius: 30rpx;
 				line-height: 56rpx;
 				color: white;
-
-				label {
-					margin-left: -55rpx;
-				}
 			}
 
 			.opt-btn-top {

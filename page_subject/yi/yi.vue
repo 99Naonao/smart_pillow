@@ -110,6 +110,7 @@
 				}
 			}
 			uni.$on('xx', this.handleMessage)
+			uni.$on('bluetooth_status_change', this.handleDisconnect)
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
 			uni.onBLECharacteristicValueChange(this.handleMessage)
 		},
@@ -117,6 +118,7 @@
 			// uni.offBLECharacteristicValueChange(this.handleMessage)
 			this.onShowing = false;
 			uni.$off('xx', this.handleMessage)
+			uni.$off('bluetooth_status_change', this.handleDisconnect)
 			// if (this.searching) {
 			// uni.stopBluetoothDevicesDiscovery({
 			// 	success: function(res) {
@@ -249,6 +251,19 @@
 			}
 		},
 		methods: {
+			// 处理蓝牙断开连接
+			handleDisconnect() {
+				// 检查是否真的断开了
+				if (!blue_class.getInstance().loginSuccess) {
+					console.log('设备连接页面检测到蓝牙断开');
+					
+					// 清空设备列表
+					this.deviceIdList = [];
+					
+					// 停止搜索
+					this.stopBlueTooth();
+				}
+			},
 			handleMessage(res) {
 				if (this.onShowing) {
 

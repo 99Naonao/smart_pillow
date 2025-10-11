@@ -1,12 +1,12 @@
 <template>
 	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'></z-nav-bar>
 	<view class="main">
-		<view class="back-img-container">
-			<image class="backimg" mode="widthFix" :src="'../static/SY_05_000.jpg'"></image>
-		</view>
-		<view class="tips-container">
-			<image class="tips" mode="widthFix" :src="'../static/SY_06_Font01.png'"></image>
-		</view>
+		<swiper class="swiper-box" indicator-dots="true" indicator-active-color="#000"
+		 @change="change" :current="swiperDotIndex" interval="3000" autoplay="true">
+			<swiper-item class="swiper-item" v-for="(item,index) in info" :key="index">
+				<image :src="item.image" mode="aspectFill" class="backImage"/>
+			</swiper-item>
+		</swiper>
 		<view class="info">
 			<view class="info-btn" @click="measureHandler">
 				开始测量
@@ -93,7 +93,16 @@
 					weight: 50,
 					tall: 168,
 					sexIndex: 2,
-				}
+				},
+				swiperDotIndex:0,
+				current:0,
+				info:[{
+					image:'../../page_subject/static/bg_text.png'
+				},{
+					image:'../../page_subject/static/bg_front.jpg'
+				},{
+					image:'../../page_subject/static/bg_side.jpg'
+				}]
 			}
 		},
 		onShow() {
@@ -112,6 +121,10 @@
 			console.log("this.form", this.form)
 		},
 		methods: {
+			change(e){
+				this.current = e.detail.current
+			},
+
 			sliderChange(e) {
 				console.log('value 发生变化：' + e.detail.value)
 			},
@@ -151,21 +164,21 @@
 <style lang="scss">
 	.main {
 		height: 100%;
-
-		.back-img-container {
+			
+		.swiper-box{
+			height: 1200rpx;
 			width: 750rpx;
-			height: 100%;
-			// height: 1000rpx;
-			overflow: hidden;
-
-
-			.backimg {
-				width: 750rpx;
-				object-fit: cover;
-			}
-
 		}
-
+		
+		.swiper-item{
+			display: flex;
+			height: 100%;
+			
+			.backImage{
+				width: 100%;
+				height: 100%;
+			}
+		}
 
 		.info {
 			position: absolute;

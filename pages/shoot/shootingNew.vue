@@ -1,6 +1,6 @@
 <template>
-	<view>
-		<camera id="canvas1" class="canvas1" disable-scroll="true">
+	<view v-if="hasCameraPermission">
+		<camera device-position="back" flash="off"  id="canvas1" class="canvas1" disable-scroll="true">
 			<cover-view class="cover">
 				<cover-image @touchend="backBtn_callback" aria-role="button" src="/static/camera/back.png"
 					class="back-btn" :style="backBtnStyle">
@@ -33,13 +33,6 @@
 					</cover-view>
 				</cover-view>
 			</cover-view>
-			<!-- 		<cover-view class="cover" v-else>
-				<cover-image @click="backBtn_callback" aria-role="button" src="/static/camera/back.png" class="back-btn"
-					:style="backBtnStyle">
-				</cover-image>
-				<cover-image class="shootBtn" @click="shootSideBtnHandler" aria-role="button"
-					src="/static/adjust/SY_08A_ButCam01.png"></cover-image>
-			</cover-view> -->
 		</camera>
 
 	</view>
@@ -67,6 +60,7 @@
 				canvasHeight: 1,
 				screenWidth: 100,
 				screenHeight: 100,
+				hasCameraPermission:false,
 				xx: 0,
 				yy: 0,
 				backBtnStyle: {
@@ -96,6 +90,7 @@
 			this.frontImage = ''
 			this.sideImage = ''
 			this.ctx = wx.createCameraContext();
+			this.checkCameraPermmsion();
 		},
 		onHide() {
 			wx.stopAccelerometer()
@@ -110,37 +105,7 @@
 			})
 
 			wx.onAccelerometerChange(this.refreshAcc)
-			let scope = 'scope.camera';
-			wx.getSetting({
-				success: res => {
-					if (scope) {
-						// 判断是否授权
-						if (res.authSetting[scope]) {
 
-						} else {
-							wx.authorize({
-								scope: 'scope.camera',
-								success() {
-									uni.showToast({
-										title: '同意授权'
-									})
-								},
-								fail() {
-									uni.showToast({
-										title: '拒绝授权'
-									})
-								}
-							})
-						}
-						// resolve(res.authSetting[scope])
-					} else {
-						// resolve(res.authSetting)
-					}
-				},
-				fail: err => {
-					reject(err)
-				}
-			})
 		},
 		onReady() {
 			// 获取小程序右上角胶囊按钮的坐标，用作自定义导航栏。
@@ -151,14 +116,80 @@
 			this.$set(this.backBtnStyle, '--menuButtonTop4', (menuButton.top + 100) + 'px')
 			this.$set(this.backBtnStyle, '--menuButtonHeight', menuButton.height + 'px')
 			this.$set(this.frameStyle, '--frameTop', (menuButton.top + menuButton.height + 100) + 'px')
-			// 胶囊按钮与手机屏幕顶端的间距
-			// this.menuButtonTop = menuButton.top
-			// 胶囊按钮的高度
-			// this.menuButtonHeight = menuButton.height
-			// console.log('onready2:', canvasId, menuButton)
-			// 获取画布组件
 		},
 		methods: {
+			checkCameraPermmsion(){
+				const scope = 'scope.camera';
+				wx.getSetting({
+					success:(res) =>{
+						if(res.authSetting.hasOwnProperty(scope)){
+							this.hasCameraPermission = res.authSetting[scope];
+							if(this.hasCameraPermission){
+								this.initCamera();
+							}else{
+								this.showPermissionSettingDialog();
+							}							
+						}else{
+							this.requestCameraPermission();
+						}
+					},
+					fail: (err) => {
+						console.error('获取相机权限失败',err)
+						this.hasCameraPermission = false;
+						this.handlePermissionMessage('请检查是否授予相机权限');
+					}
+				})
+			},
+			//请求相机权限
+			requestCameraPermission(){
+				wx.authorize({
+					scope: 'scope.camera',
+					success: () => {
+						// this.handlePermissionMessage('已授予相机权限');
+						this.hasCameraPermission = true;
+					},
+					fail: (err) => {
+						this.showPermissionSettingDialog();
+					}
+				});
+			},
+			//权限申请被拒绝后出现
+			showPermissionSettingDialog(){
+				uni.showModal({
+					title: '权限申请提示',
+					content: '需要相机权限才能使用此功能，是否前往设置？',
+					success: (res) => {
+						if (res.confirm) {
+							wx.openSetting({
+								success: (res) => {
+									this.checkCameraPermmsion();
+									// this.hasCameraPermission = res.authSetting['scope.camera'];
+									// if (!this.hasCameraPermission) {
+									// 	this.handlePermissionMessage('请在设置中开启相机权限');
+									// }
+								}
+							});
+						}else if(res.cancel){
+							this.handlePermissionMessage('请在设置中开启相机权限');
+						}
+					}
+				});
+			},
+			handlePermissionMessage(content){
+				uni.showModal({
+					title:'权限授予提示',
+					content:content,
+					showCancel:false,
+					success: (res) => {
+						if(res.confirm){
+							console.log('用户已知晓');
+						}
+					}
+				});
+			},
+			initCamera(){
+				this.ctx = wx.createCameraContext();
+			},
 			refreshAcc(obj) {
 				const {
 					x,
@@ -222,15 +253,6 @@
 							this.frontImage = img_url;
 							this.shootingTips = "请拍摄侧面照片"
 							this.showTips = true;
-							// uni.showToast({
-							// 	title: '请拍摄侧面照片',
-							// 	duration: 3000
-							// })
-
-							// wx.previewImage({
-							// 	urls: [this.frontImage],
-							// 	current: this.frontImage
-							// })
 						}
 
 					},
@@ -241,27 +263,6 @@
 					}
 				})
 			},
-			// shootSideBtnHandler() {
-			// 	console.log('this.canvasInstance1:', this.canvasInstance, this.canvasInstance.id)
-			// 	wx.getSystemInfo({
-			// 		success: (res) => {
-			// 			let pixel = res.pixelRatio
-			// 			wx.canvasToTempFilePath({
-			// 				x: 0,
-			// 				y: 0,
-			// 				width: this.canvasWidth,
-			// 				height: this.canvasHeight,
-			// 				destWidth: pixel * this.canvasWidth,
-			// 				destHeight: pixel * this.canvasHeight,
-			// 				canvasId: this.canvasInstance.id,
-			// 				success(res) {
-			// 					console.log('12345678', res.tempFilePath)
-			// 					this.sideImage = res.tempFilePath;
-			// 				}
-			// 			})
-			// 		}
-			// 	})
-			// },
 			shootBtnIOS(pixel) {
 				let that = this;
 				uni.canvasToTempFilePath({
@@ -294,15 +295,6 @@
 								.frontImage)
 							this.shootingTips = "请拍摄侧面照片"
 							this.showTips = true;
-							// uni.showToast({
-							// 	title: '请拍摄侧面照片',
-							// 	duration: 3000
-							// })
-
-							// wx.previewImage({
-							// 	urls: [this.frontImage],
-							// 	current: this.frontImage
-							// })
 						}
 					},
 					fail(err) {
@@ -331,15 +323,6 @@
 						.frontImage)
 					this.shootingTips = "请拍摄侧面照片"
 					this.showTips = true;
-					// uni.showToast({
-					// 	title: '请拍摄侧面照片',
-					// 	duration: 3000
-					// })
-
-					// wx.previewImage({
-					// 	urls: [this.frontImage],
-					// 	current: this.frontImage
-					// })
 				}
 			},
 			shootBtnAndroid(pixel) {
@@ -367,10 +350,6 @@
 					console.log('time lap 0:', Date.now() - start);
 					const imageData = cameraBusiness.renderFrame();
 					console.log('time lap 01111:', Date.now() - start);
-					// console.log('gltodataurl:', gl.canvas.toDataURL())
-					// const imageData = gl.canvas.toDataURL();
-					// that.shootAndriod(pixel, canvas);
-					// return;
 					console.log('time lap 1:', Date.now() - start);
 					const imageData2 = imageData.replace(/^data:image\/\w+;base64,/, "");
 					console.log('time lap 2:', Date.now() - start);
@@ -412,15 +391,6 @@
 							.frontImage)
 						this.shootingTips = "请拍摄侧面照片"
 						this.showTips = true;
-						// uni.showToast({
-						// 	title: '请拍摄侧面照片',
-						// 	duration: 3000
-						// })
-
-						// wx.previewImage({
-						// 	urls: [this.frontImage],
-						// 	current: this.frontImage
-						// })
 					}
 				})
 				that.canvasInstance.width = that
@@ -429,7 +399,6 @@
 					.canvasHeight
 			},
 			shootBtnHandler() {
-				// console.log('this.canvasInstance1:', this.canvasInstance, this.canvasInstance.id)
 				let that = this;
 				wx.getSystemInfo({
 					success: (res) => {
@@ -440,10 +409,6 @@
 						} else {
 							this.shootBtnAndroid(pixel)
 						}
-						// console.log("shootBtnHandler11:", platform, that.canvasInstance, that.canvasID, pixel,
-						// 	that
-						// 	.canvasWidth, that
-						// 	.canvasHeight)
 					}
 				})
 			}

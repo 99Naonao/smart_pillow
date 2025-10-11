@@ -1,7 +1,4 @@
 <template>
-	<view class="">
-		<image class="backimg" src="../../static/index/20240322180953.jpg" mode="widthFix"></image>
-	</view>
 	<view>
 		<view style="text-align: center;padding: 20rpx;font-weight: 600;"><label class="title">正面图片</label></view>
 		<view class="frontPic" :style="frontImageStyle">

@@ -127,29 +127,11 @@
 		initPillow,
 		parsePillowState
 	} from '@/common/util.js'
-
+	
 	import blue_class from '../../utils/BlueManager'
 	import {
 		addUseLog
 	} from '../../utils/miniapp'
-	// import {
-	// 	object2Query,
-	// 	parsePillowRealState,
-	// 	handPillowStatus,
-	// 	handPillowSideState,
-	// 	handPillowFrontState,
-	// 	handlePillowDelayState,
-	// 	hexStringToArrayBuffer,
-	// 	ab2hex,
-	// 	resetPillow,
-	// 	uploadDataRequest,
-	// 	initPillow,
-	// 	changeAdjustMode,
-	// 	changeSaveAdjustMode,
-	// 	hand1Shake,
-	// 	write2tooth,
-	// 	parsePillowState
-	// } from '@/common/util.js'
 	export default {
 		components: {
 			InputView,
@@ -278,32 +260,46 @@
 					return;
 				}
 
-
+				console.log("set mode已连接至枕头，发送原始数据",JSON.stringify(this.selectItem))
+				var headSafeHeight;
+				var sideHeadSafeHeight;
+				// if(this.selectItem.headHeight >= 60){
+				// 	headSafeHeight = this.selectItem.headHeight - 15
+				// }else{
+				// 	headSafeHeight = this.selectItem.headHeight < 30 ? 30 : this.selectItem.headHeight 
+				// }
+				// if(this.selectItem.sideHeadHeight >= 60){
+				// 	sideHeadSafeHeight = this.selectItem.sideHeadHeight - 15
+				// }else{
+				// 	sideHeadSafeHeight = this.selectItem.sideHeadHeight  < 30 ? 30 : this.selectItem.sideHeadHeight 
+				// }
+				headSafeHeight = this.selectItem.headHeight < 30 ? 30 : this.selectItem.headHeight 
+				sideHeadSafeHeight = this.selectItem.sideHeadHeight  < 30 ? 30 : this.selectItem.sideHeadHeight 
+				let neckSafeHeight = this.selectItem.neckHeight - 30 < 30 ? 30 : this.selectItem.neckHeight - 30
+				let sideNeckSafeHeight = this.selectItem.sideNeckHeight - 30 < 30 ? 30 : this.selectItem.sideNeckHeight - 30
 				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
-				let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : this.selectItem.headHeight, this
-					.selectItem
-					.neckHeight > 100 ? 100 : this.selectItem.neckHeight, 200, this
-					.selectItem.sideHeadHeight > 100 ? 100 : this.selectItem.sideHeadHeight, this.selectItem
-					.sideNeckHeight >
-					100 ?
-					100 :
-					this.selectItem.sideNeckHeight, 200);
-				// 如果有数据，默认调整枕头
-				// let init_arraybuffer = initPillow(this.selectItem.headHeight, this.selectItem.neckHeight, 200, this
-				// 	.selectItem
-				// 	.sideHeadHeight, this.selectItem.sideNeckHeight, 200);
-				// let app = getApp()
+				// let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : this.selectItem.headHeight, 
+				// this.selectItem.neckHeight > 100 ? 100 : this.selectItem.neckHeight, 200, 
+				// this.selectItem.sideHeadHeight > 100 ? 100 : this.selectItem.sideHeadHeight,
+				// this.selectItem.sideNeckHeight >100 ?100 :this.selectItem.sideNeckHeight, 200);
+				console.log("实际发送的仰卧头枕数据：",this.selectItem.headHeight > 100 ? 100 : headSafeHeight)
+				console.log("实际发送的仰卧颈枕数据：",this.selectItem.neckHeight > 100 ? 100 : neckSafeHeight)
+				console.log("实际发送的侧卧头枕数据：",this.selectItem.sideHeadHeight > 100 ? 100 : sideHeadSafeHeight)
+				console.log("实际发送的侧卧颈枕数据：",this.selectItem.sideNeckHeight > 100 ? 100 : sideNeckSafeHeight)
+				
+				let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : headSafeHeight,
+				this.selectItem.neckHeight > 100 ? 100 : neckSafeHeight, 200, 
+				this.selectItem.sideHeadHeight > 100 ? 100 : sideHeadSafeHeight, 
+				this.selectItem.sideNeckHeight >100 ?100 :sideNeckSafeHeight, 200);
 				blue_class.getInstance().write2tooth(init_arraybuffer);
+
+				// uni.setStorageSync('mode_switch_flag', true); // 旧标记逻辑，已改为切换时即停，保留为屏蔽
 
 				addUseLog(this.selectItem)
 
 				uni.switchTab({
 					url: "/pages/status/status"
 				})
-
-				// uni.navigateTo({
-				// 	url: "/page_subject/adjust/adjust" + object2Query(this.selectItem)
-				// })
 			},
 			bindClick(params) {
 				uni.showModal({
@@ -356,19 +352,20 @@
 			},
 			// 发送模式设置
 			sendHandler(item) {
-				// uni.switchTab({
-				// 	url: '/pages/status/status'
-				// })
+				if(!blue_class.getInstance().loginSuccess){
+					uni.showModal({
+						title:"未连接枕头提示",
+						content:"请检查是否已连接到枕头",
+						showCancel:false
+					});
+					return;
+				}
+				
 				let params = this.selectItem
 				console.log('params:', params)
 
 				uni.setStorageSync('lastMode', params);
 				this.navHandle()
-				// let init_arraybuffer = initPillow(params.headHeight, params.neckHeight, params.shoulderHeight, params
-				// 	.sideHeadHeight, params.sideNeckHeight, params.sideShoulderHeight);
-				// // let app = getApp()
-				// blue_class.getInstance().write2tooth(init_arraybuffer);
-
 				return;
 				uni.showLoading({
 					title: '调整中'
@@ -377,12 +374,6 @@
 				// 如果选择的仰卧
 				arraybuffer = handPillowFrontState(item.head, item
 					.neck)
-
-				// write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
-				// 	uni.hideLoading()
-				// }).catch(res => {
-				// 	uni.hideLoading()
-				// })
 				console.log('调低仰卧:', item.head, item.neck, ab2hex(arraybuffer))
 				// 如果选择的仰卧
 				arraybuffer = handPillowSideState(item.sideHead, item

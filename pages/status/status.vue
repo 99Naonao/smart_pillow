@@ -22,10 +22,17 @@
 				<view>颈枕高度</view>
 				<view>{{pillowSideHeight}}mm</view>
 			</view>
+			<!-- 颈枕高度变化箭头 -->
+			<image v-if="showNeckArrow" class="neck-arrow-icon" 
+				:src="neckArrowSrc" mode="widthFix"></image>
+			
 			<view class="neckInfo" :style="menuInfo">
 				<view>头枕高度</view>
 				<view>{{pillowHeight}}mm</view>
 			</view>
+			<!-- 头枕高度变化箭头 -->
+			<image v-if="showHeadArrow" class="head-arrow-icon" 
+				:src="headArrowSrc" mode="widthFix"></image>
 			<view class="">
 				<view v-for="(item,index) in deviceIdList" :key="index">
 					{{item.name}}
@@ -107,14 +114,21 @@
 		computed: {
 			pillowStatusDesc() {
 				if (this.loginStatus) {
-
+					let baseStatus = '';
 					if (this.pillowStatus == 0) {
-						return '空闲'
+						baseStatus = '空闲'
 					} else if (this.pillowStatus == 1) {
-						return '平躺中'
+						baseStatus = '平躺'
 					} else if (this.pillowStatus == 2) {
-						return '侧卧中'
+						baseStatus = '侧卧'
 					}
+					
+					// 检查是否正在进行脊柱调整
+					if (this.isSpineAdjusting) {
+						baseStatus = '微调中'
+					}
+					
+					return baseStatus;
 				} else {
 					return '未连接'
 				}
@@ -130,10 +144,54 @@
 			},
 			getPillowPower() {
 				return Math.floor((this.pillowPower * 100) / 100) / 10
+			},
+			showNeckArrow() {
+				return this.showNeckArrowFlag;
+			},
+			neckArrowSrc() {
+				return this.neckArrowDirection === 'up' ? '../../static/SY_11_UP.png' : '../../static/SY_11_DOW.png';
+			},
+			showHeadArrow() {
+				return this.showHeadArrowFlag;
+			},
+			headArrowSrc() {
+				return this.headArrowDirection === 'up' ? '../../static/SY_11_UP.png' : '../../static/SY_11_DOW.png';
 			}
 		},
 		watch: {
-
+			pillowSideHeight(newVal, oldVal) {
+				if (newVal !== oldVal && oldVal !== undefined && this.isInitialized) {
+					this.showNeckArrowFlag = true;
+					this.neckArrowDirection = newVal > oldVal ? 'up' : 'down';
+					this.lastNeckHeight = newVal; // 更新最后记录的高度
+					// 清除之前的定时器
+					if (this.neckArrowTimer) {
+						clearTimeout(this.neckArrowTimer);
+					}
+					// 设置新的定时器，2秒后检查是否还在调整
+					this.neckArrowTimer = setTimeout(() => {
+						
+						this.checkNeckAdjustment();
+					}, 1000);
+				}
+				this.prevPillowSideHeight = newVal;
+			},
+			pillowHeight(newVal, oldVal) {
+				if (newVal !== oldVal && oldVal !== undefined && this.isInitialized) {
+					this.showHeadArrowFlag = true;
+					this.headArrowDirection = newVal > oldVal ? 'up' : 'down';
+					this.lastHeadHeight = newVal; // 更新最后记录的高度
+					// 清除之前的定时器
+					if (this.headArrowTimer) {
+						clearTimeout(this.headArrowTimer);
+					}
+					// 设置新的定时器，2秒后检查是否还在调整
+					this.headArrowTimer = setTimeout(() => {
+						this.checkHeadAdjustment();
+					}, 1000);
+				}
+				this.prevPillowHeight = newVal;
+			}
 		},
 		data() {
 			return {
@@ -162,13 +220,25 @@
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 				loginStatus: false,
 				pillowHeight: 80,
-				pillowSideHeight: 1,
+				pillowSideHeight: 80,
 				pillowPower: 1,
 				pillowStatus: 0,
 				pillowPowerCharging: 0, // 充电状态
+				prevPillowSideHeight: 0, // 记录上一次的颈枕高度
+				prevPillowHeight: 0, // 记录上一次的头枕高度
+				showNeckArrowFlag: false, // 控制颈枕箭头显示
+				showHeadArrowFlag: false, // 控制头枕箭头显示
+				neckArrowDirection: 'up', // 颈枕箭头方向
+				headArrowDirection: 'up', // 头枕箭头方向
+				neckArrowTimer: null, // 颈枕箭头定时器
+				headArrowTimer: null, // 头枕箭头定时器
+				lastNeckHeight: 0, // 记录最后一次颈枕高度
+				lastHeadHeight: 0, // 记录最后一次头枕高度
+				isInitialized: false, // 标记是否已初始化
+				isSpineAdjusting: false, // 是否正在进行脊柱调整
 			}
 		},
-		// behaviors: [getBehavior(), yuvBehavior],
+
 		onShow() {
 			let curPages = getCurrentPages()[0]
 			if (typeof curPages.getTabBar === 'function' && curPages.getTabBar()) {
@@ -189,81 +259,14 @@
 
 			console.log('menui:', (app.globalData.top + 120) + 'px', this.menuInfo)
 
-			// this.$set(this, 'pillowHeight', blue_class.getInstance().pillowHeight);
-			// this.$set(this, 'pillowSideHeight', blue_class.getInstance().pillowSideHeight);
-			// this.$set(this, 'pillowPower', blue_class.getInstance().pillowPower);
-			// console.log('menui11111:', this.pillowHeight)
-			// console.log('menui1111122:', this.pillowSideHeight)
-			// console.log('menui1111122333:', this.pillowPower)
-
 			this.loginStatus = blue_class.getInstance().loginSuccess;
-			// this.pillowHeight = blue_class.getInstance().pillowHeight
-			// this.pillowSideHeight = blue_class.getInstance().pillowSideHeight
-			// this.pillowPower = blue_class.getInstance().getPillowPower()
-			// console.log('createScopedThreejs:', createScopedThreejs)
-
-			// // 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
-			// uni.onBLECharacteristicValueChange((res) => {
-			// 	console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
-			// 	let arrayBuffer = new Uint8Array(res.value);
-			// 	console.log('接收到数据', this.ab2hex(res.value), arrayBuffer.length)
-			// 	// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
-			// 	if (arrayBuffer.length == 4) {
-			// 		let receive16 = this.ab2hex(res.value);
-			// 		let last = '0x' + receive16
-			// 		let total = 0
-			// 		Array.prototype.map.call(
-			// 			arrayBuffer,
-			// 			function(bit) {
-			// 				total += Number(bit.toString(10))
-			// 				return ('00' + bit.toString(16)).slice(-2)
-			// 			}
-			// 		)
-			// 		let shake1 = this.hand1Shake(Number(
-			// 			total), arrayBuffer)
-
-
-			// 		// let dataView = new DataView(shake1)
-			// 		// let u1 = dataView.getUint8(0)
-			// 		// let u2 = dataView.getUint8(1)
-			// 		// let u3 = dataView.getUint8(2)
-			// 		// let u4 = dataView.getUint8(3)
-			// 		// let u5 = dataView.getUint8(4)
-			// 		// let u6 = dataView.getUint8(5)
-			// 		// let u7 = dataView.getUint8(6)
-			// 		// let u8 = dataView.getUint8(7)
-			// 		// let flow = u1.toString(2) + u2.toString(2) + u3.toString(2) + u4.toString(2) + u5.toString(2) +
-			// 		// 	u6.toString(2) + u7.toString(2) + u8.toString(2)
-
-			// 		// console.log('flowflowflow1:', u1.toString(2))
-			// 		// console.log('flowflowflow2:', u2.toString(2))
-			// 		// console.log('flowflowflow3:', u3.toString(2))
-			// 		// console.log('flowflowflow4:', u4.toString(2))
-			// 		// console.log('flowflowflow5:', u5.toString(2))
-			// 		// console.log('flowflowflow6:', u6.toString(2))
-			// 		// console.log('flowflowflow7:', u7.toString(2))
-			// 		// console.log('flowflowflow8:', u8.toString(2))
-			// 		console.log("total:", total)
-			// 		this.write2tooth(this.deviceId, this.serviceId, this.characteristicId, shake1)
-			// 		console.log('第一次握手', this.ab2hex(shake1))
-			// 	} else if (arrayBuffer.length == 2) {
-			// 		let receive16 = this.ab2hex(res.value);
-			// 		let mark = receive16.slice(2, 4)
-			// 		let len = receive16.slice(0, 2)
-			// 		console.log('接收到回复数据123', mark, len)
-			// 		if (mark == '55') {
-			// 			console.log('接收到回复数据', this.ab2hex(res.value))
-			// 			console.log('校验长度', parseInt('0x' + len))
-			// 		}
-			// 	}
-			// })
-
 			getappVersion({
 				appId: base.publicAppId
 			}).then(res => {
 				console.log('aba', res)
 				app.globalData.versionCode = res.versionCode;
 			})
+			uni.$on('bluetooth_status_change',this.updateConnectionStatus);
 		},
 		onHide() {
 			let that = this
@@ -276,7 +279,21 @@
 				})
 			}
 
+			// 清理定时器
+			if (this.neckArrowTimer) {
+				clearTimeout(this.neckArrowTimer);
+			}
+			if (this.headArrowTimer) {
+				clearTimeout(this.headArrowTimer);
+			}
+
+			// 重置初始化标志
+			this.isInitialized = false;
+			this.showNeckArrowFlag = false;
+			this.showHeadArrowFlag = false;
+
 			uni.$off('update_pillow_info', this.updateInfo);
+			uni.$off('bluetooth_status_change',this.updateConnectionStatus);
 		},
 		onLoad() {
 			// 监听设备发现
@@ -346,20 +363,66 @@
 		},
 
 		methods: {
-			updateInfo() {
-				this.$set(this, 'pillowHeight', blue_class.getInstance().pillowHeight);
-				this.$set(this, 'pillowSideHeight', blue_class.getInstance().pillowSideHeight);
-				this.$set(this, 'pillowPower', blue_class.getInstance().pillowPower);
-				this.$set(this, 'pillowPowerCharging', blue_class.getInstance().chargingStatus);
-				this.$set(this, 'pillowStatus', blue_class.getInstance().pillowStatus);
-
-				this.$set(this.menuInfo, '--bateryWidth', (blue_class.getInstance().pillowPower * 50 / 1000) + 'rpx');
-
-				console.log('menui11111:', this.pillowHeight)
-				console.log('menui1111122:', this.pillowSideHeight)
-				console.log('menui1111122333:', this.pillowPower)
-				console.log('--bateryWidth:', (blue_class.getInstance().pillowPower * 50 / 1000) + 'rpx')
+			// 检查颈枕是否还在调整
+			checkNeckAdjustment() {
+				if (this.pillowSideHeight === this.lastNeckHeight) {
+					// 如果高度没有变化，说明停止调整了
+					this.showNeckArrowFlag = false;
+				} else {
+					// 如果高度还在变化，继续显示箭头
+					this.lastNeckHeight = this.pillowSideHeight;
+					// 重新设置定时器
+					this.neckArrowTimer = setTimeout(() => {
+						this.checkNeckAdjustment();
+					}, 2000);
+				}
 			},
+			// 检查头枕是否还在调整
+			checkHeadAdjustment() {
+				if (this.pillowHeight === this.lastHeadHeight) {
+					// 如果高度没有变化，说明停止调整了
+					this.showHeadArrowFlag = false;
+				} else {
+					// 如果高度还在变化，继续显示箭头
+					this.lastHeadHeight = this.pillowHeight;
+					// 重新设置定时器
+					this.headArrowTimer = setTimeout(() => {
+						this.checkHeadAdjustment();
+					}, 2000);
+				}
+			},
+			updateConnectionStatus(){
+				this.loginStatus = blue_class.getInstance().loginSuccess;
+				console.log('蓝牙连接状态更新:',this.loginStatus)
+			},
+		updateInfo(){
+			this.$set(this, 'pillowHeight', blue_class.getInstance().pillowHeight);
+			this.$set(this, 'pillowSideHeight', blue_class.getInstance().pillowSideHeight);
+			this.$set(this, 'pillowPower', blue_class.getInstance().pillowPower);
+			this.$set(this, 'pillowPowerCharging', blue_class.getInstance().chargingStatus);
+			this.$set(this, 'pillowStatus', blue_class.getInstance().pillowStatus);
+			
+			// 更新脊柱调整状态
+			this.$set(this, 'isSpineAdjusting', blue_class.getInstance().isSpineAdjusting);
+
+			this.$set(this.menuInfo, '--bateryWidth', (blue_class.getInstance().pillowPower * 50 / 1000) + 'rpx');
+
+			// 设置初始化标志
+			if (!this.isInitialized) {
+				this.isInitialized = true;
+				// 初始化时记录当前高度
+				this.lastNeckHeight = blue_class.getInstance().pillowSideHeight;
+				this.lastHeadHeight = blue_class.getInstance().pillowHeight;
+				// 初始化时设置prev值，避免初始触发watch
+				this.prevPillowSideHeight = blue_class.getInstance().pillowSideHeight;
+				this.prevPillowHeight = blue_class.getInstance().pillowHeight;
+			}
+
+			console.log('menui11111:', this.pillowHeight)
+			console.log('menui1111122:', this.pillowSideHeight)
+			console.log('menui1111122333:', this.pillowPower)
+			console.log('--bateryWidth:', (blue_class.getInstance().pillowPower * 50 / 1000) + 'rpx')
+		},
 			aiHandler() {
 				uni.navigateTo({
 					url: "/page_subject/measure/measure"
@@ -962,6 +1025,15 @@
 		width: 300rpx;
 		height: 68rpx;
 	}
+	
+	.neck-arrow-icon {
+		position: absolute;
+		top: 600rpx;
+		left: 150rpx;
+		width: 24rpx;
+		height: 24rpx;
+		z-index: 10;
+	}
 
 	.neckInfo {
 		position: absolute;
@@ -975,6 +1047,15 @@
 		border-radius: 20rpx;
 		width: 300rpx;
 		height: 68rpx;
+	}
+	
+	.head-arrow-icon {
+		position: absolute;
+		top: 620rpx;
+		right: 80rpx;
+		width: 24rpx;
+		height: 24rpx;
+		z-index: 10;
 	}
 
 	.rightInfo {

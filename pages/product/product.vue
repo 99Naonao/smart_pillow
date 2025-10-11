@@ -55,7 +55,7 @@
 				})
 			},
 			go2Use() {
-				const url5 = 'https://sleep.zsyl.cc/sleeph5/miniIndex.html'
+				const url5 = 'https://sleep.zsyl.cc/sleeph5'
 				const navtitle = '健康检测'
 				console.log('go2use:', url5)
 				wx.navigateTo({

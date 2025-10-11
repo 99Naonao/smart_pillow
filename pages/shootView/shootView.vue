@@ -9,24 +9,24 @@
 					<view class="wrap shoulderLeftWrap" :style="shoulderLeftWrapStyle">
 						<view class="circle"></view>
 						<view class="tips"></view>
-						<!-- <view>{{shoulderSpace}}{{unitDesc}}</view> -->
+						
 					</view>
 					<view class="wrap shoulderRightWrap" :style="shoulderRightWrapStyle">
 						<view class="circle"></view>
 						<view class="tips"></view>
-						<!-- <view>{{shoulderSpace}}{{unitDesc}}</view> -->
+						
 					</view>
 					<view class="wrap shoulderLeftEarWrap" :style="shoulderLeftEarWrapStyle">
 						<view class="circle"></view>
 						<view class="tips"></view>
-						<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+						
 					</view>
 					<view class="wrap shoulderRightEarWrap" :style="shoulderRightEarWrapStyle">
 						<view class="circle"></view>
 						<view class="tips tips-left"></view>
-						<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+						
 					</view>
-					<!-- <view wx:for="{{markList}}" class="marker">123</view> -->
+					
 				</view>
 				<text style="line-height: 140rpx;" v-else>
 					上传待检测的图片
@@ -38,14 +38,14 @@
 			<view class="uni-common-mt123" :style="frontImageStyle">
 				<view class="datainfo flex" v-if="showFront">
 					<view class="back1" @click="handleSideClick">
-						<image class="side1Img" src="../static/camera/SY_09_ButCM01.png" mode="widthFix"></image>
+						<image class="side1Img" src="../../static/camera/SY_09_ButCM01.png" mode="widthFix"></image>
 						<view v-if="false">侧面数据</view>
 					</view>
 					<view class="back2 flex1 flex align-center">
 						<image mode="widthFix" class="img2back" src="../../static/camera/SY_09_ButZMSJ02.png">
 						</image>
 						<view class="left-part">
-							<image class="front1Img" v-if="false" src="../static/camera/SY_09_ButZMSJ02.png"
+							<image class="front1Img" v-if="false" src="../../static/camera/SY_09_ButZMSJ02.png"
 								mode="widthFix">
 							</image>
 							<view v-if="false">正面数据</view>
@@ -68,9 +68,7 @@
 						<view class=""><label class="title">头枕高度:</label><label
 								class="">{{frontRightPart}}{{unitDesc}}</label></view>
 						<view><label class="title">颈枕高度:</label>{{shoulderSpace}}{{unitDesc}}</view>
-						<!-- <view><label class="title">●左耳朵到左肩:</label>{{frontLeftPart}}{{unitDesc}}</view> -->
-						<!-- 					<view><label class="title">脖子中心到左肩:</label>{{frontLeftNeckPart}}{{unitDesc}}</view>
-					<view><label class="title">脖子中心到右肩:</label>{{frontRightNeckPart}}{{unitDesc}}</view> -->
+
 					</view>
 				</view>
 			</view>
@@ -89,28 +87,21 @@
 				<image v-if="sideBodyImgUrl!=''" :src="sideBodyImgUrl" mode="widthFix"></image>
 
 				<view class="info-part" :style="sideImageStyle" v-if="sideBodyImgUrl!=''">
-					<view class="wrap headPointWrap" :style="headPointWrapStyle" v-if="false">
+					<view class="wrap headPointWrap" :style="headPointWrapStyle" v-if="true">
 						<view class="circle"></view>
-						<view class="tips" :class="sideForward=='left'? 'tips-head-right':'tips-head-left'">后脑勺</view>
-						<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+						<view class="tips" :class="sideForward=='left'? 'tips-head-right':'tips-head-left'"></view>
+						
 					</view>
 					<view class="wrap neckPointWrap" :style="neckPointWrapStyle" v-if="sideBodyImgUrl!=''">
 						<view class="circle"></view>
 						<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'"></view>
-						<!-- <view>{{frontRightPart}}{{unitDesc}}</view> -->
+						
 					</view>
-					<view class="wrap backPointWrap" :style="backPointWrapStyle" v-if="false">
-						<view class="circle"></view>
-						<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'">后背凸点</view>
-					</view>
-					<view class="wrap backUpPointWrap" :style="backUpPointWrapStyle" v-if="sideBodyImgUrl!=''">
+					<view class="wrap backPointWrap" :style="backPointWrapStyle" v-if="true">
 						<view class="circle"></view>
 						<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'"></view>
 					</view>
-					<view class="wrap backDownPointWrap" :style="backDownPointWrapStyle" v-if="sideBodyImgUrl!=''">
-						<view class="circle"></view>
-						<view class="tips" :class="sideForward=='left'? 'tips-neck-right':'tips-neck-left'"></view>
-					</view>
+
 				</view>
 
 				<text style="line-height: 140rpx;" v-else>
@@ -128,18 +119,26 @@
 							</image>
 							<view class="side-info-part">
 
-								<view class=""><label class="title">头枕高度:</label><label
-										class="">{{sideLittleNeckBack}}{{unitDesc}}</label>
+								<view class="">
+									<label class="title">头枕高度:</label><label
+										class="">
+										<!--{{sideLittleNeckBack}}{{unitDesc}}-->
+										{{sideNeckToHead}}{{unitDesc}}
+									</label>
 								</view>
-								<view class=""><label class="title">颈枕高度:</label><label
-										class="">{{sideLittleBlockBack}}{{unitDesc}}</label>
+								<view class="">
+									<label class="title">颈枕高度:</label><label
+										class="">
+										<!--{{sideLittleBlockBack}}{{unitDesc}}-->
+										{{sideNeckToBack}}{{unitDesc}}
+									</label>
 								</view>
 							</view>
 						</view>
 						<view class="right-side-part">
-							<!-- <view><label class="title">●后背与耳朵:</label>{{sideEarBack}}{{unitDesc}}</view> -->
+						
 							<image class="front2Img" @click="handleFrontClick()"
-								src="../static/camera/SY_09_ButZM01.png" mode="widthFix"></image>
+								src="../../static/camera/SY_09_ButZM01.png" mode="widthFix"></image>
 						</view>
 					</view>
 				</view>
@@ -149,10 +148,10 @@
 					</view>
 					<view>
 						<view class="impress"><label class="title">后背凸点与颈部凹点之间:</label><label
-								class="">{{sideLittleNeckBack}}{{unitDesc}}</label>
+								class="">{{sideNeckToHead}}{{unitDesc}}</label>
 						</view>
 						<view class="impress"><label class="title">后背凸点与后脑勺之间:</label><label
-								class="">{{sideLittleBlockBack}}{{unitDesc}}</label>
+								class="">{{sideNeckToBack}}{{unitDesc}}</label>
 						</view>
 						<view><label class="title">后背凸点与脖子中点之间:</label>{{sideNeckBack}}{{unitDesc}}</view>
 						<view><label class="title">后背凸点与耳朵之间:</label>{{sideEarBack}}{{unitDesc}}</view>
@@ -168,11 +167,6 @@
 				<button class="normal-btn" @click="handleClick">手动微调</button>
 				<button class="save" @click="saveHandler">存储</button>
 			</view>
-			<!-- operate part -->
-			<!-- 		<view class="btn-cnt" style="padding-bottom: 200rpx;">
-			<button type="primary" @click="startSideCamera">{{sideBodyImgUrl==''?'开始测量':'重新测量'}}</button>
-			<button class="save" @click="saveHandler">存储</button>
-		</view> -->
 		</view>
 
 		<!-- 存储设置界面弹窗 -->
@@ -313,7 +307,7 @@
 				},
 				factor: 1,
 				fixedImgWidth: 250,
-				manFactor: 130, // 单位是mm
+				manFactor: 130, // 单位是mm 
 				womenFactor: 100, // 单位是mm
 				unit: 1000, // 100是cm 1000是mm
 				unitDesc: 'mm', // cm
@@ -343,6 +337,8 @@
 				sideBlock: 0.1, // 后脑勺点位
 				sideForward: 'left', // 上传的侧面图朝向
 				markList: [], // 标注点
+				sideNeckToBack: 0,
+				sideNeckToHead: 0
 			}
 		},
 		computed: {
@@ -361,8 +357,8 @@
 				space = Math.floor(space * 0.5)
 				// 测算高度不能低于30mm 不能低于棉花高度
 				space = Math.max(space, 30)
-				// 不高于130mm
-				space = Math.min(space, 130)
+				// 不高于110mm
+				space = Math.min(space, 110)
 				return space
 			},
 			frontLeftNeckPart() {
@@ -415,13 +411,15 @@
 				return space
 			},
 			sideLittleNeckBack() {
+				console.log('this.sideC', this.sideC, this.sideB)
 				let space = Math.abs(this.sideC - this.sideB);
+				console.log('space', space, this.unit, this.factor)
 				space = Math.max(space, 1)
 				space = space * this.unit / this.factor
 				space = space.toFixed(this.toFixed)
 				space = Math.floor(space)
 				space = Math.max(30, space);
-				space = Math.min(130, space);
+				space = Math.min(110, space);
 				return space
 			},
 			sideLittleBlockBack() {
@@ -431,8 +429,19 @@
 				space = space.toFixed(this.toFixed)
 				space = Math.floor(space)
 				space = Math.max(30, space);
-				// 最高不超过130cm
-				space = Math.min(space, 130)
+				// 最高不超过110cm
+				space = Math.min(space, 110)
+				return space
+			},
+			sideNeckToBack() {
+				let space = Math.abs(this.sideA - this.sideC);
+				space = Math.max(space, 1)
+				space = space * this.unit / this.factor
+				space = space.toFixed(this.toFixed)
+				space = Math.floor(space)
+				space = Math.max(30, space);
+				// 最高不超过110cm
+				space = Math.min(space, 110)
 				return space
 			},
 			shoulderPart() {
@@ -470,8 +479,13 @@
 						this.bodyImgOriginHeight = height;
 						this.detecting(this.bodyImgUrl, false)
 					},
-					fail: res => {
-						console.error(res)
+					fail: (error) => {
+						console.error('獲取圖片信息失敗:', error)
+						uni.showToast({
+							title: '獲取圖片信息失敗',
+							icon: 'error',
+							duration: 2000
+						})
 					}
 				})
 			},
@@ -525,8 +539,13 @@
 						this.bodyImgOriginHeight = height;
 						this.detecting(this.sideBodyImgUrl, true)
 					},
-					fail: res => {
-						console.error(res)
+					fail: (error) => {
+						console.error('獲取圖片信息失敗:', error)
+						uni.showToast({
+							title: '獲取圖片信息失敗',
+							icon: 'error',
+							duration: 2000
+						})
 					}
 				})
 			},
@@ -572,8 +591,8 @@
 				console.log('mode:', this.inputName, storageObj)
 				let params = {
 					name: this.inputName,
-					neckHeight: Math.floor(this.sideLittleBlockBack),
-					headHeight: Math.floor(this.sideLittleNeckBack),
+					neckHeight: Math.floor(this.sideNeckToBack),
+					headHeight: Math.floor(this.sideNeckToHead),
 					sideNeckHeight: Math.floor((this.shoulderSpace)),
 					sideHeadHeight: Math.floor((this.frontRightPart))
 				}
@@ -602,16 +621,7 @@
 
 				addStoreAILog(send_params)
 
-
-				// // 判断是否女的
-				// if (form && form.sexIndex) {
-				// 	if (form.sexIndex == 2) {
-				// 		params.sideNeckHeight = (this.shoulderSpace - this.womenFactor) * 0.5
-				// 	}
-				// }
-
 				console.log('params:', this.jumpStudy, params)
-				//
 
 				if (!storageObj) {
 					storageObj = []
@@ -647,20 +657,15 @@
 						}
 						that.jumpStudy = false;
 						console.log('===>that.jumpStudy')
-						// uni.navigateTo({
-						// 	url: "/page_subject/mode/setMode" + object2Query(params)
-						// })
-						// uni.switchTab({
-						// 	url: '/pages/status/status' + object2Query(params)
-						// })
+
 					}
 				})
 			},
 			finishDecting() {
 				// ai 监测结束
 				let params = {
-					neckHeight: Math.floor(this.sideLittleBlockBack),
-					headHeight: Math.floor(this.sideLittleNeckBack),
+					neckHeight: Math.floor(this.sideNeckToBack),
+					headHeight: Math.floor(this.sideNeckToHead),
 					sideNeckHeight: Math.floor((this.shoulderSpace)),
 					sideHeadHeight: Math.floor((this.frontRightPart))
 				}
@@ -729,8 +734,8 @@
 					this.checkMoreStr(data.getSeconds())
 				let orginfo = {
 					name: name,
-					neckHeight: Math.floor(this.sideLittleBlockBack),
-					headHeight: Math.floor(this.sideLittleNeckBack),
+					neckHeight: Math.floor(this.sideNeckToBack),
+					headHeight: Math.floor(this.sideNeckToHead),
 					sideNeckHeight: Math.floor((this.shoulderSpace)),
 					sideHeadHeight: Math.floor((this.frontRightPart))
 				}
@@ -751,16 +756,6 @@
 				//
 				var x = 100
 				var y = 200
-				// this.markList.push({
-				// 	x: 100,
-				// 	y: 200,
-				// 	tips: '12cm'
-				// })
-				// this.markList.push({
-				// 	x: 200,
-				// 	y: 200,
-				// 	tips: '12cm'
-				// })
 				console.log(this.markList)
 			},
 			base64({
@@ -885,7 +880,8 @@
 				console.log('detecting:', tempUrl, isSide)
 
 				const uploadTask = uni.uploadFile({
-					url: 'https://dev.ic1101.top/new_battle/zhBaiduAip',
+					// url: 'https://dev.ic1101.top/new_battle/zhBaiduAip',
+					url: 'https://sleep.zsyl.cc/gpu/api/body-analysis',
 					filePath: tempUrl,
 					name: 'file',
 					formData: {
@@ -893,21 +889,22 @@
 						'user': 'test',
 					},
 					success: (uploadFileRes) => {
+						console.log('uploadFileRes', uploadFileRes)
 						uni.hideLoading()
 						let obj = JSON.parse(uploadFileRes.data)
-						console.log('success', obj)
+						console.log('success---', obj.data)
 						// 如果是侧面图
 						if (isSide) {
-							this.handleSideData(obj, base64)
+							this.handleSideData(obj.data, base64)
 
 							// this.$refs.popupTips.open('center')
 						} else {
-							this.handleFrontData(obj)
+							this.handleFrontData(obj.data)
 						}
 					},
-					fail: () => {
+					fail: (error) => {
 						uni.hideLoading()
-						console.log('fail')
+						console.error('图片上传失败', error)
 					}
 				})
 			},
@@ -956,8 +953,15 @@
 
 				this.sideForward = forward
 				// 上传图片
+				console.log('sideBodyImgUrl', this.sideBodyImgUrl);
+				const par1 = {
+					'rect': [left, top, right, bottom],
+					'face': forward
+				}
+				console.log('par1', par1);
 				const uploadTask = uni.uploadFile({
-					url: 'https://dev.ic1101.top/new_battle/zhPyImgUpload',
+					// url: 'https://dev.ic1101.top/new_battle/zhPyImgUpload',
+					url: 'https://sleep.zsyl.cc/gpu/api/upload-image',
 					filePath: this.sideBodyImgUrl,
 					name: 'file',
 					formData: {
@@ -968,22 +972,24 @@
 					success: (uploadFileRes) => {
 						uni.hideLoading()
 						let obj = JSON.parse(uploadFileRes.data)
-						console.log('success', obj)
-						this.findSideGrayImage(obj.data, left, top, right, bottom, forward)
+						console.log('success[upload_image]', obj)
+						this.findSideGrayImage(obj.data.fileName, left, top, right, bottom, forward)
 					},
-					fail: () => {
+					fail: (error) => {
 						uni.hideLoading()
-						console.log('fail')
+						console.error('侧面图片上传失败:', error)
 					}
 				})
 			},
 			// 查找2值图
 			findSideGrayImage(imageurl, left, top, right, bottom, forward) {
+				console.log('imageUrl', imageurl);
 				uni.showLoading({
 					title: '计算中'
 				})
 				uni.request({
-					url: 'https://dev.ic1101.top/new_battle/zhBaiduBodySeg',
+					// url: 'https://dev.ic1101.top/new_battle/zhBaiduBodySeg',
+					url: 'https://sleep.zsyl.cc/gpu/api/body-segmentation',
 					header: {
 						'content-type': 'application/x-www-form-urlencoded'
 					},
@@ -995,44 +1001,21 @@
 					success: (res) => {
 						uni.hideLoading()
 						console.log('zhBaiduBodySeg success:', res)
-						let gray_url = res.data.data
+						let gray_url = res.data.data.binary_mask_path
 						this.findSideInfo(gray_url, left, top, right, bottom, forward)
 						// this.uploadGray2Python(grayBase64, left, top, right, bottom, forward)
 					},
-					fail: (res) => {
+					fail: (error) => {
 						uni.hideLoading()
-						console.log('fail:', res)
+						console.error('身体分割API失败:', error)
 					}
 				})
 			},
 			// 上传2值base64到python服务器
 			uploadGray2Python(grayBase64, left, top, right, bottom, forward) {
-				// uni.request({
-				// 	url: 'https://dev.ic1101.top/new_battle/zhPyImgUpload',
-				// 	header: {
-				// 		'content-type': 'multipart/form-data'
-				// 	},
-				// 	data: {
-				// 		'fileName': grayBase64,
-				// 		'rect': [left, top, right, bottom],
-				// 		'face': forward
-				// 	},
-				// 	method: 'POST',
-				// 	success: (res) => {
-				// 		console.log('uploadGray2Python success:', res)
-				// 		let obj = JSON.parse(res.data)
-				// 		// this.findSideGrayImage(obj.data)
-				// 		this.findSideInfo(obj.data, left, top, right, bottom, forward)
-				// 		// let grayBase64 = res.data.data
-				// 		// this.uploadGray2Python(grayBase64, left, top, right, bottom, forward)
-				// 	},
-				// 	fail: (res) => {
-				// 		console.log('fail:', res)
-				// 	}
-				// })
-				// return
 				const uploadTask = uni.uploadFile({
-					url: 'https://dev.ic1101.top/new_battle/zhPyImgUpload',
+					// url: 'https://dev.ic1101.top/new_battle/zhPyImgUpload',
+					url: 'https://sleep.zsyl.cc/gpu/api/upload-image',
 					files: [{
 						file: grayBase64,
 						name: 'test',
@@ -1049,21 +1032,9 @@
 						console.log('uploadGray2Python success', obj)
 						// this.findSideGrayImage(obj.data)
 						this.findSideInfo(obj.data, left, top, right, bottom, forward)
-						// if (isSide) {
-						// 	this.handleSideData(obj, base64)
-						// } else {
-						// 	this.handleFrontData(obj)
-						// }
-
-						// uni.showToast({
-						// 	title: '肩宽约:' + space + 'm',
-						// 	icon: 'none', //如果要纯文本，不要icon，将值设为'none'
-						// 	duration: 5000 //持续时间为 2秒
-						// })
-
 					},
-					fail: () => {
-						console.log('fail')
+					fail: (error) => {
+						console.error('上传失败:', error)
 					}
 				})
 			},
@@ -1072,8 +1043,10 @@
 				uni.showLoading({
 					title: '加载中'
 				})
+	
 				uni.request({
-					url: 'https://dev.ic1101.top/new_battle/zhPyExec',
+					// url: 'https://dev.ic1101.top/new_battle/zhPyExec',
+					url: 'https://sleep.zsyl.cc/gpu/api/neck-detection',
 					header: {
 						'content-type': 'application/x-www-form-urlencoded'
 					},
@@ -1086,111 +1059,80 @@
 					dataType: 'json',
 					success: (res) => {
 						uni.hideLoading()
-						console.log('success:', res)
-						let result = res.data
-						let point = result.data;
-						let points = point.split(',')
+						console.log('success[neck-detection]:', res)
+						let result = res.data.data
+						console.log('result', result);
+						// let point = result.data;
+						// let points = point.split(',')
 						// 后脑勺为止
 						// let lower = [points[0], point[1]]
-						this.sideBlock = points[0]
+						// this.sideBlock = result.back_point
 						// 最低点为止
-						this.sideLower = points[2]
+						// this.sideLower = result.neck_point
+						
+						const headPoint = result.head_point
+						const neckPoint = result.neck_point
+						const backPoint = result.back_point
+						// const otherPoint = result.input_rect
+						
+						this.sideNeckToBack = result.distances_mm.neck_to_back_x_distance_mm
+						this.sideNeckToHead = result.distances_mm.neck_to_head_x_distance_mm
+						
+						this.sideB = headPoint[0];
+						this.sideA = neckPoint[0];
+						this.sideC = backPoint[0];
 
-						this.sideB = points[6];
-						this.sideA = points[2];
-						this.sideC = points[8];
-
-
+						console.log('后脑勺', this.bodyImgOriginWidth, this.fixedImgWidth, headPoint[0], (this.fixedImgWidth * headPoint[0] / this
+								.bodyImgOriginWidth))
 						// 后脑勺
-						this.$set(this.headPointWrapStyle, '--left', (this.fixedImgWidth * points[0] / this
+						this.$set(this.headPointWrapStyle, '--left', (this.fixedImgWidth * headPoint[0] / this
+								.bodyImgOriginWidth) + 'px')
+						this.$set(this.headPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(headPoint[1] -
+								this.bodyImgOriginHeight) / this.bodyImgOriginWidth) + 'px')
+						// 脖颈最低
+						this.$set(this.neckPointWrapStyle, '--left', (this.fixedImgWidth * neckPoint[0] / this
+								.bodyImgOriginWidth) + 'px')
+						this.$set(this.neckPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(neckPoint[1] -
+								this.bodyImgOriginHeight) / this.bodyImgOriginWidth) + 'px')
+
+						// 后背坐标
+						this.$set(this.backPointWrapStyle, '--left', (this.fixedImgWidth * backPoint[0] / this
 								.bodyImgOriginWidth) +
 							'px')
-						this.$set(this.headPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(points[
+						this.$set(this.backPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(backPoint[
 									1] -
 								this
 								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
 							'px')
-						// 脖颈最低
-						this.$set(this.neckPointWrapStyle, '--left', (this.fixedImgWidth * points[2] / this
-								.bodyImgOriginWidth) +
-							'px')
-						this.$set(this.neckPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(points[
-									3] -
-								this
-								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
-							'px')
 
-						// 后背坐标
-						this.$set(this.backPointWrapStyle, '--left', (this.fixedImgWidth * points[4] / this
-								.bodyImgOriginWidth) +
-							'px')
-						this.$set(this.backPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(points[
-									5] -
-								this
-								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
-							'px')
+						// // 颈部上坐标
+						// this.$set(this.backUpPointWrapStyle, '--left', (this.fixedImgWidth * otherPoint[0] / this
+						// 		.bodyImgOriginWidth) +
+						// 	'px')
+						// this.$set(this.backUpPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(otherPoint[
+						// 			1] -
+						// 		this
+						// 		.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
+						// 	'px')
 
-						// 颈部上坐标
-						this.$set(this.backUpPointWrapStyle, '--left', (this.fixedImgWidth * points[6] / this
-								.bodyImgOriginWidth) +
-							'px')
-						this.$set(this.backUpPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(points[
-									7] -
-								this
-								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
-							'px')
-
-						// 颈部下坐标
-						this.$set(this.backDownPointWrapStyle, '--left', (this.fixedImgWidth * points[8] / this
-								.bodyImgOriginWidth) +
-							'px')
-						this.$set(this.backDownPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(
-								points[
-									9] -
-								this
-								.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
-							'px')
-
-						// let block = [points[2], point[3]]
-						console.log('points:', points)
+						// // 颈部下坐标
+						// this.$set(this.backDownPointWrapStyle, '--left', (this.fixedImgWidth * otherPoint[2] / this
+						// 		.bodyImgOriginWidth) +
+						// 	'px')
+						// this.$set(this.backDownPointWrapStyle, '--bottom', (this.fixedImgWidth * Math.abs(
+						// 		otherPoint[3] -
+						// 		this
+						// 		.bodyImgOriginHeight) / this.bodyImgOriginWidth) +
+						// 	'px')
+						// console.log('points:', points)
 
 						this.$refs.popupTips.open('center')
 
 						this.finishDecting();
 					},
-					fail: (res) => {
+					fail: (error) => {
 						uni.hideLoading()
-						console.log('fail:', res)
-					}
-				})
-				return
-				const uploadTask = uni.uploadFile({
-					url: 'https://dev.ic1101.top/new_battle/zhPyExec',
-					filePath: '',
-					name: 'file',
-					formData: {
-						'rect': [left, top, right, bottom],
-						'face': forward
-					},
-					success: (uploadFileRes) => {
-						uni.hideLoading()
-						let obj = JSON.parse(uploadFileRes.data)
-						console.log('success', obj)
-						// if (isSide) {
-						// 	this.handleSideData(obj, base64)
-						// } else {
-						// 	this.handleFrontData(obj)
-						// }
-
-						// uni.showToast({
-						// 	title: '肩宽约:' + space + 'm',
-						// 	icon: 'none', //如果要纯文本，不要icon，将值设为'none'
-						// 	duration: 5000 //持续时间为 2秒
-						// })
-
-					},
-					fail: () => {
-						console.log('fail')
+						console.error('颈部检测API失败:', error)
 					}
 				})
 			},
@@ -1234,19 +1176,19 @@
 
 				let speSpace = 120
 				// 判断是否女的
-				if (form && form.sexIndex) {
-					if (form.sexIndex == 2) {
-						speSpace = 100;
-					}
-				}
+				// if (form && form.sexIndex) {
+				// 	if (form.sexIndex == 2) {
+				// 		speSpace = 100;
+				// 	}
+				// }
 
 				this.shoulderSpace = Math.floor(space)
 				this.shoulderSpace = (this.shoulderSpace * 0.5 - speSpace) * 1;
 				this.shoulderSpace = this.shoulderSpace.toFixed(0)
 				// 不低于30mm
 				this.shoulderSpace = Math.max(this.shoulderSpace, 30)
-				// 不高于130mm
-				this.shoulderSpace = Math.min(this.shoulderSpace, 130)
+				// 不高于110mm
+				this.shoulderSpace = Math.min(this.shoulderSpace, 110)
 
 				space = Math.abs(this.frontLeftEarX - this.frontRightEarX);
 				space = space * this.unit / this.factor
@@ -1254,7 +1196,7 @@
 				space = space.toFixed(3)
 
 				this.headSpace = space;
-				// console.log('this.shoulderSpace:', this.shoulderSpace, space, 1, space + 1)
+				
 				// 左肩
 				this.$set(this.shoulderLeftWrapStyle, '--left', (this.fixedImgWidth * rightShoulder / this
 						.bodyImgOriginWidth) +
