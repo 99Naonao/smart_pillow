@@ -15,7 +15,7 @@
 					<image mode="widthFix" :src="checkConnectList(item)"></image>
 				</view>
 				<view class="connect-btn" @click="disconnectBlueToothHandler(item)"
-					v-if="item.deviceId == currentDeviceId">断开连接</view>
+					v-if="isConnected && item.deviceId == currentDeviceId">断开连接</view>
 				<view class="connect-btn" @click="connectBlueToothSleepHandler(item)" v-else>连接</view>
 			</view>
 		</view>
@@ -93,6 +93,8 @@
 			this.refreshDeviceList();
 
 			this.onShowing = true;
+			// 初始化连接状态
+			this.isConnected = blue_class.getInstance().loginSuccess;
 			let app = getApp();
 			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 80) + 'px');
 
@@ -122,7 +124,15 @@
 				}
 			}
 			uni.$on('xx', this.handleMessage)
-			uni.$on('bluetooth_status_change', this.handleDisconnect)
+			uni.$on('bluetooth_status_change', ()=>{
+				this.handleDisconnect();
+				// 根據全局狀態同步當前設備ID，便於按鈕顯示
+				if (blue_class.getInstance().loginSuccess) {
+					this.currentDeviceId = blue_class.getInstance().deviceId;
+				} else {
+					this.currentDeviceId = '';
+				}
+			})
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
 			// uni.onBLECharacteristicValueChange(this.handleMessage)
 		},
@@ -158,20 +168,30 @@
 				// deviceIdList: [], // 检测列表
 				testName: '测试专用',
 				connectList: [], // 连接列表
+				isConnected: false, // 连接状态
 			}
 		},
 		methods: {
 			// 处理蓝牙断开连接
 			handleDisconnect() {
+				console.log('handleDisconnect 被调用，当前 loginSuccess:', blue_class.getInstance().loginSuccess);
 				// 检查是否真的断开了
 				if (!blue_class.getInstance().loginSuccess) {
 					console.log('工作页面检测到蓝牙断开');
+					
+					// 更新连接状态
+					this.isConnected = false;
+					console.log('设置 isConnected = false');
 					
 					// 清空设备列表
 					this.deviceIdList = [];
 					
 					// 停止搜索
 					this.stopBlueTooth();
+				} else {
+					// 连接成功时也更新状态
+					this.isConnected = true;
+					console.log('工作页面检测到蓝牙连接，设置 isConnected = true');
 				}
 			},
 			disconnectBlueToothHandler(item) {
@@ -189,6 +209,12 @@
 						}
 						that.currentDeviceId = '';
 						blue_class.getInstance().deviceId = '';
+						blue_class.getInstance().deviceName = '';
+						blue_class.getInstance().loginSuccess = false;
+						console.log('手动断开：设置 loginSuccess = false，准备触发事件');
+						// 触发连接状态变化事件，通知页面更新
+						uni.$emit('bluetooth_status_change');
+						console.log('手动断开：已触发 bluetooth_status_change 事件');
 						uni.showModal({
 							title: '蓝牙断开提示',
 							content: `设备${item.name}已断开连接`,
@@ -371,12 +397,13 @@
 
 			},
 			handleMessage(res) {
-				if (this.onShowing) {
-
-				} else {
-					console.log('[no showing]')
-					return;
-				}
+				// 移除 onShowing 检查，确保握手流程能正常进行
+				// if (this.onShowing) {
+				// } else {
+				// 	console.log('[no showing]')
+				// 	return;
+				// }
+				console.log('handleMessage 被调用，当前 onShowing:', this.onShowing)
 				console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
 				let arrayBuffer = new Uint8Array(res.value);
 				let mark = arrayBuffer[0];
@@ -412,9 +439,15 @@
 						// console.log('校验长度', parseInt('0x' + len))
 						console.log('握手成功可以发送ssid了')
 						blue_class.getInstance().loginSuccess = true
+						console.log('设置 loginSuccess = true，当前状态:', blue_class.getInstance().loginSuccess)
+
+						// 触发连接状态变化事件，通知页面更新
+						console.log('触发 bluetooth_status_change 事件')
+						uni.$emit('bluetooth_status_change');
 
 						// 连接成功，跳转调整界面
 						nextTick(() => {
+							console.log('准备跳转到首页')
 							this.showAdjustHandler()
 						})
 						// blue_class.getInstance().write2tooth(this.characteristicStringId,
@@ -748,6 +781,17 @@
 					blue_class.getInstance().deviceId = 'deviceId';
 					blue_class.getInstance().deviceName = this.testName;
 					blue_class.getInstance().loginSuccess = true;
+					
+					// 同步當前已連接設備ID，便於按鈕狀態即時切換
+					this.currentDeviceId = 'deviceId';
+					
+					// 更新连接状态
+					this.isConnected = true;
+					
+					// 测试模式下也需要触发状态更新事件
+					console.log('测试模式：触发 bluetooth_status_change 事件')
+					uni.$emit('bluetooth_status_change');
+					
 					this.showAdjustHandler();
 					return;
 				}
@@ -764,11 +808,17 @@
 						this.stopBlueTooth();
 						app.globalData.deviceId = deviceId;
 
-						blue_class.getInstance().deviceId = deviceId;
-						blue_class.getInstance().deviceName = item.name;
+					blue_class.getInstance().deviceId = deviceId;
+					blue_class.getInstance().deviceName = item.name;
+					// 不要在这里设置 loginSuccess = true，让握手流程正常进行
 
-
-						console.log('connectBluetooth success!:', deviceId, res)
+					console.log('connectBluetooth success!:', deviceId, res)
+					console.log('连接成功，设备信息已设置，等待握手...')
+					
+					// 更新连接状态（物理连接已建立）
+					this.isConnected = true;
+					// 同步當前已連接設備ID，便於按鈕狀態即時切換
+					this.currentDeviceId = deviceId;
 
 
 						uni.getBLEDeviceServices({

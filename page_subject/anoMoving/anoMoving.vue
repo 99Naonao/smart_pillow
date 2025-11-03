@@ -332,8 +332,7 @@
 					uni.showModal({
 						title: '睡姿提醒',
 						content: '请保持仰卧姿势后再启动脊柱微调功能',
-						showCancel: true,
-						cancelText: '取消',
+						showCancel: false,
 						confirmText: '我知道了',
 						success: (res) => {
 							if (res.confirm) {

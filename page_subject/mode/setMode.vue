@@ -236,12 +236,64 @@
 		},
 		methods: {
 			navJustHandle() {
-				if (!this.selectItem) {
-					uni.showToast({
-						title: '未选择模式数据！'
-					})
+				// 先检查蓝牙连接状态
+				if (!blue_class.getInstance().loginSuccess) {
+					uni.showModal({
+						title: '未连接枕头',
+						content: '请先连接枕头后再进行手动微调',
+						showCancel: false,
+						confirmText: '我知道了'
+					});
 					return;
 				}
+				
+				// 先检查是否选择了模式
+				if (!this.selectItem || !this.selectItem.name) {
+					// 检查是否有上次使用的模式
+					const lastMode = uni.getStorageSync('lastMode');
+					
+					if (lastMode && lastMode.name) {
+						// 显示确认弹窗
+						uni.showModal({
+							title: '使用上次模式',
+							content: '检测到您上次使用的模式是"' + lastMode.name + '"，是否使用该模式进行手动微调？',
+							showCancel: true,
+							success: (res) => {
+								if (res.confirm) {
+									// 使用上次模式
+									this.selectItem = lastMode;
+									this.navigateToAdjust();
+								}
+							}
+						});
+					} else if (this.modeList && this.modeList.length > 0) {
+						// 没有上次模式，但列表中有模式，询问是否使用第一个模式
+						const firstMode = this.modeList[0];
+						uni.showModal({
+							title: '使用列表模式',
+							content: '检测到您有保存的模式"' + firstMode.name + '"，是否使用该模式进行手动微调？',
+							showCancel: true,
+							success: (res) => {
+								if (res.confirm) {
+									// 使用第一个模式
+									this.selectItem = firstMode;
+									this.navigateToAdjust();
+								}
+							}
+						});
+					} else {
+						uni.showToast({
+							title: '请您先选择已有模式后再点击手动微调！'
+						});
+					}
+					return;
+				}
+				
+				// 已选择模式，直接跳转
+				this.navigateToAdjust();
+			},
+			// 跳转到手动微调页面的方法
+			navigateToAdjust() {
 				if (!this.selectItem.headHeight && !this.selectItem.neckHeight) {
 					uni.showToast({
 						title: '模式数据不合理！'

@@ -170,12 +170,62 @@
 		},
 		methods: {
 			restartHandle() {
-				let arraybuffer = restartPillow(77);
-				blue_class.getInstance().write2tooth(arraybuffer)
+				// 检查枕头是否连接
+				if (!blue_class.getInstance().loginSuccess) {
+					uni.showModal({
+						title: '提示',
+						content: '请先连接枕头设备',
+						showCancel: false,
+						confirmText: '我知道了'
+					});
+					return;
+				}
+				
+				uni.showModal({
+					title: '警告',
+					content: '设备重启为专业操作，非专业人士請勿进行此操作。確定要重启设备吗？',
+					confirmText: '确定重启',
+					cancelText: '取消',
+					success: (res) => {
+						if (res.confirm) {
+							let arraybuffer = restartPillow(77);
+							blue_class.getInstance().write2tooth(arraybuffer);
+							uni.showToast({
+								title: '设备重启指令已发送',
+								icon: 'success'
+							});
+						}
+					}
+				});
 			},
 			resetHandle() {
-				let reset_data = resetPillow(88);
-				blue_class.getInstance().write2tooth(reset_data)
+				// 检查枕头是否连接
+				if (!blue_class.getInstance().loginSuccess) {
+					uni.showModal({
+						title: '提示',
+						content: '请先连接枕头设备',
+						showCancel: false,
+						confirmText: '我知道了'
+					});
+					return;
+				}
+				
+				uni.showModal({
+					title: '警告',
+					content: '设备校准为专业操作，非专业人士请勿进行此操作。確定要校准设备吗？',
+					confirmText: '确定校准',
+					cancelText: '取消',
+					success: (res) => {
+						if (res.confirm) {
+							let reset_data = resetPillow(88);
+							blue_class.getInstance().write2tooth(reset_data);
+							uni.showToast({
+								title: '设备校准指令已发送',
+								icon: 'success'
+							});
+						}
+					}
+				});
 			},
 			sleepQuestions(){
 				uni.navigateTo({

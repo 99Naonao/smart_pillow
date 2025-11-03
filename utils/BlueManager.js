@@ -156,32 +156,61 @@ class blue_class {
 		uni.onBLEConnectionStateChange(function(res) {
 			// 该方法回调中可以用于处理连接意外断开等异常情况
 			console.log(`device ${res.deviceId} state has changed, connected: ${res.connected}`)
-			if (res.deviceId == that.deviceId) {
-				that.loginSuccess = false; // 连接成功
-				that.deviceId = '';
-				that.deviceName = '';
-				//清空缓存
-				uni.$emit('bluetooth_status_change')
-				if(!that.manualDisconnecting){
-					uni.showModal({
-						title:'蓝牙断开提示',
-						content:'设备蓝牙意外断开，是否回到首页重新连接蓝牙？',
-						showCancel:'稍后',
-						confirmText:'回到首页',
-						success:(res)=>{
-							if(res.confirm){
-								uni.switchTab({
-									url:'/pages/status/status'
-								})
-							}else if(res.cancel){
-								console.log('用户选择了稍后处理');
-							}
-						}
-					})
-				}else{
-					console.log('检测到手动断开，跳过意外断开提示');
+			// 兼容：若还未记录deviceId，但收到已连接事件，则补记并广播
+			if (res.connected) {
+				if (!that.deviceId) {
+					that.deviceId = res.deviceId;
 				}
+				// 连接成功
+				console.log('蓝牙设备连接成功');
+				that.loginSuccess = true;
+				// 连接成功时重置手动断开标记
 				that.manualDisconnecting = false;
+				// 触发连接状态变化事件，通知页面更新
+				uni.$emit('bluetooth_status_change');
+				return;
+			}
+			// 断开仅在为当前记录设备时生效，避免误判其他设备
+			if (res.deviceId == that.deviceId) {
+				if (res.connected) {
+					// 连接成功
+					console.log('蓝牙设备连接成功');
+					that.loginSuccess = true;
+					// 连接成功时重置手动断开标记
+					that.manualDisconnecting = false;
+					// 触发连接状态变化事件，通知页面更新
+					uni.$emit('bluetooth_status_change');
+				} else {
+					// 连接断开
+					console.log('蓝牙设备连接断开');
+					that.loginSuccess = false;
+					that.deviceId = '';
+					that.deviceName = '';
+					//清空缓存
+					uni.$emit('bluetooth_status_change')
+					
+					if(!that.manualDisconnecting){
+						uni.showModal({
+							title:'蓝牙断开提示',
+							content:'设备蓝牙意外断开，是否回到首页重新连接蓝牙？',
+							showCancel:'稍后',
+							confirmText:'回到首页',
+							success:(res)=>{
+								if(res.confirm){
+									uni.switchTab({
+										url:'/pages/status/status'
+									})
+								}else if(res.cancel){
+									console.log('用户选择了稍后处理');
+								}
+							}
+						})
+					}else{
+						console.log('检测到手动断开，跳过意外断开提示');
+					}
+					// 断开后重置手动断开标记
+					that.manualDisconnecting = false;
+				}
 			}
 		})
 	}

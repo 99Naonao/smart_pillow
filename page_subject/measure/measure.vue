@@ -11,6 +11,9 @@
 			<view class="info-btn" @click="measureHandler">
 				开始测量
 			</view>
+			<view class="skip-btn" @click="skipMeasureHandler">
+				跳过测量，前往使用默认高度
+			</view>
 		</view>
 	</view>
 	<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" border-radius="40rpx 40rpx 0rpx 0rpx"
@@ -156,6 +159,12 @@
 			},
 			saveHandler() {
 				this.$refs.ppp.close()
+			},
+			// 跳过测量，跳转到默认数据页面
+			skipMeasureHandler() {
+				uni.navigateTo({
+					url: '/page_subject/mode/mode'
+				})
 			}
 		}
 	}
@@ -207,18 +216,47 @@
 
 
 	.info-btn {
-		background-color: #4281c1;
+		background: linear-gradient(135deg, #4281c1, #5a9bd4);
 		margin: 0 auto;
 		color: white;
-		width: 400rpx;
+		width: 450rpx;
 		text-align: center;
-		font-size: 40rpx;
-		padding: 30rpx;
-		line-height: 60rpx;
-		padding-left: 50rpx;
-		padding-right: 50rpx;
-		border-radius: 15rpx;
+		font-size: 36rpx;
+		font-weight: 500;
+		padding: 32rpx 50rpx;
+		line-height: 1.2;
+		border-radius: 25rpx;
 		margin-top: 50rpx;
+		box-shadow: 0 8rpx 20rpx rgba(66, 129, 193, 0.3);
+		transition: all 0.3s ease;
+	}
+
+	.info-btn:active {
+		transform: translateY(2rpx);
+		box-shadow: 0 4rpx 12rpx rgba(66, 129, 193, 0.4);
+	}
+
+	.skip-btn {
+		background-color: rgba(255, 255, 255, 0.9);
+		margin: 0 auto;
+		color: #666;
+		width: 450rpx;
+		text-align: center;
+		font-size: 32rpx;
+		font-weight: 400;
+		padding: 28rpx 50rpx;
+		line-height: 1.2;
+		border-radius: 25rpx;
+		margin-top: 30rpx;
+		border: 2rpx solid #e0e0e0;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+		transition: all 0.3s ease;
+	}
+
+	.skip-btn:active {
+		transform: translateY(2rpx);
+		background-color: rgba(248, 248, 248, 0.9);
+		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 	}
 
 

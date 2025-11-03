@@ -651,6 +651,8 @@
 								url: "/page_subject/study/study"
 							})
 						} else {
+							// 设置模式发送成功标记，以便status页面调用checkModeSentCompleted()
+							uni.setStorageSync('mode_sent_success', true);
 							uni.switchTab({
 								url: "/pages/status/status"
 							})

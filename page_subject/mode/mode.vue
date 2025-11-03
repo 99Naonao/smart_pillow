@@ -27,8 +27,8 @@
 				</view>
 			</view>
 		</view>
-		<view v-if="selectItem.headHeight" class="send-btn" @click.stop="sendItemHandler()">
-			发送
+		<view v-if="selectItem.headHeight" class="send-btn" :class="{'sending': isSending}" @click.stop="sendItemHandler()">
+			发送数据到枕头
 		</view>
 		<view class="kv" @click="navHandle">
 			<image class="kv-img" mode="widthFix" :src="'../static/mode/SY_04A_bg01.png'"></image>
@@ -122,24 +122,6 @@
 	import {
 		addUseLog
 	} from '../../utils/miniapp'
-	// import {
-	// 	object2Query,
-	// 	parsePillowRealState,
-	// 	handPillowStatus,
-	// 	handPillowSideState,
-	// 	handPillowFrontState,
-	// 	handlePillowDelayState,
-	// 	hexStringToArrayBuffer,
-	// 	ab2hex,
-	// 	resetPillow,
-	// 	uploadDataRequest,
-	// 	initPillow,
-	// 	changeAdjustMode,
-	// 	changeSaveAdjustMode,
-	// 	hand1Shake,
-	// 	write2tooth,
-	// 	parsePillowState
-	// } from '@/common/util.js'
 	export default {
 		components: {
 			InputView
@@ -171,6 +153,7 @@
 				standard: {},
 				selectItem: {},
 				pillowName: '',
+				isSending: false, // 是否正在发送数据
 				options1: [{
 					text: '删除',
 					style: {
@@ -240,6 +223,10 @@
 				// }
 			},
 			sendItemHandler() {
+				if(this.isSending) {
+					return; // 如果正在发送，直接返回
+				}
+				
 				if(!blue_class.getInstance().loginSuccess){
 					uni.showModal({
 						title:"未连接枕头提示",
@@ -248,6 +235,10 @@
 					});
 					return;
 				}
+				
+				// 开始发送状态
+				this.isSending = true;
+				
 				addUseLog(this.selectItem);
 				console.log("mode已连接至枕头，发送数据",JSON.stringify(this.selectItem))
 				
@@ -279,13 +270,61 @@
 				this.selectItem.neckHeight > 100 ? 100 : neckSafeHeight, 200, 
 				this.selectItem.sideHeadHeight > 100 ? 100 : sideHeadSafeHeight, 
 				this.selectItem.sideNeckHeight >100 ?100 :sideNeckSafeHeight, 200);
+				
+				// 发送数据到枕头
 				blue_class.getInstance().write2tooth(init_arraybuffer);
 
 				// uni.setStorageSync('mode_switch_flag', true); // 旧标记逻辑，已改为切换时即停，保留为屏蔽
 
-				uni.switchTab({
-					url: "/pages/status/status"
-				})
+				// 增加交互感
+				setTimeout(() => {
+					uni.showLoading({
+						title: '数据发送中',
+						mask: true
+					});
+					
+					this.isSending = false;
+					
+					// 延迟跳转，让用户看到成功提示
+					setTimeout(() => {
+						uni.hideLoading();
+						uni.setStorageSync('mode_sent_success', true)
+						
+						// 将发送的模式添加到"我的数据"中
+						this.addToMyMode(this.selectItem);
+						
+						uni.switchTab({
+							url: "/pages/status/status"
+						});
+					}, 3000);
+				}, 500); // 3秒后完成发送
+			},
+			// 将模式添加到"我的数据"中
+			addToMyMode(modeItem) {
+				try {
+					// 获取现有的"我的数据"列表
+					let myModeList = uni.getStorageSync('myMode');
+					let modes = myModeList ? JSON.parse(myModeList) : [];
+					
+					// 检查是否已存在相同名称的模式
+					const existingIndex = modes.findIndex(item => item.name === modeItem.name);
+					
+					if (existingIndex >= 0) {
+						// 如果已存在，更新数据
+						modes[existingIndex] = { ...modeItem };
+						console.log('更新已存在的模式:', modeItem.name);
+					} else {
+						// 如果不存在，添加新模式
+						modes.push({ ...modeItem });
+						console.log('添加新模式到我的数据:', modeItem.name);
+					}
+					
+					// 保存更新后的列表
+					uni.setStorageSync('myMode', JSON.stringify(modes));
+					console.log('我的数据已更新，当前模式数量:', modes.length);
+				} catch (error) {
+					console.error('添加模式到我的数据失败:', error);
+				}
 			},
 			// 发送模式设置
 			sendHandler(item) {
@@ -345,8 +384,11 @@
 			},
 			navHandle() {
 				if (!this.selectItem.headHeight && !this.selectItem.neckHeight) {
-					uni.showToast({
-						title: '未选择模式数据！'
+					console.log("未选择默认数据");
+					uni.showModal({
+						title:"默认数据未选择提示",
+						content:"请选择成年男性、成年女性、10-15岁儿童其中一个默认数据进行手动微调",
+						showCancel:false
 					})
 					return;
 				}
@@ -383,6 +425,12 @@
 			padding-left: 50rpx;
 			padding-right: 50rpx;
 			border-radius: 25rpx;
+			transition: all 0.3s ease;
+			
+			&.sending {
+				background-color: #8a9bb5;
+				opacity: 0.8;
+			}
 		}
 
 		.kv {

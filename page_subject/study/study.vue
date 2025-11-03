@@ -19,13 +19,13 @@
 			</view>
 			<view class="title">
 				<view class="" v-if="status==0">
-					枕头空闲学习
+					请保持枕头空闲
 				</view>
 				<view class="" v-if="status==1">
-					枕头仰卧学习
+					请保持仰卧躺在枕头上
 				</view>
 				<view class="" v-if="status==2">
-					枕头侧卧学习
+					请保持侧卧躺在枕头上
 				</view>
 				<view class="" v-if="status==3">
 					学习完成!
@@ -48,7 +48,7 @@
 		</view>
 		<view class="info">
 			<view class="info-btn" v-if="status==3" @click="successHandler">
-				学习完毕
+				学习完毕，返回首页
 			</view>
 			<view class="info-btn" v-else @click="measureHandler">
 				开始学习
@@ -98,6 +98,8 @@
 				addStudyLog({
 					status: this.status
 				})
+				// 设置学习完成标记
+				uni.setStorageSync('study_completed', true)
 				uni.switchTab({
 					url: "/pages/status/status"
 				})

@@ -434,6 +434,9 @@
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
 						.initSideNeckHeight, 2);
 
+					// 设置手动微调完成标记（取消也算完成流程）
+					uni.setStorageSync('manual_adjust_completed', true)
+					
 					// 跳转首页
 					uni.switchTab({
 						url: '/pages/status/status'
@@ -512,6 +515,8 @@
 						.initSideNeckHeight, 2);
 
 					let inputName = this.inputName;
+					// 设置手动微调完成标记（只有真正保存了数据才算完成）
+					uni.setStorageSync('manual_adjust_completed', true)
 					uni.showToast({
 						title: '保存中',
 						success() {

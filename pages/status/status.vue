@@ -1,5 +1,21 @@
 <template>
 	<view class="main" v-if="hasLogin">
+		<!-- 引导悬浮提示已移除 -->
+		<!-- 悬浮球：位于"头枕高度"下方、"脊柱微调"上方，可拖拽，只在模式发送成功后显示 -->
+		<view
+			v-if="showFloatingBall"
+			class="floating-ball"
+			:style="{ left: floatX + 'rpx', top: floatY + 'rpx' }"
+			@touchstart="onFloatStart"
+			@touchmove.stop.prevent="onFloatMove"
+			@touchend="onFloatEnd"
+			@click.stop="onFloatClick"
+		>
+			<view class="float-label">
+				<text>手动</text>
+				<text>微调</text>
+			</view>
+		</view>
 		<view class="bg" :style="menuInfo">
 			<image mode="widthFix" class="backimg" src="../../static/index/SY_00A_001.jpg"></image>
 			<view class="logoleft">
@@ -50,7 +66,7 @@
 				</view>
 				<view class="item" @click="aiHandler()">
 					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
-					<label class="title" for="">AI检测</label>
+					<label class="title" for="">AI拍照</label>
 					<image class="icon2" src="../../static/index/SY_00A_IconAI.png" mode="widthFix"></image>
 					<!-- <label class="desc" for="">未连接</label> -->
 				</view>
@@ -105,7 +121,8 @@
 	import {
 		nextTick
 	} from 'vue';
-	import blue_class from '../../utils/BlueManager';
+  import blue_class from '../../utils/BlueManager';
+  import { object2Query } from '@/common/util.js'
 	import {
 		getappVersion
 	} from '../../utils/miniapp';
@@ -236,6 +253,11 @@
 				lastHeadHeight: 0, // 记录最后一次头枕高度
 				isInitialized: false, // 标记是否已初始化
 				isSpineAdjusting: false, // 是否正在进行脊柱调整
+				// 顶部引导悬浮提示已移除
+				// 悬浮球
+				showFloatingBall: false, // 是否显示悬浮球，只在模式发送成功后显示
+				floatX: 600, // 默认靠右
+				floatY: 1000, // 头枕高度下方、状态区上方
 			}
 		},
 
@@ -250,6 +272,17 @@
 
 			uni.$on('update_pillow_info', this.updateInfo);
 			this.updateInfo()
+			// 引导悬浮提示已移除
+			
+			// 检查是否学习完成，显示弹窗
+			this.checkStudyCompleted()
+			// 检查手动微调是否完成，显示弹窗
+			this.checkManualAdjustCompleted()
+			// 检查模式发送完成，提示可使用悬浮球手动微调
+			this.checkModeSentCompleted()
+			
+			// 检查悬浮球显示状态
+			this.checkFloatingBallStatus()
 
 			let app = getApp();
 			this.$set(this.menuInfo, '--menuButtonTop', (app.globalData.top + 120) + 'px');
@@ -363,6 +396,113 @@
 		},
 
 		methods: {
+			// 已移除引导气泡
+			onFloatStart(e){
+				this._floatStart = e.touches[0];
+				this._floatOrigin = { x: this.floatX, y: this.floatY };
+			},
+			onFloatMove(e){
+				if(!this._floatStart) return;
+				const t = e.touches[0];
+				const dx = t.clientX - this._floatStart.clientX;
+				const dy = t.clientY - this._floatStart.clientY;
+				const ratio = uni.getSystemInfoSync().windowWidth / 750;
+				this.floatX = Math.max(20, Math.min(750-100, this._floatOrigin.x + dx/ratio));
+				this.floatY = Math.max(600, Math.min(1000, this._floatOrigin.y + dy/ratio));
+			},
+			onFloatEnd(){
+				this._floatStart = null;
+				try{uni.setStorageSync('status_float_pos', {x:this.floatX,y:this.floatY});}catch(err){}
+			},
+			onFloatClick(){
+				// 首页悬浮球点击：优先使用 lastMode，没有则尝试 myMode[0]，都没有跳转到 setMode
+				try{
+					const lastMode = uni.getStorageSync('lastMode');
+					if(lastMode && lastMode.name){
+						uni.navigateTo({ url: '/page_subject/adjust/adjust' + object2Query(lastMode) });
+						return;
+					}
+					const myModeStr = uni.getStorageSync('myMode');
+					if(myModeStr){
+						const list = JSON.parse(myModeStr) || [];
+						if(list.length > 0){
+							uni.navigateTo({ url: '/page_subject/adjust/adjust' + object2Query(list[0]) });
+							return;
+						}
+					}
+				}catch(err){}
+				// 无可用模式，引导去选择自定义模式
+				uni.navigateTo({ url: '/page_subject/mode/setMode' });
+			},
+			// 检查学习是否完成，显示弹窗
+			checkStudyCompleted() {
+				const studyCompleted = uni.getStorageSync('study_completed')
+				if (studyCompleted) {
+					// 清除标记，避免重复显示
+					uni.removeStorageSync('study_completed')
+					// 延迟显示弹窗，确保页面完全加载
+					setTimeout(() => {
+						uni.showModal({
+							title: '学习完成',
+							content: '恭喜您完成睡姿学习！现在请开始享受吧。',
+							showCancel: false,
+							confirmText: '我知道了'
+						})
+					}, 300)
+				}
+			},
+			// 检查手动微调是否完成，显示弹窗
+			checkManualAdjustCompleted() {
+				const manualAdjustCompleted = uni.getStorageSync('manual_adjust_completed')
+				if (manualAdjustCompleted) {
+					// 清除标记，避免重复显示
+					uni.removeStorageSync('manual_adjust_completed')
+					// 延迟显示弹窗，确保页面完全加载
+					setTimeout(() => {
+						uni.showModal({
+							title: '调整完成',
+							content: '您已完成手动微调流程！是否进行睡姿学习？',
+							showCancel: true,
+							cancelText: '稍后学习',
+							confirmText: '开始学习',
+							success: (res) => {
+								if (res.confirm) {
+									// 跳转到睡姿学习页面
+									uni.navigateTo({
+										url: '/page_subject/study/study'
+									})
+								}
+							}
+						})
+					}, 300)
+				}
+			},
+			// 检查模式发送完成，提示可点击悬浮球
+			checkModeSentCompleted(){
+				const sent = uni.getStorageSync('mode_sent_success');
+				if(sent){
+					uni.removeStorageSync('mode_sent_success');
+					// 显示悬浮球并保存状态
+					this.showFloatingBall = true;
+					uni.setStorageSync('show_floating_ball', true);
+					setTimeout(()=>{
+						uni.showModal({
+							title:'默认数据设置成功提示',
+							content:'模式已设置成功，若您觉得高度不够可点击首页悬浮球进行手动微调。',
+							showCancel:false,
+							confirmText:'我知道了'
+						})
+					},300)
+				}
+			},
+			// 检查悬浮球显示状态
+			checkFloatingBallStatus(){
+				// 检查是否有悬浮球显示标记
+				const showFloat = uni.getStorageSync('show_floating_ball');
+				if(showFloat){
+					this.showFloatingBall = true;
+				}
+			},
 			// 检查颈枕是否还在调整
 			checkNeckAdjustment() {
 				if (this.pillowSideHeight === this.lastNeckHeight) {
@@ -392,8 +532,10 @@
 				}
 			},
 			updateConnectionStatus(){
-				this.loginStatus = blue_class.getInstance().loginSuccess;
+				console.log('收到 bluetooth_status_change 事件，当前 loginSuccess:', blue_class.getInstance().loginSuccess)
+				this.$set(this, 'loginStatus', blue_class.getInstance().loginSuccess);
 				console.log('蓝牙连接状态更新:',this.loginStatus)
+				console.log('页面 login 计算属性值:', this.login)
 			},
 		updateInfo(){
 			this.$set(this, 'pillowHeight', blue_class.getInstance().pillowHeight);
@@ -567,6 +709,11 @@
 						})
 						this.stopBlueTooth()
 
+						// 设置连接状态
+						blue_class.getInstance().deviceId = deviceId;
+						blue_class.getInstance().deviceName = item.name;
+						// 不要在这里设置 loginSuccess = true，让握手流程正常进行
+						
 						console.log('connectBluetooth success!:', deviceId, res)
 						uni.getBLEDeviceServices({
 							deviceId,
@@ -1133,7 +1280,38 @@
 	}
 
 
-
+/* 悬浮气泡样式 */
+.floating-ball{
+  position: fixed;
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 70rpx;
+  /* 由內聯樣式控制 left/top，移除 right 以避免衝突 */
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(6rpx);
+  box-shadow: 0 6rpx 20rpx rgba(0,0,0,0.25);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid rgba(255,255,255,0.5);
+}
+.floating-ball .float-label{
+  color: #ffffff;
+  font-size: 36rpx;
+  line-height: 1.2;
+  text-align: center;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.floating-ball .float-label text{
+  letter-spacing: 10rpx;
+  display: block;
+  transform: translateX(7rpx);
+}
 
 	.status-part {
 		margin-bottom: env(safe-area-inset-bottom);
@@ -1154,7 +1332,7 @@
 				width: 127rpx;
 				height: 161rpx;
 			}
-
+			
 			.title {
 				position: absolute;
 				left: 0;
