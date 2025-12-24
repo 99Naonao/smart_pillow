@@ -718,13 +718,13 @@
 					// 如果选择的是调整头枕
 					if (this.selectHead) {
 						// this.head -= 1
-						if (this.head <= 0) {
-							this.head = 0
+						if (this.head <= 30) {
+							this.head = 30
 						}
 					} else {
 						// this.neck -= 1
-						if (this.neck <= 0) {
-							this.neck = 0
+						if (this.neck <= 30) {
+							this.neck = 30
 						}
 					}
 					arraybuffer = handPillowFrontState(action, this.selectHead)
@@ -733,13 +733,13 @@
 					// 如果选择的侧卧
 					if (this.selectHead) {
 						// this.sideHead -= 1
-						if (this.sideHead <= 0) {
-							this.sideHead = 0
+						if (this.sideHead <= 30) {
+							this.sideHead = 30
 						}
 					} else {
 						// this.sideNeck -= 1
-						if (this.sideNeck <= 0) {
-							this.sideNeck = 0
+						if (this.sideNeck <= 30) {
+							this.sideNeck = 30
 						}
 					}
 					arraybuffer = handPillowFrontState(action, this
