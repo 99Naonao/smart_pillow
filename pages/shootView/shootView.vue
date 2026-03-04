@@ -211,7 +211,8 @@
 	} from '../../common/util'
 	import {
 		addAILog,
-		addStoreAILog
+		addStoreAILog,
+		callPushSmartPillowData
 	} from '../../utils/miniapp'
 	import InputView from './InputView.vue'
 	import {
@@ -540,9 +541,9 @@
 						this.detecting(this.sideBodyImgUrl, true)
 					},
 					fail: (error) => {
-						console.error('獲取圖片信息失敗:', error)
+						console.error('获取图片信息失败:', error)
 						uni.showToast({
-							title: '獲取圖片信息失敗',
+							title: '获取图片信息失败',
 							icon: 'error',
 							duration: 2000
 						})
@@ -694,8 +695,12 @@
 				Object.assign(send_params, form);
 				Object.assign(send_params, params);
 
-				addAILog(send_params)
+				addAILog(send_params).then(()=>{
+					console.log('拍照得到的参数保存成功');
+					callPushSmartPillowData(params.headHeight,params.neckHeiht);
+				})
 			},
+
 			closeSave() {
 				this.$refs.popup.close()
 				this.jumpStudy = false;

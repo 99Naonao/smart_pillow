@@ -4,7 +4,7 @@
 	<public-module></public-module>
 	<view class="">
 		<image class="topKV" :style="menuStyle" mode="widthFix" src="@/static/SY_01_000.png"></image>
-		<view class="tips">监测到以下设备</view>
+		<view class="tips" for="">监测到以下设备</view>
 		<view class="tips" v-if="tempDeviceIdList.length == 0">暂无设备</view>
 		<view v-for="(item,index) in tempDeviceIdList" :key="index">
 			<view class="device-item">
@@ -55,9 +55,15 @@
 <script>
 	import {
 		object2Query,
+		handPillowFrontState,
+		handlePillowDelayState,
+		hexStringToArrayBuffer,
 		ab2hex,
 		hand1Shake,
-		ensureLoginBeforeConnectBle
+		write2tooth,
+		changeAdjustMode,
+		handPillowSideState,
+		parsePillowState
 	} from '@/common/util.js'
 	import blue_class from '../../utils/BlueManager';
 	import {
@@ -83,8 +89,6 @@
 
 		},
 		onShow() {
-			// 每次页面显示时重置蓝牙错误弹窗标记，避免上一轮的状态影响本次
-			this.bluetoothErrorShown = false;
 			this.checkBlueToothSetting();
 			this.refreshDeviceList();
 
@@ -93,21 +97,6 @@
 			this.isConnected = blue_class.getInstance().loginSuccess;
 			let app = getApp();
 			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 80) + 'px');
-			
-			// 监听蓝牙适配器状态变化，当蓝牙重新打开时自动重新搜索
-			uni.onBluetoothAdapterStateChange((res) => {
-				console.log('蓝牙适配器状态变化:', res);
-				if (res.available) {
-					// 蓝牙已打开，重新开始搜索
-					console.log('检测到蓝牙已打开，重新开始搜索设备');
-					this.bluetoothErrorShown = false; // 重置错误标记
-					this.openBlueTooth();
-				} else {
-					// 蓝牙已关闭
-					console.log('检测到蓝牙已关闭');
-					this.searching = false;
-				}
-			});
 
 			// this.deviceIdList = [];
 			// 如果正在搜索中
@@ -135,8 +124,7 @@
 				}
 			}
 			uni.$on('xx', this.handleMessage)
-			// 保存事件处理函数的引用，以便后续可以正确移除
-			this.bluetoothStatusChangeHandler = () => {
+			uni.$on('bluetooth_status_change', ()=>{
 				this.handleDisconnect();
 				// 根據全局狀態同步當前設備ID，便於按鈕顯示
 				if (blue_class.getInstance().loginSuccess) {
@@ -144,8 +132,7 @@
 				} else {
 					this.currentDeviceId = '';
 				}
-			};
-			uni.$on('bluetooth_status_change', this.bluetoothStatusChangeHandler)
+			})
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
 			// uni.onBLECharacteristicValueChange(this.handleMessage)
 		},
@@ -153,11 +140,9 @@
 			// uni.offBLECharacteristicValueChange(this.handleMessage)
 			this.onShowing = false;
 			uni.$off('xx', this.handleMessage)
-			uni.$off('bluetooth_status_change', this.bluetoothStatusChangeHandler)
+			uni.$off('bluetooth_status_change', this.handleDisconnect)
 			this.stopBlueTooth();
 			uni.onBluetoothDeviceFound(null)
-			// 移除蓝牙适配器状态变化监听
-			uni.onBluetoothAdapterStateChange(null);
 		},
 		onLoad() {
 			// 监听设备发现
@@ -184,7 +169,6 @@
 				testName: '测试专用',
 				connectList: [], // 连接列表
 				isConnected: false, // 连接状态
-				bluetoothErrorShown: false, // 是否已弹出过蓝牙初始化失败提示
 			}
 		},
 		methods: {
@@ -199,9 +183,8 @@
 					this.isConnected = false;
 					console.log('设置 isConnected = false');
 					
-				// 清空设备列表
-				// this.deviceIdList = []; // 已注释，使用 tempDeviceIdList 代替
-				this.tempDeviceIdList = [];
+					// 清空设备列表
+					this.deviceIdList = [];
 					
 					// 停止搜索
 					this.stopBlueTooth();
@@ -282,46 +265,41 @@
 					console.log('new device list has founded', deviceIdList.length, devices.length, devices);
 				});
 			},
+			stopBlueTooth() {
+				uni.closeBluetoothAdapter({
+					complete: () => {
+						this.searching = false
+						console.log("stopBlueTooth")
+					}
+				})
+			},
 			checkBlueToothSetting() {
 				console.log("checkBlueToothSetting");
 				let that = this;
-				const systemInfo = uni.getSystemInfoSync();
-				const isIOS = systemInfo.platform === 'ios';
-				// 每次进来先重置蓝牙错误弹窗标记，避免上一轮的状态影响本次
-				this.bluetoothErrorShown = false;
 
 				// 获取用户权限设置
 				uni.getSetting({
 					success(res) {
 						console.log("getSetting", res);
-						// 检查蓝牙权限（小程序層級）
+						// 检查蓝牙权限
 						if (!res.authSetting["scope.bluetooth"]) {
 							that.requestPermission(
 								"scope.bluetooth",
 								() => {
 									console.log("蓝牙权限已授予");
-									// iOS 不需要再申請地理位置權限，直接開啟藍牙
-									if (isIOS) {
-										that.openBlueTooth();
-									} else {
-										// Android 再檢查地理位置權限
-										that.checkLocationPermission();
-									}
+									that.openBlueTooth();
+									// that.checkLocationPermission(); // 检查地理位置权限
+									
 								},
 								() => {
 									console.log("蓝牙权限被拒绝");
-									that.showPermissionDeniedMessage("蓝牙");
+									// that.showPermissionDeniedMessage("蓝牙");
 								}
 							);
 						} else {
 							console.log("蓝牙权限已存在");
-							if (isIOS) {
-								// iOS 已有藍牙權限，直接開啟藍牙
-								that.openBlueTooth();
-							} else {
-								// Android 再檢查地理位置權限
-								that.checkLocationPermission();
-							}
+							that.openBlueTooth();
+							// that.checkLocationPermission(); // 检查地理位置权限
 						}
 					},
 					fail(err) {
@@ -334,7 +312,6 @@
 			// 检查地理位置权限
 			checkLocationPermission() {
 				let that = this;
-				// 只在 Android 等需要定位權限的平台調用；iOS 直接在 checkBlueToothSetting 裡 openBlueTooth
 				uni.getSetting({
 					success(res) {
 						if (!res.authSetting["scope.userLocation"]) {
@@ -386,97 +363,46 @@
 					}
 				});
 			},
-			// 統一處理藍牙初始化失敗的提示（錯誤碼對照官方表）
-			handleOpenBluetoothFail(err) {
-				// 避免同一次流程中連續彈多次相同提示
-				if (this.bluetoothErrorShown) {
-					console.log('handleOpenBluetoothFail 已顯示過，本次忽略:', err);
-					return;
-				}
-				this.bluetoothErrorShown = true;
-				console.log('openBluetoothAdapter fail:', err);
-				let message = '蓝牙初始化失败，请稍后重试';
-				const code = err.errCode || err.errno;
-				switch (code) {
-					case 10001: // not available：當前藍牙適配器不可用（藍牙關閉、硬件不可用）
-						message = '请检查手机蓝牙是否打开';
-						break;
-					case 10000: // not init：未初始化藍牙適配器
-					case 3:
-						message = '蓝牙尚未初始化，请检查微信是否已开启附近设备权限或蓝牙权限';
-						break;
-					case 10008: // system error：其餘系統上拋的異常
-						message = '系统蓝牙出现异常，请重启手机后重试';
-						break;
-					case 10009: // system not support：Android 系統特有，版本過低或不支持 BLE
-						message = '当前系统不支持蓝牙低功耗功能，请更换设备后重试或重新进入小程序';
-						break;
-					default:
-						// 其它錯誤碼（10002 / 10003 / 10004 / 10005 / 10006...）統一給出通用提示並附帶錯誤碼
-						if (code !== undefined) {
-							message = `蓝牙初始化失败（错误码：${code}），请检查系统设置或稍后重试`;
-						}
-						break;
-				}
-				uni.showModal({
-					title: '提示',
-					content: message,
-					showCancel: false,
-					success: () => {
-						this.searching = false;
-					}
-				});
-			},
-			// 开始搜索蓝牙设备（提取为独立方法，避免重复代码）
-			startBluetoothDiscovery() {
-				this.addCallBack();
-				uni.startBluetoothDevicesDiscovery({
-					services: [],
-					success: (res) => {
-						console.log('startBluetoothDevicesDiscovery success:', res)
-						this.searching = true
-					},
-					fail: (err) => {
-						console.log('startBluetoothDevicesDiscovery fail:', err)
-						if(err.errCode == -1){
-							uni.showModal({
-								title:'微信位置权限未授予提示',
-								content:'当前系统未开启定位服务或未授权微信使用定位，无法搜索蓝牙设备\n请在手机系统设置打开定位服务兵允许微信使用位置信息后重试',
-								showCancel:false
-							})
-						}
-						this.searching = false
-					}
-				})
-			},
 			openBlueTooth() {
-				// 先检查适配器状态，避免重复初始化
-				uni.getBluetoothAdapterState({
+				this.addCallBack();
+				uni.openBluetoothAdapter({
 					success: (res) => {
-						console.log('蓝牙适配器已打开，直接开始搜索设备')
-						// 适配器已打开，直接开始搜索
-						this.startBluetoothDiscovery();
-					},
-					fail: (err) => {
-						// 适配器未打开，尝试打开
-						console.log('蓝牙适配器未打开，尝试初始化:', err)
-						this.addCallBack();
-						uni.openBluetoothAdapter({
+						console.log('startBluetoothDevicesDiscovery')
+						// 开始搜索蓝牙设备
+						uni.startBluetoothDevicesDiscovery({
+							services: [],
+							success(res) {
+								console.log('startBluetoothDevicesDiscovery success:', res)
+								this.searching = true
+							}
+						})
+						uni.getBluetoothAdapterState({
 							success: (res) => {
-								console.log('openBluetoothAdapter success')
-								// 打开成功后开始搜索
-								this.startBluetoothDiscovery();
-							},
-							fail: (res) => {
-								console.log('openBluetoothAdapter fail:', JSON.stringify(res));
-								// 根據錯誤碼給出更精準的提示
-								this.handleOpenBluetoothFail(res);
+								console.log('getBluetoothAdapterState success!', res)
+							}
+						})
+					},
+					fail(res) {
+
+						uni.showModal({
+							title: '提示',
+							content: '请检查手机蓝牙是否打开',
+							showCancel: false,
+							success: (res) => {
+								this.searching = false
 							}
 						})
 					}
 				})
+
 			},
 			handleMessage(res) {
+				// 移除 onShowing 检查，确保握手流程能正常进行
+				// if (this.onShowing) {
+				// } else {
+				// 	console.log('[no showing]')
+				// 	return;
+				// }
 				console.log('handleMessage 被调用，当前 onShowing:', this.onShowing)
 				console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
 				let arrayBuffer = new Uint8Array(res.value);
@@ -508,10 +434,8 @@
 					console.log('第一次握手', ab2hex(shake1))
 				} else if (arrayBuffer.length == 2) {
 					console.log('接收到回复数据2:', ab2hex(res.value))
-					let hexValue = ab2hex(res.value);
-					let mark2 = arrayBuffer[0].toString(16); // 获取 mark 值
-					if (hexValue.indexOf('55') > -1) {
-						console.log('接收到回复数据', hexValue)
+					if (ab2hex(res.value).indexOf('55') > -1) {
+						console.log('接收到回复数据', ab2hex(res.value))
 						// console.log('校验长度', parseInt('0x' + len))
 						console.log('握手成功可以发送ssid了')
 						blue_class.getInstance().loginSuccess = true
@@ -528,18 +452,17 @@
 						})
 						// blue_class.getInstance().write2tooth(this.characteristicStringId,
 						// 	hexStringToArrayBuffer('jimlee'))
-					} else if (mark2 == '66') {
+					} else if (mark == '66') {
 						console.log('握手成功可以发送ssid密码了')
 						// 发送wifi密码
 						// blue_class.getInstance().write2tooth(this.characteristicStringId,
 						// 	hexStringToArrayBuffer('lijiming'))
-					} else if (mark2 == 'aa') {
+					} else if (mark == 'aa') {
 						console.log('发送成功了ssid了')
-					} else if (mark2 == '33') {
+					} else if (mark == '33') {
 						console.log('收到成功调整枕头')
-						// 注意：2字节数据中没有 len 和 receive16，这些变量只在4字节数据中存在
-						// console.log('8个字节指令的校验和', parseInt('0x' + len))
-						// console.log('后四位', receive16, receive16.slice(4, 1), receive16.slice(5, 1))
+						console.log('8个字节指令的校验和', parseInt('0x' + len))
+						console.log('后四位', receive16, receive16.slice(4, 1), receive16.slice(5, 1))
 					}
 				} else {
 					mark = arrayBuffer[0];
@@ -595,11 +518,119 @@
 							break;
 					}
 					return;
+					//默认是枕头状态 5s收到一次
+					let receive16 = ab2hex(res.value);
+					// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
+					let status = receive16.slice(0, 2);
+					let status1 = '0x' + status;
+
+					let status10 = parseInt(status1);
+					switch (status10) {
+						case 0:
+							console.log('枕头空闲状态')
+							break;
+						case 1:
+							console.log('枕头平躺状态')
+							break;
+						case 2:
+							console.log('枕头侧卧状态')
+							break;
+					}
+					let headHeight = receive16.slice(4, 6);
+					let headHeight10 = parseInt('0x' + headHeight);
+					let neckHeight = receive16.slice(6, 8);
+					let neckHeight10 = parseInt('0x' + neckHeight);
+					let vesrion = receive16.slice(8, 10);
+					let vesrion10 = parseInt('0x' + vesrion);
+					let isright = receive16.slice(10, 12);
+					let isright10 = parseInt('0x' + isright);
+					let press = receive16.slice(12, 14);
+					let press10 = parseInt('0x' + press);
+					//保存版本号
+					blue_class.getInstance().version = vesrion10;
+					// let status1 = '0x' + status;
+
+					console.log('枕头状态=>', status, headHeight, neckHeight, vesrion, isright, press)
+					console.log('枕头状态=>', status10, headHeight10, neckHeight10, vesrion10, isright10, press10)
 				}
 			},
 			parsePillowStatus(arraybuffer) {
 				blue_class.getInstance().parsePillowStatus(arraybuffer)
 				return;
+				// //默认是枕头状态 5s收到一次
+				let receive16 = ab2hex(arraybuffer);
+				// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
+				let status = receive16.slice(0, 2);
+				let status1 = '0x' + status;
+
+				let status10 = parseInt(status1);
+				switch (status10) {
+					case 0:
+						console.log('枕头空闲状态')
+						break;
+					case 1:
+						console.log('枕头平躺状态')
+						break;
+					case 2:
+						console.log('枕头侧卧状态')
+						break;
+				}
+				let detail_status_16 = receive16.slice(2, 4);
+				let detail_status = '0x' + detail_status_16;
+				let n1 = (detail_status & 0x01);
+				// 0--空闲，1--充电中，2--充电完成
+				switch (n1) {
+					case 0:
+						console.log('枕头在空闲状态');
+						break;
+					case 1:
+						console.log('枕头在充电中状态');
+						break;
+					case 2:
+						console.log('枕头在充电完成状态');
+						break;
+				}
+				let n2 = (detail_status >> 2) & 0x01;
+				console.log('泵1电流:', n2);
+				let n3 = (detail_status >> 3) & 0x01;
+				console.log('泵2电流:', n3);
+				let n4 = (detail_status >> 4) & 0x01;
+				console.log('气囊1升高超时:', n4);
+				let n5 = (detail_status >> 5) & 0x01;
+				console.log('气囊2升高超时:', n5);
+				let n6 = (detail_status >> 6) & 0x01;
+				console.log('气囊1气压超高:', n6);
+				let n7 = (detail_status >> 7) & 0x01;
+				console.log('气囊2气压超高:', n7);
+				let headHeight = receive16.slice(4, 6);
+				let headHeight10 = parseInt('0x' + headHeight);
+				let neckHeight = receive16.slice(6, 8);
+				let neckHeight10 = parseInt('0x' + neckHeight);
+				let vesrion = receive16.slice(8, 10);
+				let vesrion10 = parseInt('0x' + vesrion);
+				let isright = receive16.slice(10, 12);
+				let isright10 = parseInt('0x' + isright);
+				let press = receive16.slice(12, 16);
+				let press10 = parseInt('0x' + press);
+
+
+				// 0100970d030101f3
+				// dataView.setUint32(0, second | (minutes << 6) | (hours << 12) | (days << 17) | (months << 22) | ((year -
+				// 		2020) <<
+				// 	26))
+
+				blue_class.getInstance().setPillowCharging(n1)
+				blue_class.getInstance().setPillowHeight(headHeight10)
+				blue_class.getInstance().setPillowStatus(status10)
+				blue_class.getInstance().setPillowSideHeight(neckHeight10)
+				blue_class.getInstance().setPillowPower(press10)
+				// work 枕头状态 mm=> 1 height:151mm neckheight:13mm version:3 校准:1 电池:1
+				// console.log('work 枕头状态 =>', 'height:' + headHeight, 'neckheight:' + neckHeight, vesrion, isright, press)
+				console.log('page work 枕头状态 mm=>', status10, 'height:' + headHeight10 + 'mm', 'neckheight:' + neckHeight10 +
+					'mm', 'version:' +
+					vesrion10,
+					'校准:' + isright10,
+					'电池:' + press10)
 			},
 			parsePillowSleepData(receive_dataView) {
 
@@ -657,11 +688,34 @@
 					url: "/pages/status/status"
 				})
 			},
-
+			// 调低枕头
+			adjustLowSleepHandler() {
+				this.head -= 1
+				if (this.head <= 0) {
+					this.head = 0
+				}
+				console.log('调低:', this.head, this.neck)
+				let arraybuffer = handPillowFrontState(this.head, this
+					.neck)
+				console.log('调低:', ab2hex(arraybuffer))
+				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer)
+			},
+			// 调高枕头
+			adjustHighSleepHandler() {
+				this.head += 1
+				if (this.head >= 100) {
+					this.head = 100
+				}
+				console.log('调高:', this.head, this.neck)
+				let arraybuffer = handPillowFrontState(this.head, this
+					.neck)
+				console.log('调高:', ab2hex(arraybuffer))
+				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer)
+			},
 			closePopUpHandle() {
 				this.$refs.ppp.close()
 			},
-			// 停止蓝牙扫描（连接前只停止扫描，不关闭适配器，参考 xxxx.vue）
+			// 停止蓝牙
 			stopBlueTooth() {
 				uni.stopBluetoothDevicesDiscovery({
 					success: (res) => {
@@ -674,19 +728,43 @@
 				})
 			},
 
+			reconnect() {
+				uni.openBluetoothAdapter({
+					success: (res) => {
+						console.log('startBluetoothDevicesDiscovery')
+						// 开始搜索蓝牙设备
+						uni.startBluetoothDevicesDiscovery({
+							services: [],
+							success(res) {
+								console.log('startBluetoothDevicesDiscovery success:', res)
+								this.searching = true
+							}
+						})
+
+						uni.getBluetoothAdapterState({
+							success: (res) => {
+								console.log('getBluetoothAdapterState success!', res)
+							}
+						})
+	
+					},
+					fail(res) {
+						uni.showModal({
+							title: '提示',
+							content: '请检查手机蓝牙是否打开',
+							showCancel: false,
+							success: (res) => {
+								this.searching = false
+							}
+						})
+					}
+				})
+			},
 			// 连接蓝牙
 			connectBlueToothSleepHandler(item) {
 				uni.showLoading({
 					title: '连接蓝牙设备中...',
 				})
-
-				// 再次防护：点击连接按钮时也校验登录状态
-				if (!ensureLoginBeforeConnectBle(() => {
-					// 这里不做额外处理，仅用于通过校验
-				})) {
-					uni.hideLoading();
-					return;
-				}
 
 
 				let app = getApp();
@@ -741,11 +819,14 @@
 					this.isConnected = true;
 					// 同步當前已連接設備ID，便於按鈕狀態即時切換
 					this.currentDeviceId = deviceId;
+
+
 						uni.getBLEDeviceServices({
 							deviceId,
 							success: (res) => {
 								console.log('getBLEDeviceServices success:', res)
-								console.log('getBLEDeviceServices res.services:', res.services)
+								console.log('getBLEDeviceServices res.services:', res
+									.services)
 								for (let i = 0; i < res.services.length; i++) {
 									if (res.services[i].isPrimary) {
 										// this.addNotify(deviceId, res.services[i]
@@ -801,13 +882,33 @@
 					}
 				})
 			},
-
+			// wifi界面
+			connectWifiSleepHandler(item) {
+				let url = '/pages/initWifi/initWifi' + '?pillowName=' + item.name
+				uni.navigateTo({
+					url: url
+				})
+			},
 			// 检测是否
 			checkConnectList(item) {
 				if (this.connectList.indexOf(item.deviceId) > -1) {
 					return '../static/SY_01WIEI_IconLY.png'
 				}
 				return '../static/SY_01WIEI_IconLY.png'
+			},
+			checkWifiConnectList(item) {
+				return ('../static/SY_01WIEI_IconWF.png');
+			},
+			// 连接枕头
+			connectSleepHandler(item) {
+				console.log('this', this.$refs)
+				this.$refs.ppp.open('bottom')
+				this.show = true
+				this.currentItem = item;
+				return
+				uni.navigateTo({
+					url: '/pages/initWifi/initWifi'
+				})
 			},
 			change(e) {
 				this.show = e.show

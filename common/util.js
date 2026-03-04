@@ -807,6 +807,53 @@ var sendModeByName = function(name) {
 	blue_class.getInstance().write2tooth(init_arraybuffer);
 	return true;
 }
+function getMiniProgramEnv(){
+	try {
+		const accountInfo = uni.getAccountInfoSync();
+		const envVersion = accountInfo.miniProgram.envVersion;
+		console.log('当前小程序环境:',envVersion)
+		return{
+			envVersion,
+			isRelease: envVersion === 'release',
+			isTrial: envVersion === 'trial',
+			isDevelop: envVersion === 'develop'
+		};
+	} catch (error) {
+		console.log('获取当前小程序环境异常：',error)
+		return {
+		  envVersion: 'release',
+		  isRelease: true,
+		  isTrial: false,
+		  isDevelop: false
+		};
+	}
+}
+
+function isLogin(){
+	const userInfo = uni.getStorageSync('userInfo');
+	return !!(userInfo && userInfo.token);
+}
+
+function ensureLoginBeforeConnectBle(onSuccess){
+	if(isLogin()){
+		onSuccess && onSuccess();
+		return true;
+	}
+	uni.showModal({
+		title:'温馨提示',
+		content:'',
+		confirmText:'去登录',
+		cancelText:'取消',
+		success: (res) => {
+			if(res.confirm){
+				uni.switchTab({
+					url:'/pages/newMine/newMine'
+				})
+			}
+		}
+	});
+	return false;
+}
 export {
 	object2Query,
 	saveRandomMode,
@@ -845,5 +892,7 @@ export {
 	sendModeByName,
 	getAIModeByName,
 	formatTimeByString,
-	dateUtils
+	dateUtils,
+	getMiniProgramEnv,
+	ensureLoginBeforeConnectBle
 }

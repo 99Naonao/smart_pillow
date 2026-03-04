@@ -112,6 +112,7 @@
 	import blue_class from '../../utils/BlueManager'
 	import InputView from '../../pages/shootView/InputView.vue'
 	import RecommandInfo from './RecommandInfo.vue'
+	import { callPushSmartPillowData } from '../../utils/miniapp'
 	import {
 		object2Query,
 		parsePillowRealState,
@@ -390,10 +391,14 @@
 				// }else{
 				// 	sideHeadSafeHeight = sideHeadHeight  < 30 ? 30 : sideHeadHeight 
 				// }
-				headSafeHeight = headHeight < 30 ? 30 : headHeight 
-				sideHeadSafeHeight = sideHeadHeight  < 30 ? 30 : sideHeadHeight 
-				let neckSafeHeight = neckHeight - 30 < 30 ? 30 : neckHeight - 30 //仰卧颈部
-				let sideNeckSafeHeight = sideNeckHeight - 30 < 30 ? 30 : sideNeckHeight - 30 //侧卧颈部
+				// headSafeHeight = headHeight < 30 ? 30 : headHeight 
+                // sideHeadSafeHeight = sideHeadHeight  < 30 ? 30 : sideHeadHeight 
+                // let neckSafeHeight = neckHeight - 30 < 30 ? 30 : neckHeight - 30 //仰卧颈部
+                // let sideNeckSafeHeight = sideNeckHeight - 30 < 30 ? 30 : sideNeckHeight - 30 //侧卧颈部
+				headSafeHeight = headHeight 
+				sideHeadSafeHeight = sideHeadHeight 
+				let neckSafeHeight = neckHeight - 30 < 0 ? 0 : neckHeight - 30 //仰卧颈部，允许到0
+				let sideNeckSafeHeight = sideNeckHeight - 30 < 0 ? 0 : sideNeckHeight - 30 //侧卧颈部，允许到0
 				let init_arraybuffer = initPillow(headHeight > 100 ? 80 : headSafeHeight, neckHeight > 100 ? 100 :
 					neckSafeHeight,200, sideHeadHeight > 100 ? 100 : sideHeadSafeHeight, 
 					sideNeckHeight > 100 ? 100 :sideNeckSafeHeight, 200);
@@ -442,6 +447,13 @@
 						url: '/pages/status/status'
 					})
 				}
+			  // 调用复用函数构建参数（取消调整）
+			  const pillowParams = this.buildPillowParams();
+		
+			  // 调用util里的方法
+			  callPushSmartPillowData(pillowParams.headHeight,pillowParams.neckHeight,pillowParams.sideHeadHeight,pillowParams.sideNeckHeight)
+				.then(res => console.log(`${adjustMode}取消调整数据提交成功:`, res))
+				.catch(err => console.error(`${adjustMode}取消调整数据提交失败:`, err));
 			},
 			saveModeHandler() {
 				this.$refs.popupSave.open('bottom');
@@ -529,6 +541,15 @@
 						}
 					})
 				}
+				const pillowParams = this.buildPillowParams({
+				  headHeight: this.head,
+				  neckHeight: this.neck,
+				  sideHeadHeight: this.selectIndex === 1 ? this.initSideHeadHeight : this.sideHead,
+				  sideNeckHeight: this.selectIndex === 1 ? this.initSideNeckHeight : this.sideNeck,
+				});
+				callPushSmartPillowData(pillowParams.headHeight,pillowParams.neckHeight,pillowParams.sideHeadHeight,pillowParams.sideNeckHeight)
+				.then(res => console.log(`${adjustMode}保存调整数据提交成功:`, res))
+				.catch(err => console.error(`${adjustMode}保存调整数据提交失败:`, err));
 			},
 			handleMessage(res) {
 				// console.log(`value:`, res.value)
@@ -718,13 +739,13 @@
 					// 如果选择的是调整头枕
 					if (this.selectHead) {
 						// this.head -= 1
-						if (this.head <= 30) {
-							this.head = 30
+						if (this.head <= 0) {
+							this.head = 0
 						}
 					} else {
 						// this.neck -= 1
-						if (this.neck <= 30) {
-							this.neck = 30
+						if (this.neck <= 0) {
+							this.neck = 0
 						}
 					}
 					arraybuffer = handPillowFrontState(action, this.selectHead)
@@ -733,13 +754,13 @@
 					// 如果选择的侧卧
 					if (this.selectHead) {
 						// this.sideHead -= 1
-						if (this.sideHead <= 30) {
-							this.sideHead = 30
+						if (this.sideHead <= 0) {
+							this.sideHead = 0
 						}
 					} else {
 						// this.sideNeck -= 1
-						if (this.sideNeck <= 30) {
-							this.sideNeck = 30
+						if (this.sideNeck <= 0) {
+							this.sideNeck = 0
 						}
 					}
 					arraybuffer = handPillowFrontState(action, this
@@ -834,6 +855,22 @@
 				// console.log('调高:', ab2hex(arraybuffer))
 				blue_class.getInstance().write2tooth(arraybuffer)
 			},
+			  // 通用参数构建函数
+			  buildPillowParams(heightData = {}) {
+			    // 默认高度数据（未传则用初始值）
+			    const defaultHeight = {
+			      headHeight: this.initHeadHeight,
+			      neckHeight: this.initNeckHeight,
+			      sideHeadHeight: this.initSideHeadHeight,
+			      sideNeckHeight: this.initSideNeckHeight
+			    };
+			    // 合并默认高度和传入的自定义高度
+			    const finalHeight = { ...defaultHeight, ...heightData };
+			
+			    return {
+			      ...finalHeight, // 高度参数
+			    };
+			  },
 		}
 	}
 </script>

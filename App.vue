@@ -60,6 +60,7 @@
 			console.log('App Launch')
 			this.calcNavBarInfo();
 		},
+
 		onShow: function() {
 			console.log('App Show')
 		},

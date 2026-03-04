@@ -109,11 +109,12 @@
 			<recommand-info :showTips="false" :standard="standard"></recommand-info>
 		</view>
 	</view>
-</template>
+</template> 
 
 <script>
 	import InputView from '../../pages/shootView/InputView.vue'
 	import RecommandInfo from '../adjust/RecommandInfo.vue'
+	import { callPushSmartPillowData } from '../../utils/miniapp'
 	import {
 		object2Query,
 		handPillowSideState,
@@ -415,28 +416,28 @@
 				
 				let params = this.selectItem
 				console.log('params:', params)
-
+				
 				uni.setStorageSync('lastMode', params);
+
+				callPushSmartPillowData(params.headHeight,params.neckHeight,params.sideHeadHeight,params.sideNeckHeight)
 				this.navHandle()
 				return;
-				uni.showLoading({
-					title: '调整中'
-				})
-				let arraybuffer
-				// 如果选择的仰卧
-				arraybuffer = handPillowFrontState(item.head, item
-					.neck)
-				console.log('调低仰卧:', item.head, item.neck, ab2hex(arraybuffer))
-				// 如果选择的仰卧
-				arraybuffer = handPillowSideState(item.sideHead, item
-					.sideNeck)
+				// uni.showLoading({
+				// 	title: '调整中'
+				// })
+				// let arraybuffer
+				// // 如果选择的仰卧
+				// arraybuffer = handPillowFrontState(item.head, item.neck)
+				// console.log('调低仰卧:', item.head, item.neck, ab2hex(arraybuffer))
+				// // 如果选择的仰卧
+				// arraybuffer = handPillowSideState(item.sideHead, item.sideNeck)
 
-				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
-					uni.hideLoading()
-					this.back()
-				}).catch(res => {
-					uni.hideLoading()
-				})
+				// write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
+				// 	uni.hideLoading()
+				// 	this.back()
+				// }).catch(res => {
+				// 	uni.hideLoading()
+				// })
 			},
 			back() {
 				uni.navigateBack()

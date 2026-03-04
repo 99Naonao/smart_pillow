@@ -6,13 +6,14 @@
 				<view class="top_info">
 					<view class="avatar_bg">
 						<image v-if="hasLogin" class="avatar" :src="userInfo.avatar || '/static/default-avatar.png'"
-							@click="navTo('/pages/my/set/userInfo')"></image>
-						<image v-else class="avatar" :src="userInfo.avatar || '/static/default-avatar.png'"
-							@click="clickWxLogin"></image>
+							@click="toUserInfo"></image>
+						<button v-else class="avatar-btn" open-type="getPhoneNumber" @getphonenumber="onGetPhoneNumber">
+							<image class="avatar" :src="userInfo.avatar || '/static/default-avatar.png'"></image>
+						</button>
 					</view>
 					<view class="usernameInfo">
 						<view class="userNickNameInfo" v-if="nickNameInputFlag">
-							<text class="username">{{ userInfo.nickName || '点击头像登录' }}</text>
+							<text class="username">{{ userInfo.nickName || '点击头像唤醒快捷登录' }}</text>
 						</view>
 						<view class="username" v-else>
 							<input class="username" type="text" placeholder="请输入新的昵称" @blur="inputClose()"
@@ -32,24 +33,24 @@
 				<view class="btn" @click="go2Use">去使用</view>
 			</view>
 			<view class="desc">
-				<view class="rule-title">积分活动规则</view>
+				<view class="rule-title">积分规则</view>
 				<view class="popup__body">
-					会员积分是眠加小程序商城针对会员购物、参加会员活动等情况而给予的奖励，积分可在“眠加小程序商城”和“眠加活力健康检测”中使用。您可在眠加会员中心（ 我的> 会员中心>
+					会员积分是“眠加好物”小程序商城针对会员购物、参加会员活动等情况而给予的奖励，积分可在“眠加好物”和“眠加睡商检测”中使用。您可在眠加会员中心（ 我的--会员中心--
 					积分）查看所获得的积分。具体的积分获取、使用规则详见如文规定。<br>
 					<text>\n</text>
 					一、积分获取规则：<br><br>
 					<text>\n</text>
-					1. 注册积分：在眠加小程序商城完成注册，送200初始积分；<br>
-					2. 消费积分：会员在眠加小程序商城消费时，每消费1元可获得1积分，积分可累计；<br>
+					1. 注册积分：在“眠加好物”小程序商城完成注册，送200初始积分；<br>
+					2. 消费积分：会员在“眠加好物”小程序商城消费时，每消费1元可获得1积分，积分可累计；<br>
 					3. 签到积分：会员每天签到可获得1积分，每月签到次数不超过31次；<br>
 					4. 积分回馈的数量以订单完成时的商品实付金额和比例为准，且仅计取整数。例如购买1000.9元的商品，发放1000个积分。<br>
 					<text>\n</text>
 					二、积分兑换规则：<br><br>
 					<text>\n</text>
-					1. 适用范围：积分仅可在“眠加小程序商城”和“眠加活力健康检测”中使用，可用于商品购买、健康检测、礼品兑换、活动抽奖等；<br>
+					1. 适用范围：积分仅可在“眠加好物”小程序商城”和“眠加睡商检测”中使用，可用于商品购买、睡商检测、礼品兑换、活动抽奖等；<br>
 					2. 购物积分抵扣：会员可使用积分抵扣购物金额，每20积分可抵扣1元，最高可抵扣订单总金额的40%；<br>
-					3. 健康检测积分抵扣：60积分可进行健康检测一次，健康检测无次数限制；<br>
-					4. 积分兑换礼品：会员可使用积分兑换眠加小程序商城指定的礼品，兑换所需积分以具体兑换礼品为准；<br>
+					3. 睡商检测积分抵扣：90积分可进行睡商检测一次，睡商检测无次数限制；<br>
+					4. 积分兑换礼品：会员可使用积分兑换"眠加好物"小程序商城指定的礼品，兑换所需积分以具体兑换礼品为准；<br>
 					5. 订单内全部商品确认收货后，且7天内未发生退货的情况下，所发放积分才可使用；<br>
 					6. 若使用现金+积分购买商品，所使用积分不享受积分回馈权益，只有使用的现金享受积分回馈权益，且单个商品不能连续15次用积分购买；<br>
 					7. 若使用优惠券购买商品，则优惠券折扣部分不享受积分回馈；<br>
@@ -60,23 +61,26 @@
 					<text>\n</text>
 					三、特别声明：<br><br>
 					<text>\n</text>
-					1. 眠加小程序商城对本规则拥有最终解释权，保留对细则进行变更，解释，及终止权利；<br>
-					2. 如用户注销眠加小程序商城帐号，所获的积分将被清空并作废；<br>
+					1. “眠加好物”小程序商城对本规则拥有最终解释权，保留对细则进行变更，解释，及终止权利；<br>
+					2. 如用户注销“眠加好物”小程序商城帐号，所获的积分将被清空并作废；<br>
 					3. 当订单已完成，发生增值税发票更换普通发票情况时，不补发对应积分；发生普通发票更换增值税发票情况时，则需要扣减该笔订单发放的积分；<br>
 					4.凡以违反积分规则的方式或采用不正当手段（包括但不限于作弊、恶意刷分、扰乱/破坏系统、恶意利用系统或者规则漏洞）获取、使用积分，我们有权根据其行为恶劣程度决定扣除您帐号内所有或部分积分，对于已使用积分，有权要求您返还已抵扣的订单金额或所兑换的礼品或权益；<br>
 					5. 以上积分规则自2024年8月13日生效。<br>
 				</view>
 				<view class="info-part">
-					<view class="opt-part">
+					<view class="opt-part">   
 						<view class="opt-btn" @click="uploadDataHandle" v-if="false">
 							<label>上报数据</label>
 						</view>
 
-						<view class="opt-btn" @click="resetHandle">
+						<view class="opt-btn" @click="resetHandle" v-if ="!miniProgramEnv.isRelease">
 							<label>设备校准</label>
 						</view>
-						<view class="opt-btn" @click="restartHandle">
+						<view class="opt-btn" @click="restartHandle" v-if ="!miniProgramEnv.isRelease">
 							<label>设备重启</label>
+						</view>
+						<view v-if="hasLogin">
+							<view class="opt-btn" @click="logout">退出登录</view>
 						</view>
 					</view>
 				</view>
@@ -94,7 +98,8 @@
 <script>
 	import blue_class from '../../utils/BlueManager'
 	import {
-		autoLogin
+		getPhoneByCode,
+		onGetCode
 	} from '@/utils/miniapp.js'
 	import {
 		object2Query,
@@ -116,7 +121,8 @@
 		sendModeByName,
 		saveRandomMode,
 		restartPillow,
-		getAIModeByName
+		getAIModeByName,
+		getMiniProgramEnv
 	} from '@/common/util.js'
 	export default {
 		computed: {
@@ -142,14 +148,15 @@
 				userInfo: {
 					avatar: ''
 				},
-				shoulderWidthNum: ''
+				shoulderWidthNum: '',
+				miniProgramEnv:getMiniProgramEnv() //当前小程序环境信息
 			}
 		},
 		onShow() {
 			let curPages = getCurrentPages()[0]
 			if (typeof curPages.getTabBar === 'function' && curPages.getTabBar()) {
 				curPages.getTabBar().setData({
-					selected: 2
+					selected: 1
 				});
 			}
 
@@ -223,22 +230,20 @@
 					}
 				});
 			},
-
 			refreshUserInfo() {
 				let userInfo = uni.getStorageSync('userInfo')
 				if (userInfo && userInfo.token) {
-					this.score = userInfo.score;
+					this.score = userInfo.score || 0;
 					this.userInfo = userInfo;
+					this.hasLogin = true;
+				} else {
+					this.score = 0;
+					this.userInfo = { avatar: '' };
+					this.hasLogin = false;
 				}
 			},
 			go2Use() {
-				// const url =
-				// 	'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx1ac2da77b1e55f42&redirect_uri=https://sleep.zsyl.cc/sleeph5&response_type=code&scope=snsapi_userinfo&state=STATE';
-				// const url2 = 'https://mp.weixin.qq.com/s/tsSJqende7UKJf2xZExZ7Q?token=1386691342&lang=zh_CN'
-
-				// const url3 =
-				// 	'https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz=MzkyMDQ5NTk0OQ&scene=124#wechat_redirect';
-				const url5 = 'https://sleep.zsyl.cc/sleeph5/miniIndex.html'
+				const url5 = 'https://sleep.xinglu.shop/sleeph5'
 				const navtitle = '健康检测'
 				console.log('go2use:', url5)
 				wx.navigateTo({
@@ -246,12 +251,99 @@
 					url: `/pages/mine/webview?url=${url5}&nav=${navtitle}`,
 				});
 			},
-			clickWxLogin() {
-				autoLogin((res) => {
-					console.log('success')
-					console.log(uni.getStorageSync('userInfo'))
-					this.refreshUserInfo();
-				})
+			async onGetPhoneNumber(e) {
+				if (!e.detail || e.detail.errMsg !== 'getPhoneNumber:ok') {
+					uni.showToast({
+						title: '已取消授权手机号',
+						icon: 'none'
+					});
+					return;
+				}
+				const { encryptedData, iv } = e.detail;
+				if (!encryptedData || !iv) {
+					uni.showToast({
+						title: '获取手机号数据失败',
+						icon: 'none'
+					});
+					return;
+				}
+				try {
+					const wx_code = await onGetCode();
+					const params = {
+						encryptedData,
+						iv,
+						phone_code: '',
+						terminal: 7,
+						wx_code,
+						version: '1.0.10'
+					};
+					const res = await getPhoneByCode(params);
+					console.log('微信手机号快捷登录结果:', res);
+					if (res && res.code === 1 && res.data) {
+						const data = res.data;
+						const userInfo = {
+							token: data.token,
+							nickName: data.nickname,
+							avatar: data.avatar,
+							mobile: data.mobile,
+							user_sn: data.sn,
+							user_id: data.user_id,
+							score: data.user_integral || 0
+						};
+						uni.setStorageSync('userInfo', userInfo);
+						this.score = userInfo.score;
+						this.userInfo = userInfo;
+						this.hasLogin = true;
+						uni.showToast({
+							title: '登录成功',
+							icon: 'success'
+						});
+					} else {
+						const msg = (res && res.msg) || '登录失败，请重试';
+						// 特殊处理：微信手机号解密失败，给出明确引导
+						if (msg.indexOf('微信手机号解密失败') > -1) {
+							uni.showModal({
+								title: '授权失败',
+								content: '授权信息校验未完成，请在此点击头像重新完成授权',
+								showCancel: false,
+								confirmText: '我知道了'
+							});
+						} else {
+							uni.showToast({
+								title: msg,
+								icon: 'none'
+							});
+						}
+					}
+				} catch (error) {
+					console.error('微信手机号快捷登录异常:', error);
+					uni.showModal({
+						title: '授权失败',
+						content: '授权信息校验异常，请再次点击头像重新完成授权',
+						showCancel: false,
+						confirmText: '我知道了'
+					});
+				}
+			},
+			logout() {
+				uni.showModal({
+					title: '退出登录',
+					content: '退出后将无法使用枕头功能，是否确认？',
+					confirmText: '退出登录',
+					cancelText: '取消',
+					success: (res) => {
+						if (res.confirm) {
+							uni.removeStorageSync('userInfo');
+							this.hasLogin = false;
+							this.userInfo = { avatar: '' };
+							this.score = 0;
+							uni.showToast({
+								title: '已退出登录',
+								icon: 'success'
+							});
+						}
+					}
+				});
 			},
 			saveWdithHandle() {
 				uni.setStorageSync('shoulderWidth', this.shoulderWidthNum);
@@ -314,6 +406,19 @@
 				margin: 0 auto;
 				border: 5px solid #fff;
 				background-color: #FFF4EA;
+
+				.avatar-btn {
+					padding: 0;
+					margin: 0;
+					border: none;
+					background: transparent;
+					width: 114upx;
+					height: 114upx;
+					border-radius: 100%;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+				}
 
 				.avatar {
 					flex-shrink: 0;
@@ -386,6 +491,7 @@
 					margin-right: 20rpx;
 				}
 			}
+
 
 			.desc {
 				font-size: 32rpx;

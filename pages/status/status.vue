@@ -68,25 +68,21 @@
 					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
 					<label class="title" for="">AI拍照</label>
 					<image class="icon2" src="../../static/index/SY_00A_IconAI.png" mode="widthFix"></image>
-					<!-- <label class="desc" for="">未连接</label> -->
 				</view>
 				<view class="item" @click="hotHandler()">
 					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
 					<label class="title" for="">模式选择</label>
 					<image class="icon3" src="../../static/index/SY_00A_IconRFa.png" mode="widthFix"></image>
-					<!-- <label class="desc" for="">未开启</label> -->
 				</view>
 				<view class="item" @click="statusCheck()">
 					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
 					<label class="title" for="">睡姿学习</label>
 					<image class="icon4" src="../../static/index/SY_00A_IconJZWT1.png" mode="widthFix"></image>
-					<!-- <label class="desc" for="">仰卧中</label> -->
 				</view>
 				<view class="item" @click="spineCheck()">
 					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
 					<label class="title" for="">脊柱微调</label>
 					<image class="icon4" src="../../static/index/SY_00A_IconJZWT.png" mode="widthFix"></image>
-					<!-- <label class="desc" for="">仰卧中</label> -->
 				</view>
 			</view>
 		</view>
