@@ -79,6 +79,9 @@
 						<view class="opt-btn" @click="restartHandle" v-if ="!miniProgramEnv.isRelease">
 							<label>设备重启</label>
 						</view>
+						<view class="opt-btn" @click="goBleTest" v-if ="!miniProgramEnv.isRelease">
+							<label>蓝牙协议测试</label>
+						</view>
 						<view v-if="hasLogin">
 							<view class="opt-btn" @click="logout">退出登录</view>
 						</view>
@@ -250,6 +253,11 @@
 					// 跳转到webview页面
 					url: `/pages/mine/webview?url=${url5}&nav=${navtitle}`,
 				});
+			},
+			goBleTest() {
+				uni.navigateTo({
+					url: '/pages/bleTest/bleTest'
+				})
 			},
 			async onGetPhoneNumber(e) {
 				if (!e.detail || e.detail.errMsg !== 'getPhoneNumber:ok') {

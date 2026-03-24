@@ -594,7 +594,8 @@
 
 				// return;
 				uni.navigateTo({
-					url: "/page_subject/ano/ano"
+					// url: "/page_subject/ano/ano",
+					url: "/page_subject/anoMoving/anoMoving"
 				})
 			},
 
@@ -816,7 +817,7 @@
 					characteristicId,
 					// 这里的value是ArrayBuffer类型
 					value: buffer,
-					writeType: 'write',
+					writeType: 'writeNoResponse',
 					success(res) {
 						console.log('writeBLECharacteristicValue success', res)
 					}

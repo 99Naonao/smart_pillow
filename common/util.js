@@ -429,13 +429,16 @@ var write2tooth = async function(deviceId, serviceId, characteristicId, buffer) 
 			characteristicId,
 			// 这里的value是ArrayBuffer类型
 			value: buffer,
-			writeType: 'write',
+			writeType: 'writeNoResponse',
 			success(res) {
 				resolve(res)
 				console.log('writeBLECharacteristicValue success', res)
 			},
-			fail() {
-				reject()
+			fail(err) {
+				const errMsg = (err && (err.errMsg || err.message)) || ''
+				console.error('[write2tooth util] writeBLECharacteristicValue fail', err)
+				console.error('[write2tooth util] errMsg:', errMsg, 'code:', err && err.errCode)
+				reject(err || new Error(errMsg || 'writeBLECharacteristicValue fail'))
 			}
 		})
 	});
@@ -468,13 +471,16 @@ var write2toothstr = async function(deviceId, serviceId, characteristicId, buffe
 			characteristicId,
 			// 这里的value是ArrayBuffer类型
 			value: buffer,
-			writeType: 'write',
+			writeType: 'writeNoResponse',
 			success(res) {
 				resolve(res)
 				console.log('writeBLECharacteristicValue success', res)
 			},
-			fail() {
-				reject()
+			fail(err) {
+				const errMsg = (err && (err.errMsg || err.message)) || ''
+				console.error('[write2toothstr util] writeBLECharacteristicValue fail', err)
+				console.error('[write2toothstr util] errMsg:', errMsg, 'code:', err && err.errCode)
+				reject(err || new Error(errMsg || 'writeBLECharacteristicValue fail'))
 			}
 		})
 	});

@@ -68,19 +68,6 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
-		},
-		{
-			"path": "pages/PSQI/NewPSQI",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path" : "pages/PSQI/result",
-			"style" : 
-			{
-				"navigationStyle": "custom"
-			}
 		}
 	],
 	"subPackages": [{

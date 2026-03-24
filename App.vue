@@ -66,6 +66,13 @@
 		},
 		onHide: function() {
 			console.log('App Hide')
+			// 兜底：进入后台时停止搜寻，避免适配器长期处于 discovery 状态影响再次扫描
+			if (typeof uni !== 'undefined' && uni.stopBluetoothDevicesDiscovery) {
+				uni.stopBluetoothDevicesDiscovery({
+					fail() {},
+					complete() {}
+				})
+			}
 		}
 	}
 </script>

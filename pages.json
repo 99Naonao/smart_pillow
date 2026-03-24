@@ -70,23 +70,16 @@
 			}
 		},
 		{
-			"path": "pages/PSQI/NewPSQI",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path" : "pages/PSQI/result",
-			"style" : 
-			{
-				"navigationStyle": "custom"
-			}
-		},
-		{
 			"path": "pages/newMine/newMine",
 			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTitleText":"个人中心"
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/bleTest/bleTest",
+			"style": {
+				"navigationStyle": "default",
+				"navigationBarTitleText": "蓝牙协议测试"
 			}
 		}
 	],

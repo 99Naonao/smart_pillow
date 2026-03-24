@@ -359,29 +359,37 @@ class blue_class {
 		});
 	}
 	write2tooth(buffer) {
-		let deviceId = this.deviceId;
-		let serviceId = this.serviceId;
-		let characteristicId = this.characteristicId;
+		const deviceId = this.deviceId;
+		const serviceId = this.serviceId;
+		const characteristicId = this.characteristicId;
+		// fail 回调里 this 可能不是当前实例，勿在 fail 内再调 this.ab2hex
+		const hex = this.ab2hex(buffer);
 		console.log('write2tooth,deviceId:,', deviceId, ',serviceId:,' + serviceId,
-			',characteristicId:,' + characteristicId, 'arraybuffer:', this.ab2hex(buffer))
-		// 向蓝牙设备发送一个0x00的16进制数据
+			',characteristicId:,' + characteristicId, 'arraybuffer:', hex)
+		// 多数透传串口类特征仅声明 writeNoResponse；用 write 会报 writeType is not supported
 		uni.writeBLECharacteristicValue({
-			// 这里的 deviceId 需要在 getBluetoothDevices 或 onBluetoothDeviceFound 接口中获取
 			deviceId,
-			// 这里的 serviceId 需要在 getBLEDeviceServices 接口中获取
 			serviceId,
-			// 这里的 characteristicId 需要在 getBLEDeviceCharacteristics 接口中获取
 			characteristicId,
-			// 这里的value是ArrayBuffer类型
 			value: buffer,
-			writeType: 'write',
-			success(res) {
-				// resolve(res)
+			writeType: 'writeNoResponse',
+			success: (res) => {
 				console.log('writeBLECharacteristicValue success', res)
+				uni.$emit('ble_write_result', { ok: true, res })
 			},
-			fail() {
-				console.log('writeBLECharacteristicValue fail')
-				// reject()
+			fail: (err) => {
+				const errMsg = (err && (err.errMsg || err.message)) || ''
+				console.error('[write2tooth] writeBLECharacteristicValue fail', err)
+				console.error('[write2tooth] errMsg:', errMsg, 'code:', err && err.errCode)
+				uni.$emit('ble_write_result', {
+					ok: false,
+					errMsg,
+					err,
+					deviceId,
+					serviceId,
+					characteristicId,
+					hex
+				})
 			}
 		})
 	}
