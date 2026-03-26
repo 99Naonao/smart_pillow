@@ -121,6 +121,8 @@
       <button class="btn" type="warn" @click="send('startSpineAdjust')">脊柱微调 启动 0x09</button>
       <button class="btn" type="warn" @click="send('calibrateEnter')">标定枕头 进入模式 0x0A</button>
       <button class="btn" type="warn" @click="send('calibrateExit')">标定枕头 退出模式 0x0A</button>
+	  <button class="btn" type="warn" @click="send('calibrateSuccess')">标定枕头 成功模式 0x0A</button>
+	  
     </view>
 
     <view class="section">
@@ -795,14 +797,17 @@ export default {
     parseStatusFromBuffer(buffer) {
       try {
         const dv = new DataView(buffer)
-        if (dv.byteLength < 8) return null
+        const n = dv.byteLength
+        if (n < 5) return null
         const start = dv.getUint8(0)
         if (start !== 0xaa && start !== 0xAA) return null
         const func = dv.getUint8(3)
-        // 《枕头蓝牙通讯协议》应答位 bit7=1：读 0x04 的上传功能字节为 0x84；兼容固件发 0x04
+        
         if ((func & 0x7f) !== 0x04) return null
 
         let offset = 4
+        // 存在精简包与完整包，先保证基础状态字段可读。
+        if (n < offset + 7) return null
         const workStatus = dv.getUint8(offset++)
         const fault1 = dv.getUint8(offset++)
         const fault2 = dv.getUint8(offset++)
@@ -810,21 +815,6 @@ export default {
         const pump2 = dv.getUint8(offset++)
         const temperature = dv.getUint8(offset++)
         const valve = dv.getUint8(offset++)
-
-        // 跳过睡姿数据 16 * uint16 = 32 字节
-        offset += 16 * 2
-
-        // RTC 年月日时分秒
-        const year = dv.getUint8(offset++)
-        const month = dv.getUint8(offset++)
-        const day = dv.getUint8(offset++)
-        const hour = dv.getUint8(offset++)
-        const minute = dv.getUint8(offset++)
-        const second = dv.getUint8(offset++)
-
-        const press1 = dv.getUint16(offset, true)
-        offset += 2
-        const press2 = dv.getUint16(offset, true)
 
         // 与协议文档「读取枕头数据 0x04」工作状态一致
         const workStatusMap = {
@@ -843,9 +833,7 @@ export default {
           valveBits.push(`阀${i + 1}:${(valve >> i) & 0x01 ? '开' : '关'}`)
         }
 
-        const rtcText = `${year}-${month}-${day} ${hour}:${minute}:${second}`
-
-        return {
+        const result = {
           workStatus,
           workStatusText: workStatusMap[workStatus] || String(workStatus),
           fault1,
@@ -856,11 +844,51 @@ export default {
           pump2Text: pumpStatusMap[pump2] || String(pump2),
           temperature,
           valve,
-          valveBits,
-          rtcText,
-          press1,
-          press2
+          valveBits
         }
+        const fullPayloadNeed = 32 + 6 + 4
+        const compactPayloadNeed = 6 + 4
+        const remain = n - offset
+
+        if (remain >= fullPayloadNeed) {
+          // 完整包：含 16*uint16 睡姿 + RTC + 2 路压力
+          offset += 16 * 2
+          const year = dv.getUint8(offset++)
+          const month = dv.getUint8(offset++)
+          const day = dv.getUint8(offset++)
+          const hour = dv.getUint8(offset++)
+          const minute = dv.getUint8(offset++)
+          const second = dv.getUint8(offset++)
+          const press1 = dv.getUint16(offset, true)
+          offset += 2
+          const press2 = dv.getUint16(offset, true)
+          result.rtcText = `${year}-${month}-${day} ${hour}:${minute}:${second}`
+          result.press1 = press1
+          result.press2 = press2
+          result.packetType = 'full'
+          return result
+        }
+
+        if (remain >= compactPayloadNeed) {
+          // 简版包：无睡姿数组，仅带 RTC + 2 路压力（常见 len=18/总长=23）
+          const year = dv.getUint8(offset++)
+          const month = dv.getUint8(offset++)
+          const day = dv.getUint8(offset++)
+          const hour = dv.getUint8(offset++)
+          const minute = dv.getUint8(offset++)
+          const second = dv.getUint8(offset++)
+          const press1 = dv.getUint16(offset, true)
+          offset += 2
+          const press2 = dv.getUint16(offset, true)
+          result.rtcText = `${year}-${month}-${day} ${hour}:${minute}:${second}`
+          result.press1 = press1
+          result.press2 = press2
+          result.packetType = 'compact'
+          return result
+        }
+
+        result.packetType = 'base'
+        return result
       } catch (e) {
         console.error('parseStatusFromBuffer error', e)
         return null
@@ -970,9 +998,9 @@ export default {
             buffer = BluePillowProtocol.spineAdjust({
               headHeight: 60,
               neckHeight: 50,
-              times: 3,
-              holdTime1: 30,
-              holdTime2: 30
+              times: 1,
+              holdTime1: 10,
+              holdTime2: 10
             })
             break
           case 'writePostureConfig': {
@@ -1033,6 +1061,9 @@ export default {
           case 'calibrateExit':
             buffer = BluePillowProtocol.calibrate(0x02)
             break
+			case 'calibrateSuccess':
+			buffer = BluePillowProtocol.calibrate(0x03)
+			break
           default:
             uni.showToast({
               title: '未知指令',

@@ -293,7 +293,7 @@ class BluePillowProtocol {
    * @param {number} payload.holdTime2 放松高度保持时间（秒，uint16）
    */
   static spineAdjust({ headHeight, neckHeight, times, holdTime1, holdTime2 }) {
-    const bytes = new Uint8Array(2 + 1 + 2 + 2);
+    const bytes = new Uint8Array(2 + 2 + 1 + 2 + 2);
     let offset = 0;
     // 头枕高度
     bytes[offset++] = headHeight & 0xff;
