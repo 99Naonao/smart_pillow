@@ -1,4 +1,4 @@
-import blue_class from '../utils/BlueManager'
+import { PillowBleManager } from '@/utils/BlueUtils'
 
 function formatTime(time) {
 	if (typeof time !== 'number' || time < 0) {
@@ -618,26 +618,6 @@ var handleMarkSend = function(mark, buffer) {
 	return write_buffer;
 }
 
-// 重置校准
-var resetPillow = function(mark) {
-	console.log('[handleresetPillow] buffer');
-	const n_buffer = new ArrayBuffer(4)
-	const dataView = new DataView(n_buffer)
-	// 写入长度
-	dataView.setUint16(0, 0xAA55)
-	dataView.setUint16(2, 0x07E8)
-	let withLengthBuffer = handleSendFormart(n_buffer);
-	return handleMarkSend(mark, withLengthBuffer)
-}
-
-// 重启
-var restartPillow = function(mark) {
-	console.log('[handlerestartPillowrestartPillow] buffer');
-	const n_buffer = new ArrayBuffer(0)
-	const dataView = new DataView(n_buffer)
-	let withLengthBuffer = handleSendFormart(n_buffer);
-	return handleMarkSend(mark, withLengthBuffer)
-}
 // 初始数据校准
 var initPillow = function(head, neck, width, sideHead, sideNexck, sideWidth) {
 	// 2——用户卧姿参数设置，数据1－正卧头部气囊高度值（U8），数据2－正卧颈部气囊高度值（U8），数据3－正卧肩宽值（U16）数据4－侧卧头部气囊高度值（U8），数据5－侧卧颈部气囊高度值（U8），数据6－侧卧肩宽值（U16）
@@ -802,16 +782,17 @@ var sendModeByName = function(name) {
 			break;
 		}
 	}
-	// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
-	let init_arraybuffer = initPillow(item.headHeight > 100 ? 100 : item.headHeight, item
-		.neckHeight > 100 ? 100 : item.neckHeight, 200, item.sideHeadHeight > 100 ? 100 : item.sideHeadHeight,
-		item
-		.sideNeckHeight >
-		100 ?
-		100 :
-		item.sideNeckHeight, 200);
-	blue_class.getInstance().write2tooth(init_arraybuffer);
-	return true;
+	if (!item) {
+		return false;
+	}
+	const payload = {
+		headHeight: item.headHeight,
+		neckHeight: item.neckHeight,
+		sideHeadHeight: item.sideHeadHeight,
+		sideNeckHeight: item.sideNeckHeight,
+		profileIndex: item.profileIndex != null && item.profileIndex !== '' ? item.profileIndex : 0
+	};
+	return PillowBleManager.getInstance().applyModeProfileFromItem(payload);
 }
 function getMiniProgramEnv(){
 	try {
@@ -838,6 +819,156 @@ function getMiniProgramEnv(){
 function isLogin(){
 	const userInfo = uni.getStorageSync('userInfo');
 	return !!(userInfo && userInfo.token);
+}
+
+/**
+ * 对字节序列逐字节按位异或（8bit），常用于心率/WiFi 模块侧 CHK。
+ * @param {number[]|Uint8Array} bytes
+ * @returns {number} 0～255
+ */
+function xorBytes(bytes) {
+	const arr = bytes instanceof Uint8Array ? bytes : Uint8Array.from(bytes || [])
+	let x = 0
+	for (let i = 0; i < arr.length; i++) {
+		x ^= arr[i] & 0xff
+	}
+	return x & 0xff
+}
+
+/**
+ * 协议约定：前 8 字节的异或校验值（CHK）。
+ * @param {number[]|Uint8Array} bytes8 必须恰好 8 个字节
+ * @returns {number} CHK，0～255
+ */
+function xorChk8(bytes8) {
+	const arr = bytes8 instanceof Uint8Array ? bytes8 : Uint8Array.from(bytes8 || [])
+	if (arr.length !== 8) {
+		throw new Error('xorChk8: 需要恰好 8 个字节')
+	}
+	return xorBytes(arr)
+}
+
+/**
+ * 心率/WiFi 模块控制帧（《枕头蓝牙通讯协议》第三节）：5A 5A + 6 字节载荷 + CHK（前 8 字节异或）。
+ * @param {Object} [opt]
+ * @param {boolean} [opt.configWifi=false] true 时第 3 字节为 0x0A（发起配网）
+ * @param {boolean} [opt.queryStatus=false] true 时第 5 字节为 0x0A（查询联网状态）
+ * @param {number} [opt.byte3=0] 第 4 字节
+ * @param {number[]} [opt.spare567=[0,0,0]] 第 6～8 字节
+ * @returns {number[]} 共 9 个字节，末字节为 CHK
+ */
+function buildHeartModuleWifiFrame9(opt) {
+	const o = opt || {}
+	const configWifi = !!o.configWifi
+	const queryStatus = !!o.queryStatus
+	const b3 = Math.max(0, Math.min(255, Number(o.byte3) || 0)) & 0xff
+	const spare = o.spare567 || o.spare || [0, 0, 0]
+	const s0 = Math.max(0, Math.min(255, Number(spare[0]) || 0)) & 0xff
+	const s1 = Math.max(0, Math.min(255, Number(spare[1]) || 0)) & 0xff
+	const s2 = Math.max(0, Math.min(255, Number(spare[2]) || 0)) & 0xff
+	const bytes8 = [
+		0x5a,
+		0x5a,
+		configWifi ? 0x0a : 0x00,
+		b3,
+		queryStatus ? 0x0a : 0x00,
+		s0,
+		s1,
+		s2
+	]
+	const chk = xorChk8(bytes8)
+	return bytes8.concat([chk])
+}
+
+/**
+ * 将 hex 文本（可含空格）转为字节数组。
+ * @param {string} hex
+ * @returns {number[]}
+ */
+function hexTextToBytes(hex) {
+	const clean = String(hex || '').replace(/[^0-9a-fA-F]/g, '')
+	if (!clean || clean.length % 2 !== 0) return []
+	const out = []
+	for (let i = 0; i < clean.length; i += 2) {
+		const v = parseInt(clean.slice(i, i + 2), 16)
+		if (Number.isNaN(v)) return []
+		out.push(v & 0xff)
+	}
+	return out
+}
+
+/**
+ * 心率/WiFi 0x0F 数据区可能是 ASCII 形式的 hex 文本（如 "5b 5b 0 0 a 0 0 0 a\r\n"），
+ * 本方法尝试提取其中的十六进制 token 并转字节。
+ * @param {number[]|Uint8Array} bytes
+ * @returns {number[]}
+ */
+function extractAsciiHexBytes(bytes) {
+	const arr = bytes instanceof Uint8Array ? bytes : Uint8Array.from(bytes || [])
+	if (!arr.length) return []
+	const txt = Array.from(arr).map((b) => String.fromCharCode(b & 0xff)).join('')
+	const tokens = txt.match(/[0-9a-fA-F]{1,2}/g)
+	if (!tokens || tokens.length < 9) return []
+	const out = []
+	for (let i = 0; i < tokens.length; i++) {
+		const v = parseInt(tokens[i], 16)
+		if (!Number.isNaN(v)) out.push(v & 0xff)
+	}
+	return out
+}
+
+/**
+ * 在字节流中查找 5B 5B 开头且 CHK 正确（前8字节异或）的 9 字节联网状态帧。
+ * @param {number[]|Uint8Array} bytes
+ * @returns {number[]|null}
+ */
+function findWifiStatusFrame9(bytes) {
+	const arr = bytes instanceof Uint8Array ? bytes : Uint8Array.from(bytes || [])
+	if (arr.length < 9) return null
+	for (let i = 0; i <= arr.length - 9; i++) {
+		if (arr[i] !== 0x5b || arr[i + 1] !== 0x5b) continue
+		let x = 0
+		for (let j = 0; j < 8; j++) x ^= arr[i + j] & 0xff
+		if ((x & 0xff) === (arr[i + 8] & 0xff)) {
+			return Array.from(arr.slice(i, i + 9))
+		}
+	}
+	return null
+}
+
+/**
+ * 解析 0x0F/0x8F 载荷 hex，兼容二进制/ASCII 两种 5B5B 状态回传。
+ * @param {string} payloadHex 仅 data 区 hex（不含外层 AA/长度/功能/CRC）
+ * @returns {{ok:boolean,statusByte?:number,connected?:boolean,source?:string,frameHex?:string,statusText?:string}}
+ */
+function parseHeartWifiStatusFromPayloadHex(payloadHex) {
+	const rawBytes = hexTextToBytes(payloadHex)
+	if (!rawBytes.length) return { ok: false }
+
+	const frameBin = findWifiStatusFrame9(rawBytes)
+	const buildResult = (frame, source) => {
+		const statusByte = frame[4] & 0xff
+		const connected = statusByte === 0x0a
+		return {
+			ok: true,
+			statusByte,
+			connected,
+			source,
+			frameHex: frame.map((b) => ('0' + (b & 0xff).toString(16)).slice(-2)).join(''),
+			statusText: connected
+				? '已联网(0x0A)'
+				: statusByte === 0x05
+					? '未联网(0x05)'
+					: `未知状态(0x${('0' + statusByte.toString(16)).slice(-2).toUpperCase()})`
+		}
+	}
+	if (frameBin) return buildResult(frameBin, 'bin-5b5b')
+
+	const asciiBytes = extractAsciiHexBytes(rawBytes)
+	const frameAscii = findWifiStatusFrame9(asciiBytes)
+	if (frameAscii) return buildResult(frameAscii, 'ascii-5b5b')
+
+	return { ok: false }
 }
 
 function ensureLoginBeforeConnectBle(onSuccess){
@@ -876,7 +1007,6 @@ export {
 	hand1Shake,
 	write2tooth,
 	ab2hex,
-	resetPillow,
 	formatTime,
 	formatLocation,
 	handPillowState,
@@ -887,7 +1017,6 @@ export {
 	handleSendFormart,
 	uploadDataRequest,
 	write2toothstr,
-	restartPillow,
 	initPillow,
 	appAnswer,
 	handPillowStudyState,
@@ -900,5 +1029,9 @@ export {
 	formatTimeByString,
 	dateUtils,
 	getMiniProgramEnv,
-	ensureLoginBeforeConnectBle
+	ensureLoginBeforeConnectBle,
+	xorBytes,
+	xorChk8,
+	buildHeartModuleWifiFrame9,
+	parseHeartWifiStatusFromPayloadHex
 }

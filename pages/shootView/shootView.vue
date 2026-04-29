@@ -218,6 +218,7 @@
 	import {
 		object2Query,
 	} from '@/common/util.js'
+	import { PillowBleManager } from '@/utils/BlueUtils'
 	export default {
 		components: {
 			InputView
@@ -595,7 +596,9 @@
 					neckHeight: Math.floor(this.sideNeckToBack),
 					headHeight: Math.floor(this.sideNeckToHead),
 					sideNeckHeight: Math.floor((this.shoulderSpace)),
-					sideHeadHeight: Math.floor((this.frontRightPart))
+					sideHeadHeight: Math.floor((this.frontRightPart)),
+					/** 新协议 0x02/0x03 用户索引，与 AI 单套结果对应默认写 0 号档案 */
+					profileIndex: 0
 				}
 
 				let form = {
@@ -643,6 +646,8 @@
 				uni.setStorageSync('myMode', JSON.stringify(storageObj));
 
 				uni.setStorageSync('standard', JSON.stringify(params));
+				// 已连接枕头时按新协议写入档案 + 当前仰卧高度（与 mode 页「发送数据」一致）
+				PillowBleManager.getInstance().applyModeProfileFromItem(params)
 				let that = this;
 				uni.showToast({
 					title: '发送中',
@@ -697,7 +702,12 @@
 
 				addAILog(send_params).then(()=>{
 					console.log('拍照得到的参数保存成功');
-					callPushSmartPillowData(params.headHeight,params.neckHeiht);
+					callPushSmartPillowData(
+						params.headHeight,
+						params.neckHeight,
+						params.sideHeadHeight,
+						params.sideNeckHeight
+					);
 				})
 			},
 

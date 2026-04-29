@@ -1,0 +1,1836 @@
+﻿servicewechat.com:1 [wifiProvision] 配网超时（60秒）
+servicewechat.com:1 [wifiProvision] 诊断：60秒内未收到 TYPE_CONNECT_ROUTER_RESULT（type=4）
+servicewechat.com:1 notifyConnectBle 蓝牙准备连接的deviceId --------------
+servicewechat.com:1 [wifiProvision] 配网超时，已请求断开 GoodSleep 设备
+servicewechat.com:1 我要连接？ false
+servicewechat.com:1 ------???????????????????????--------
+servicewechat.com:1 [wifiProvision] BluFi← type=-1 result=true data={"deviceId":"BD40B603-A7FA-6F8A-442E-D2D3087506CF","name":"GoodSleep SM04"}
+servicewechat.com:1 App route: 
+- path: pages/status/status
+- openType: navigateBack
+- renderer: webview
+- componentFramework: exparser
+servicewechat.com:1 pages/wifiProvision/wifiProvision: onUnload have been invoked
+servicewechat.com:1 pages/status/status: onShow have been invoked
+servicewechat.com:1 menui11111: 0
+servicewechat.com:1 menui1111122: 65
+servicewechat.com:1 menui1111122333: 0
+servicewechat.com:1 --bateryWidth: 0rpx
+servicewechat.com:1 menui: 172px
+servicewechat.com:1 ====== url ======
+servicewechat.com:1 https://sleep.zsyl.cc/api/appVersion
+servicewechat.com:1 pages/status/status: onRouteDone have been invoked
+servicewechat.com:1 -----??????????????????-----
+servicewechat.com:1 ====== result ======
+servicewechat.com:1 {success: true, code: "00000", message: "请求成功", data: }
+servicewechat.com:1 App route: 
+- path: page_subject/work/work
+- openType: navigateTo
+- renderer: webview
+- componentFramework: exparser
+servicewechat.com:1 pages/status/status: onHide have been invoked
+servicewechat.com:1 Update view with init data
+servicewechat.com:1 page_subject/work/work: onLoad have been invoked
+servicewechat.com:1 onload!!!!!!
+servicewechat.com:1 page_subject/work/work: onShow have been invoked
+servicewechat.com:1 checkBlueToothSetting
+servicewechat.com:1 refreshDeviceList: [Object]
+servicewechat.com:1 Invoke event onReady in page: page_subject/work/work
+servicewechat.com:1 page_subject/work/work: onReady have been invoked
+servicewechat.com:1 page_subject/work/work: onRouteDone have been invoked
+servicewechat.com:1 getSetting {errMsg: "getSetting:ok", authSetting: }
+servicewechat.com:1 蓝牙权限已存在
+servicewechat.com:1 蓝牙适配器已打开，直接开始搜索设备
+servicewechat.com:1 startBluetoothDevicesDiscovery success: {errno: , errMsg: "startBluetoothDevicesDiscovery:ok", errCode: , isDiscovering: true}
+servicewechat.com:1 蓝牙适配器状态变化: {available: true, discovering: true}
+servicewechat.com:1 检测到蓝牙已打开，重新开始搜索设备
+servicewechat.com:1 蓝牙适配器已打开，直接开始搜索设备
+servicewechat.com:1 startBluetoothDevicesDiscovery success: {errno: , errMsg: "startBluetoothDevicesDiscovery:ok", errCode: , isDiscovering: true}
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: ZKTeco
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: ZKTeco
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: midea
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: GoodSleep
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: GoodSleep
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: RTK_BT_4.1
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: RTK_BT_4.1
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: midea
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: lck1_7C31628E6587
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 connectBluetooth success!: E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C {errCode: , errno: , errMsg: "createBLEConnection:ok"}
+servicewechat.com:1 连接成功，设备信息已设置，等待握手...
+servicewechat.com:1 device E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C state has changed, connected: true
+servicewechat.com:1 蓝牙设备连接成功（物理层）；业务就绪以 notify 开启且 loginSuccess 为准
+servicewechat.com:1 handleDisconnect 被调用，当前 loginSuccess: false
+servicewechat.com:1 工作页面检测到蓝牙断开
+servicewechat.com:1 设置 isConnected = false
+servicewechat.com:1 蓝牙适配器状态变化: {available: true, discovering: }
+servicewechat.com:1 检测到蓝牙已打开，重新开始搜索设备
+servicewechat.com:1 蓝牙适配器已打开，直接开始搜索设备
+servicewechat.com:1 startBluetoothDevicesDiscovery success: {errno: , errMsg: "startBluetoothDevicesDiscovery:ok", errCode: , isDiscovering: true}
+servicewechat.com:1 蓝牙适配器状态变化: {available: true, discovering: true}
+servicewechat.com:1 检测到蓝牙已打开，重新开始搜索设备
+servicewechat.com:1 蓝牙适配器已打开，直接开始搜索设备
+servicewechat.com:1 startBluetoothDevicesDiscovery success: {errno: , errMsg: "startBluetoothDevicesDiscovery:ok", errCode: , isDiscovering: true}
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: ZKTeco
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: ZKTeco
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: RTK_BT_4.1
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: RTK_BT_4.1
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: GoodSleep
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: GoodSleep
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: midea
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: midea
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 getBLEDeviceServices success: {errno: , deviceId: "E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C", services: , errMsg: "getBLEDeviceServices:ok", errCode: , …}
+servicewechat.com:1 getBLEDeviceServices res.services: (2) [Object, Object]
+servicewechat.com:1 getBLEDeviceCharacteristics: E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C 0000FFE0-0000-1000-8000-00805F9B34FB
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: Z_6_8021454
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: Z_6_8021454
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 onBluetoothDeviceFound: {devices: }
+servicewechat.com:1 result.devices[0].name: 
+servicewechat.com:1 new device list has founded 1 1 [Object]
+servicewechat.com:1 成功启用 notify 功能 {deviceUUID: "E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C", serviceUUID: "0000FFE0-0000-1000-8000-00805F9B34FB", notifyUUID: "0000FFE2-0000-1000-8000-00805F9B34FB", writeUUID: "0000FFE1-0000-1000-8000-00805F9B34FB"}
+servicewechat.com:1 handleDisconnect 被调用，当前 loginSuccess: true
+servicewechat.com:1 工作页面检测到蓝牙连接，设置 isConnected = true
+servicewechat.com:1 App route: 
+- path: pages/status/status
+- openType: switchTab
+- renderer: webview
+- componentFramework: exparser
+servicewechat.com:1 page_subject/work/work: onUnload have been invoked
+servicewechat.com:1 pages/status/status: onShow have been invoked
+servicewechat.com:1 menui11111: 0
+servicewechat.com:1 menui1111122: 65
+servicewechat.com:1 menui1111122333: 0
+servicewechat.com:1 --bateryWidth: 0rpx
+servicewechat.com:1 menui: 172px
+servicewechat.com:1 ====== url ======
+servicewechat.com:1 https://sleep.zsyl.cc/api/appVersion
+servicewechat.com:1 [BLE 发送 APP→设备] len=6 hex=55010084bf23 deviceId=E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 [BLE 发送] 写入特征值成功 {errCode: , errno: , errMsg: "writeBLECharacteristicValue:ok"}
+servicewechat.com:1 ====== result ======
+servicewechat.com:1 {success: true, code: "00000", message: "请求成功", data: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914013300,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:13:33",
+↵      "id": 1776914013300,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 11.9,
+↵        "heart_rate": 68
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914013300,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:13:33",
+      "id": 1776914013300,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 11.9,
+        "heart_rate": 68
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914013300, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 68, breathRate: 11.9, rows: 1}
+servicewechat.com:1 [BLE 接收 设备→APP] len=27 hex=aa160084000000000019001a04170b0d160500e20200004100b0f3
+servicewechat.com:1 setPillowHeight: 0
+servicewechat.com:1 menui11111: 0
+servicewechat.com:1 menui1111122: 65
+servicewechat.com:1 menui1111122333: 0
+servicewechat.com:1 --bateryWidth: 0rpx
+servicewechat.com:1 pages/status/status: onRouteDone have been invoked
+servicewechat.com:1 App route: 
+- path: pages/wifiProvision/wifiProvision
+- openType: navigateTo
+- renderer: webview
+- componentFramework: exparser
+servicewechat.com:1 pages/status/status: onHide have been invoked
+servicewechat.com:1 Update view with init data
+servicewechat.com:1 pages/wifiProvision/wifiProvision: onLoad have been invoked
+servicewechat.com:1 [wifiProvision] [WiFi] 恢复已记住 Wi-Fi：ZSYL26F
+servicewechat.com:1 [wifiProvision] [WiFi] 点击自动填写当前 Wi-Fi，silent=true
+servicewechat.com:1 [wifiProvision] [WiFi] startWifi 初始化成功
+servicewechat.com:1 [wifiProvision] BluFi 已初始化（微信）
+servicewechat.com:1 pages/wifiProvision/wifiProvision: onShow have been invoked
+servicewechat.com:1 [wifiProvision] [WiFi] 开始读取当前连接的 Wi-Fi
+servicewechat.com:1 [wifiProvision] [WiFi] 读取到当前 Wi-Fi：ZSYL26F-5G（5G）
+servicewechat.com:1 Invoke event onReady in page: pages/wifiProvision/wifiProvision
+servicewechat.com:1 pages/wifiProvision/wifiProvision: onReady have been invoked
+servicewechat.com:1 pages/wifiProvision/wifiProvision: onRouteDone have been invoked
+servicewechat.com:1 [wifiProvision] 下发 0x0F 配网指令 5a 5a 0a 00 00 00 00 00 0a
+servicewechat.com:1 [BLE 发送 APP→设备] len=16 hex=550b000f005a5a0a00000000000a1b17 deviceId=E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C
+servicewechat.com:1 [BLE 发送] 写入特征值成功 {errCode: , errno: , errMsg: "writeBLECharacteristicValue:ok"}
+servicewechat.com:1 -----??????????????????-----
+servicewechat.com:1 -----??????????????????-----
+servicewechat.com:1 [wifiProvision] BluFi← type=42 result=true data={"errCode":0,"errno":0,"errMsg":"stopBluetoothDevicesDiscovery:ok"}
+servicewechat.com:1 [wifiProvision] BluFi← type=42 result=true data={"errCode":0,"errno":0,"errMsg":"stopBluetoothDevicesDiscovery:ok"}
+servicewechat.com:1 [BLE 接收 设备→APP] len=7 hex=aa02000f000440
+servicewechat.com:1 [wifiProvision] 收到 0x0F 写应答成功
+servicewechat.com:1 [wifiProvision] 断开当前枕头蓝牙
+servicewechat.com:1 device E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C state has changed, connected: false
+servicewechat.com:1 蓝牙设备连接断开
+servicewechat.com:1 检测到手动断开，跳过意外断开提示
+servicewechat.com:1 [wifiProvision] BluFi← type=-2 result=false data={"deviceId":"E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C","errorCode":0,"errorMsg":"disconnect success","connected":false}
+servicewechat.com:1 [wifiProvision] BluFi← type=-2 result=false data={"deviceId":"E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C","errorCode":0,"errorMsg":"disconnect success","connected":false}
+servicewechat.com:1 [wifiProvision] 启动 BluFi 扫描（notifyStartDiscoverBle）
+servicewechat.com:1 --------??????????????????????????--------
+servicewechat.com:1 --------????????????????????????????????--------
+servicewechat.com:1 --------?????????????????????---------
+servicewechat.com:1 --------????????????????????????--------
+servicewechat.com:1 --------??????????????????????????--------
+servicewechat.com:1 --------????????????????????????????????--------
+servicewechat.com:1 --------?????????????????????---------
+servicewechat.com:1 --------????????????????????????--------
+servicewechat.com:1 [wifiProvision] BluFi← type= 41 result=true data={"errno":0,"errMsg":"startBluetoothDevicesDiscovery:ok","errCode":0,"isDiscovering":true}
+servicewechat.com:1 [wifiProvision] BluFi← type= 41 result=true data={"errno":0,"errMsg":"startBluetoothDevicesDiscovery:ok","errCode":0,"isDiscovering":true}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":1,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"connectable":true,"name":"RTK_BT_4.1","advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","RSSI":-76}}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":2,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"connectable":true,"name":"RTK_BT_4.1","advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","RSSI":-76}}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":3,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"connectable":true,"name":"RTK_BT_4.1","advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","RSSI":-76}}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":4,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"connectable":true,"name":"RTK_BT_4.1","advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","RSSI":-76}}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":5,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"connectable":true,"name":"RTK_BT_4.1","advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","RSSI":-76}}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":5,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"connectable":true,"name":"RTK_BT_4.1","advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","RSSI":-76}}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":6,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"connectable":true,"name":"RTK_BT_4.1","advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","RSSI":-76}}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":7,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"connectable":true,"name":"RTK_BT_4.1","advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","RSSI":-76}}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":7,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"connectable":true,"name":"RTK_BT_4.1","advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","RSSI":-76}}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":8,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"connectable":true,"name":"RTK_BT_4.1","advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","RSSI":-76}}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":8,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"connectable":true,"name":"RTK_BT_4.1","advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","RSSI":-76}}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":8,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-74,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":9,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-74,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":9,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-74,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":9,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-74,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":9,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":9,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":10,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":10,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":10,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":11,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":12,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":12,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":12,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":12,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":12,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-55
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":12,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-54
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":12,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-79,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-54
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":12,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-73,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-54
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":12,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-73,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-54
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":12,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-73,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-54
+servicewechat.com:1 --------??????????????--------- {devices: }
+servicewechat.com:1 [wifiProvision] BluFi← type=1 result=true data={"_arrayLen":13,"first":{"deviceId":"EAAC8042-E0C3-C500-4419-776C27564C49","RSSI":-73,"connectable":true,"advertisData":"0001b500022cf4c540000001aa7b4be9280110000000","advertisServiceUUIDs":["0000FE3C-0000-1000-8000-00805F9B34FB"],"localName":"RTK_BT_4.1","name":"RTK_BT_4.1"}}
+servicewechat.com:1 [wifiProvision] BluFi 列表更新 GoodSleep 1 台: GoodSleep | id=BD40B603-A7FA-6F8A-442E-D2D3087506CF | RSSI=-54
+servicewechat.com:1 [wifiProvision] iOS 跳过配网阶段 MAC 保存（首次扫描阶段已处理）
+servicewechat.com:1 [wifiProvision] BluFi 连接 BD40B603-A7FA-6F8A-442E-D2D3087506CF
+servicewechat.com:1 notifyConnectBle 蓝牙准备连接的deviceId --------------
+servicewechat.com:1 -----??????????????????-----
+servicewechat.com:1 -----??????????????????-----
+servicewechat.com:1 我要连接？ true
+servicewechat.com:1 我要连接？ true
+servicewechat.com:1 [wifiProvision] BluFi← type=42 result=true data={"errCode":0,"errno":0,"errMsg":"stopBluetoothDevicesDiscovery:ok"}
+servicewechat.com:1 [wifiProvision] BluFi← type=42 result=true data={"errCode":0,"errno":0,"errMsg":"stopBluetoothDevicesDiscovery:ok"}
+servicewechat.com:1 ------?????????????????????--------
+servicewechat.com:1 [blufi] setBLEMTU fail (ignored): setBLEMTU:fail not support on this platform
+servicewechat.com:1 ------?????????????????????--------
+servicewechat.com:1 [blufi] setBLEMTU fail (ignored): setBLEMTU:fail not support on this platform
+servicewechat.com:1 device BD40B603-A7FA-6F8A-442E-D2D3087506CF state has changed, connected: true
+servicewechat.com:1 忽略非当前目标设备的连接事件: BD40B603-A7FA-6F8A-442E-D2D3087506CF target= 
+servicewechat.com:1 [wifiProvision] BluFi← type=0 result=true data={"deviceId":"BD40B603-A7FA-6F8A-442E-D2D3087506CF","name":"GoodSleep"}
+servicewechat.com:1 [wifiProvision] BluFi 连接成功，notifyInitBleEsp32
+servicewechat.com:1 初始化esp32
+servicewechat.com:1 [wifiProvision] BluFi← type=0 result=true data={"deviceId":"BD40B603-A7FA-6F8A-442E-D2D3087506CF","name":"GoodSleep"}
+servicewechat.com:1 [wifiProvision] BluFi 连接成功，notifyInitBleEsp32
+servicewechat.com:1 初始化esp32
+servicewechat.com:1 [wifiProvision] BluFi← type=-2 result=true data={"deviceId":"BD40B603-A7FA-6F8A-442E-D2D3087506CF","errorCode":0,"errorMsg":"connect success","connected":true}
+servicewechat.com:1 [wifiProvision] BluFi← type=-2 result=true data={"deviceId":"BD40B603-A7FA-6F8A-442E-D2D3087506CF","errorCode":0,"errorMsg":"connect success","connected":true}
+servicewechat.com:1 [wifiProvision] 按 blue.js 方式（notifyInitBleEsp32 后 50ms）开始三包下发
+servicewechat.com:1 [wifiProvision] 采用 blue.js 三包直写方式下发 0x09/0x0D/0x0C
+servicewechat.com:1 ------???????????????????????--------
+servicewechat.com:1 ------???????????????????????--------
+servicewechat.com:1 ------???????????????????????--------
+servicewechat.com:1 ------???????????????????????--------
+servicewechat.com:1 [wifiProvision] 选择配网写通道 service=55535343-FE7D-4AE5-8FA9-9FAFD205E455 char=49535343-1E4D-4BD9-BA61-23C647249616
+servicewechat.com:1 [wifiProvision] 三包复用写通道 service=55535343-FE7D-4AE5-8FA9-9FAFD205E455 char=49535343-1E4D-4BD9-BA61-23C647249616
+servicewechat.com:1 [wifiProvision] 0x09(hex)=090000075a53594c323646
+servicewechat.com:1 [wifiProvision] [三包写入成功] service=55535343-FE7D-4AE5-8FA9-9FAFD205E455 char=49535343-1E4D-4BD9-BA61-23C647249616 len=11
+servicewechat.com:1 [wifiProvision] 0x09 写入完成
+servicewechat.com:1 [wifiProvision] 0x0D(hex)=0d00010b3133353939303635353235
+servicewechat.com:1 [wifiProvision] [三包写入成功] service=55535343-FE7D-4AE5-8FA9-9FAFD205E455 char=49535343-1E4D-4BD9-BA61-23C647249616 len=15
+servicewechat.com:1 [wifiProvision] 0x0D 写入完成
+servicewechat.com:1 [wifiProvision] 0x0C(hex)=0c000202
+servicewechat.com:1 [wifiProvision] [三包写入成功] service=55535343-FE7D-4AE5-8FA9-9FAFD205E455 char=49535343-1E4D-4BD9-BA61-23C647249616 len=4
+servicewechat.com:1 [wifiProvision] 0x0C 写入完成（三包已全部发送）
+servicewechat.com:1 [wifiProvision] 未收到 type=4，触发第二轮三包补发
+servicewechat.com:1 [wifiProvision] [三包写入成功] service=55535343-FE7D-4AE5-8FA9-9FAFD205E455 char=49535343-1E4D-4BD9-BA61-23C647249616 len=11
+servicewechat.com:1 [wifiProvision] [三包写入成功] service=55535343-FE7D-4AE5-8FA9-9FAFD205E455 char=49535343-1E4D-4BD9-BA61-23C647249616 len=15
+servicewechat.com:1 468
+servicewechat.com:1 入网失败 468 : init security error
+servicewechat.com:1 [wifiProvision] [三包写入成功] service=55535343-FE7D-4AE5-8FA9-9FAFD205E455 char=49535343-1E4D-4BD9-BA61-23C647249616 len=4
+servicewechat.com:1 [wifiProvision] 第二轮三包补发完成
+servicewechat.com:1 [wifiProvision] BluFi← type=4 result=true data={"progress":100,"ssid":"ZSYL26F\u0003\u000b13599065525\u0000"}
+servicewechat.com:1 [wifiProvision] [配网progress] progress=100 result=true ssid=ZSYL26F13599065525 
+servicewechat.com:1 [wifiProvision] 【连路由结果】result.result=true data={"progress":100,"ssid":"ZSYL26F\u0003\u000b13599065525\u0000"}
+servicewechat.com:1 [wifiProvision] BluFi 上报连路由成功，开始断开 GoodSleep（不自动回连枕头）
+servicewechat.com:1 notifyConnectBle 蓝牙准备连接的deviceId --------------
+servicewechat.com:1 [wifiProvision] 已请求断开 BluFi 设备 BD40B603-A7FA-6F8A-442E-D2D3087506CF
+servicewechat.com:1 我要连接？ false
+servicewechat.com:1 ------???????????????????????--------
+servicewechat.com:1 我要连接？ false
+servicewechat.com:1 ------???????????????????????--------
+servicewechat.com:1 device BD40B603-A7FA-6F8A-442E-D2D3087506CF state has changed, connected: false
+servicewechat.com:1 [wifiProvision] BluFi← type=-1 result=true data={"deviceId":"BD40B603-A7FA-6F8A-442E-D2D3087506CF","name":"GoodSleep"}
+servicewechat.com:1 [wifiProvision] BluFi← type=-1 result=true data={"deviceId":"BD40B603-A7FA-6F8A-442E-D2D3087506CF","name":"GoodSleep"}
+servicewechat.com:1 [wifiProvision] BluFi← type=-2 result=false data={"deviceId":"BD40B603-A7FA-6F8A-442E-D2D3087506CF","errorCode":0,"errorMsg":"disconnect success","connected":false}
+servicewechat.com:1 [wifiProvision] BluFi← type=-2 result=false data={"deviceId":"BD40B603-A7FA-6F8A-442E-D2D3087506CF","errorCode":0,"errorMsg":"disconnect success","connected":false}
+servicewechat.com:1 [wifiProvision] 配网成功，已断开 GoodSleep。请返回首页手动连接枕头。
+servicewechat.com:1 [wifiProvision] createBLEConnection 枕头成功 E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C
+servicewechat.com:1 device E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C state has changed, connected: true
+servicewechat.com:1 蓝牙设备连接成功（物理层）；业务就绪以 notify 开启且 loginSuccess 为准
+servicewechat.com:1 [wifiProvision] BluFi← type=-2 result=true data={"deviceId":"E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C","errorCode":0,"errorMsg":"connect success","connected":true}
+servicewechat.com:1 [wifiProvision] BluFi← type=-2 result=true data={"deviceId":"E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C","errorCode":0,"errorMsg":"connect success","connected":true}
+servicewechat.com:1 [wifiProvision] 回连枕头通道 service=0000FFE0-0000-1000-8000-00805F9B34FB notify=0000FFE2-0000-1000-8000-00805F9B34FB write=0000FFE1-0000-1000-8000-00805F9B34FB
+servicewechat.com:1 成功启用 notify 功能 {deviceUUID: "E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C", serviceUUID: "0000FFE0-0000-1000-8000-00805F9B34FB", notifyUUID: "0000FFE2-0000-1000-8000-00805F9B34FB", writeUUID: "0000FFE1-0000-1000-8000-00805F9B34FB"}
+servicewechat.com:1 [wifiProvision] 回连枕头成功（未下发 0x0F 查询）
+servicewechat.com:1 App route: 
+- path: pages/status/status
+- openType: navigateBack
+- renderer: webview
+- componentFramework: exparser
+servicewechat.com:1 pages/wifiProvision/wifiProvision: onUnload have been invoked
+servicewechat.com:1 pages/status/status: onShow have been invoked
+servicewechat.com:1 menui11111: 0
+servicewechat.com:1 menui1111122: 65
+servicewechat.com:1 menui1111122333: 0
+servicewechat.com:1 --bateryWidth: 0rpx
+servicewechat.com:1 menui: 172px
+servicewechat.com:1 ====== url ======
+servicewechat.com:1 https://sleep.zsyl.cc/api/appVersion
+servicewechat.com:1 [BLE 发送 APP→设备] len=6 hex=55010084bf23 deviceId=E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 pages/status/status: onRouteDone have been invoked
+servicewechat.com:1 [BLE 发送] 写入特征值成功 {errCode: , errno: , errMsg: "writeBLECharacteristicValue:ok"}
+servicewechat.com:1 -----??????????????????-----
+servicewechat.com:1 -----??????????????????-----
+servicewechat.com:1 ====== result ======
+servicewechat.com:1 {success: true, code: "00000", message: "请求成功", data: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914047350,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:07",
+↵      "id": 1776914047350,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.6,
+↵        "heart_rate": 76
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914047350,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:07",
+      "id": 1776914047350,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.6,
+        "heart_rate": 76
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914047350, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 76, breathRate: 15.6, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914047350,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:07",
+↵      "id": 1776914047350,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.6,
+↵        "heart_rate": 76
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914047350,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:07",
+      "id": 1776914047350,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.6,
+        "heart_rate": 76
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914047350, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 76, breathRate: 15.6, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914049277,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:09",
+↵      "id": 1776914049277,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.6,
+↵        "heart_rate": 75
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914049277,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:09",
+      "id": 1776914049277,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.6,
+        "heart_rate": 75
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914049277, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 75, breathRate: 15.6, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914049277,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:09",
+↵      "id": 1776914049277,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.6,
+↵        "heart_rate": 75
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914049277,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:09",
+      "id": 1776914049277,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.6,
+        "heart_rate": 75
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914049277, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 75, breathRate: 15.6, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914051277,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:11",
+↵      "id": 1776914051277,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 14.6,
+↵        "heart_rate": 74
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914051277,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:11",
+      "id": 1776914051277,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 14.6,
+        "heart_rate": 74
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914051277, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 74, breathRate: 14.6, rows: 1}
+servicewechat.com:1 [BLE 发送 APP→设备] len=6 hex=55010084bf23 deviceId=E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C
+servicewechat.com:1 [BLE 发送] 写入特征值成功 {errCode: , errno: , errMsg: "writeBLECharacteristicValue:ok"}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914051277,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:11",
+↵      "id": 1776914051277,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 14.6,
+↵        "heart_rate": 74
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914051277,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:11",
+      "id": 1776914051277,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 14.6,
+        "heart_rate": 74
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914051277, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 74, breathRate: 14.6, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914053277,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:13",
+↵      "id": 1776914053277,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.9,
+↵        "heart_rate": 73
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914053277,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:13",
+      "id": 1776914053277,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.9,
+        "heart_rate": 73
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914053277, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 73, breathRate: 15.9, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914053277,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:13",
+↵      "id": 1776914053277,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.9,
+↵        "heart_rate": 73
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914053277,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:13",
+      "id": 1776914053277,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.9,
+        "heart_rate": 73
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914053277, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 73, breathRate: 15.9, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914055277,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:15",
+↵      "id": 1776914055277,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.9,
+↵        "heart_rate": 72
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914055277,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:15",
+      "id": 1776914055277,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.9,
+        "heart_rate": 72
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914055277, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 72, breathRate: 15.9, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914055277,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:15",
+↵      "id": 1776914055277,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": true,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.9,
+↵        "heart_rate": 72
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914055277,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:15",
+      "id": 1776914055277,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": true,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.9,
+        "heart_rate": 72
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914055277, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 72, breathRate: 15.9, rows: 1}
+servicewechat.com:1 [BLE 发送 APP→设备] len=6 hex=55010084bf23 deviceId=E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 [BLE 发送] 写入特征值成功 {errCode: , errno: , errMsg: "writeBLECharacteristicValue:ok"}
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914057279,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:17",
+↵      "id": 1776914057279,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": true,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 16.8,
+↵        "heart_rate": 73
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914057279,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:17",
+      "id": 1776914057279,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": true,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 16.8,
+        "heart_rate": 73
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914057279, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 73, breathRate: 16.8, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914057279,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:17",
+↵      "id": 1776914057279,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": true,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 16.8,
+↵        "heart_rate": 73
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914057279,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:17",
+      "id": 1776914057279,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": true,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 16.8,
+        "heart_rate": 73
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914057279, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 73, breathRate: 16.8, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914059282,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:19",
+↵      "id": 1776914059282,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": true,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 16.8,
+↵        "heart_rate": 72
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914059282,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:19",
+      "id": 1776914059282,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": true,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 16.8,
+        "heart_rate": 72
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914059282, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 72, breathRate: 16.8, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914059282,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:19",
+↵      "id": 1776914059282,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 16.8,
+↵        "heart_rate": 72
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914059282,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:19",
+      "id": 1776914059282,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 16.8,
+        "heart_rate": 72
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914059282, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 72, breathRate: 16.8, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914061318,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:21",
+↵      "id": 1776914061318,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.8,
+↵        "heart_rate": 71
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914061318,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:21",
+      "id": 1776914061318,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.8,
+        "heart_rate": 71
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914061318, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 71, breathRate: 15.8, rows: 1}
+servicewechat.com:1 [BLE 发送 APP→设备] len=6 hex=55010084bf23 deviceId=E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 [BLE 发送] 写入特征值成功 {errCode: , errno: , errMsg: "writeBLECharacteristicValue:ok"}
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914061318,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:21",
+↵      "id": 1776914061318,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.8,
+↵        "heart_rate": 71
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914061318,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:21",
+      "id": 1776914061318,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.8,
+        "heart_rate": 71
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914061318, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 71, breathRate: 15.8, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914063279,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:23",
+↵      "id": 1776914063279,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.8,
+↵        "heart_rate": 70
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914063279,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:23",
+      "id": 1776914063279,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.8,
+        "heart_rate": 70
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914063279, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 70, breathRate: 15.8, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914063279,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:23",
+↵      "id": 1776914063279,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.8,
+↵        "heart_rate": 70
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914063279,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:23",
+      "id": 1776914063279,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.8,
+        "heart_rate": 70
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914063279, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 70, breathRate: 15.8, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914065304,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:25",
+↵      "id": 1776914065304,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 16.6,
+↵        "heart_rate": 70
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914065304,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:25",
+      "id": 1776914065304,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 16.6,
+        "heart_rate": 70
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914065304, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 70, breathRate: 16.6, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914065304,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:25",
+↵      "id": 1776914065304,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 16.6,
+↵        "heart_rate": 70
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914065304,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:25",
+      "id": 1776914065304,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 16.6,
+        "heart_rate": 70
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914065304, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 70, breathRate: 16.6, rows: 1}
+servicewechat.com:1 [BLE 发送 APP→设备] len=6 hex=55010084bf23 deviceId=E291E5ED-5B15-CC80-FD2A-DBA2E0D5649C
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 [BLE 发送] 写入特征值成功 {errCode: , errno: , errMsg: "writeBLECharacteristicValue:ok"}
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914067283,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:27",
+↵      "id": 1776914067283,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.6,
+↵        "heart_rate": 71
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914067283,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:27",
+      "id": 1776914067283,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.6,
+        "heart_rate": 71
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914067283, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 71, breathRate: 15.6, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914067283,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:27",
+↵      "id": 1776914067283,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 15.6,
+↵        "heart_rate": 71
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914067283,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:27",
+      "id": 1776914067283,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 15.6,
+        "heart_rate": 71
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914067283, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 71, breathRate: 15.6, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914069277,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:29",
+↵      "id": 1776914069277,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 16.9,
+↵        "heart_rate": 70
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914069277,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:29",
+      "id": 1776914069277,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 16.9,
+        "heart_rate": 70
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914069277, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 70, breathRate: 16.9, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }
+servicewechat.com:1 接口返回数据：=== {header: , data: "<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+↵  "ret": 0,
+↵  "err_code": 0,
+↵  "msg": "ok",
+↵  "timestamp": 1776914069277,
+↵  "mac": "b4:c2:e0:f5:a7:5d",
+↵  "data": [
+↵    {
+↵      "date": "2026-04-23 11:14:29",
+↵      "id": 1776914069277,
+↵      "temperature": 0.0,
+↵      "humidity": 0.0,
+↵      "inbed": true,
+↵      "body_movement": false,
+↵      "left": {
+↵        "respiration_rate": 0.0,
+↵        "heart_rate": 0
+↵      },
+↵      "right": {
+↵        "respiration_rate": 16.9,
+↵        "heart_rate": 70
+↵      }
+↵    }
+↵  ]
+↵}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>", statusCode: 200, profile: , cookies: , …}
+servicewechat.com:1 原始返回数据：=== <?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><GetDeviceRealtimeDataResponse xmlns="http://bed.cn/"><GetDeviceRealtimeDataResult>{
+  "ret": 0,
+  "err_code": 0,
+  "msg": "ok",
+  "timestamp": 1776914069277,
+  "mac": "b4:c2:e0:f5:a7:5d",
+  "data": [
+    {
+      "date": "2026-04-23 11:14:29",
+      "id": 1776914069277,
+      "temperature": 0.0,
+      "humidity": 0.0,
+      "inbed": true,
+      "body_movement": false,
+      "left": {
+        "respiration_rate": 0.0,
+        "heart_rate": 0
+      },
+      "right": {
+        "respiration_rate": 16.9,
+        "heart_rate": 70
+      }
+    }
+  ]
+}</GetDeviceRealtimeDataResult></GetDeviceRealtimeDataResponse></soap:Body></soap:Envelope>
+servicewechat.com:1 解析XML中的JSON数据： {ret: , err_code: , msg: "ok", timestamp: 1776914069277, mac: "b4:c2:e0:f5:a7:5d", …}
+servicewechat.com:1 [deviceManager] 准备设置实时数据: {heartRate: 70, breathRate: 16.9, rows: 1}
+servicewechat.com:1 设备mac信息: B4:C2:E0:F5:A7:5D
+servicewechat.com:1 [soapRequest] 调用方法: GetDeviceRealtimeData
+servicewechat.com:1 [soapRequest] 请求参数: {key: "1f3e1d08bac85daf08eca14e72cde665", mac: "B4:C2:E0:F5:A7:5D", timestamp: , waveform: }

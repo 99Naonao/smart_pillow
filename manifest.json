@@ -59,7 +59,15 @@
         "usingComponents" : true,
         "optimization" : {
             "subPackages" : true
-        }
+        },
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "用于扫描周边 Wi-Fi、配置智能枕头联网及蓝牙相关能力"
+            }
+        },
+        "requiredPrivateInfos" : [
+            "getLocation"
+        ]
     },
     "mp-alipay" : {
         "usingComponents" : true

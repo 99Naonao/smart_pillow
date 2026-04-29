@@ -114,25 +114,16 @@
 <script>
 	import InputView from '../../pages/shootView/InputView.vue'
 	import RecommandInfo from '../adjust/RecommandInfo.vue'
-	import { callPushSmartPillowData } from '../../utils/miniapp'
 	import {
 		object2Query,
-		handPillowSideState,
-		handPillowFrontState,
-		handlePillowDelayState,
-		hexStringToArrayBuffer,
 		getAIModeByName,
-		ab2hex,
-		hand1Shake,
-		write2tooth,
-		initPillow,
-		parsePillowState
 	} from '@/common/util.js'
 	
-	import blue_class from '../../utils/BlueManager'
+	import { PillowBleManager } from '@/utils/BlueUtils'
 	import {
 		addUseLog
 	} from '../../utils/miniapp'
+	import { stopSpineAdjustSession } from '@/common/spineSession.js'
 	export default {
 		components: {
 			InputView,
@@ -149,6 +140,12 @@
 			this.findStore()
 		},
 		onShow() {
+			if (PillowBleManager.getInstance().getSpineAdjusting()) {
+				stopSpineAdjustSession({
+					showModal: true,
+					modalContent: '进入我的数据页后已结束脊柱微调'
+				});
+			}
 			let mode = uni.getStorageSync('myMode');
 			if (mode) {
 				this.modeList = JSON.parse(mode)
@@ -238,7 +235,7 @@
 		methods: {
 			navJustHandle() {
 				// 先检查蓝牙连接状态
-				if (!blue_class.getInstance().loginSuccess) {
+				if (!PillowBleManager.getInstance().loginSuccess) {
 					uni.showModal({
 						title: '未连接枕头',
 						content: '请先连接枕头后再进行手动微调',
@@ -306,50 +303,42 @@
 				})
 			},
 			navHandle() {
-				if (!this.selectItem.headHeight && !this.selectItem.neckHeight) {
+				const s = this.selectItem || {}
+				const hasDims = ['headHeight', 'neckHeight', 'sideHeadHeight', 'sideNeckHeight'].some((k) => {
+					const v = s[k]
+					if (v === '' || v === undefined || v === null) return false
+					return Number.isFinite(Number(v))
+				})
+				if (!hasDims) {
 					uni.showToast({
 						title: '未选择模式数据！'
 					})
 					return;
 				}
 
-				console.log("set mode已连接至枕头，发送原始数据",JSON.stringify(this.selectItem))
-				var headSafeHeight;
-				var sideHeadSafeHeight;
-				// if(this.selectItem.headHeight >= 60){
-				// 	headSafeHeight = this.selectItem.headHeight - 15
-				// }else{
-				// 	headSafeHeight = this.selectItem.headHeight < 30 ? 30 : this.selectItem.headHeight 
-				// }
-				// if(this.selectItem.sideHeadHeight >= 60){
-				// 	sideHeadSafeHeight = this.selectItem.sideHeadHeight - 15
-				// }else{
-				// 	sideHeadSafeHeight = this.selectItem.sideHeadHeight  < 30 ? 30 : this.selectItem.sideHeadHeight 
-				// }
-				headSafeHeight = this.selectItem.headHeight < 30 ? 30 : this.selectItem.headHeight 
-				sideHeadSafeHeight = this.selectItem.sideHeadHeight  < 30 ? 30 : this.selectItem.sideHeadHeight 
-				let neckSafeHeight = this.selectItem.neckHeight - 30 < 30 ? 30 : this.selectItem.neckHeight - 30
-				let sideNeckSafeHeight = this.selectItem.sideNeckHeight - 30 < 30 ? 30 : this.selectItem.sideNeckHeight - 30
-				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
-				// let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : this.selectItem.headHeight, 
-				// this.selectItem.neckHeight > 100 ? 100 : this.selectItem.neckHeight, 200, 
-				// this.selectItem.sideHeadHeight > 100 ? 100 : this.selectItem.sideHeadHeight,
-				// this.selectItem.sideNeckHeight >100 ?100 :this.selectItem.sideNeckHeight, 200);
-				console.log("实际发送的仰卧头枕数据：",this.selectItem.headHeight > 100 ? 100 : headSafeHeight)
-				console.log("实际发送的仰卧颈枕数据：",this.selectItem.neckHeight > 100 ? 100 : neckSafeHeight)
-				console.log("实际发送的侧卧头枕数据：",this.selectItem.sideHeadHeight > 100 ? 100 : sideHeadSafeHeight)
-				console.log("实际发送的侧卧颈枕数据：",this.selectItem.sideNeckHeight > 100 ? 100 : sideNeckSafeHeight)
-				
-				let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : headSafeHeight,
-				this.selectItem.neckHeight > 100 ? 100 : neckSafeHeight, 200, 
-				this.selectItem.sideHeadHeight > 100 ? 100 : sideHeadSafeHeight, 
-				this.selectItem.sideNeckHeight >100 ?100 :sideNeckSafeHeight, 200);
-				blue_class.getInstance().write2tooth(init_arraybuffer);
+				const ble = PillowBleManager.getInstance()
+				if (!ble.isConnected()) {
+					uni.showModal({
+						title: '未连接枕头提示',
+						content: '请检查是否已连接到枕头',
+						showCancel: false
+					})
+					return
+				}
 
-				// uni.setStorageSync('mode_switch_flag', true); // 旧标记逻辑，已改为切换时即停，保留为屏蔽
+				const payload = {
+					...this.selectItem,
+					profileIndex: this.selectItem.profileIndex != null && this.selectItem.profileIndex !== ''
+						? this.selectItem.profileIndex
+						: 0
+				}
+				if (!ble.applyModeProfileFromItem(payload)) {
+					uni.showToast({ title: '下发失败，请重试', icon: 'none' })
+					return
+				}
 
 				addUseLog(this.selectItem)
-
+				uni.setStorageSync('mode_sent_success', true)
 				uni.switchTab({
 					url: "/pages/status/status"
 				})
@@ -405,7 +394,7 @@
 			},
 			// 发送模式设置
 			sendHandler(item) {
-				if(!blue_class.getInstance().loginSuccess){
+				if (!PillowBleManager.getInstance().isConnected()) {
 					uni.showModal({
 						title:"未连接枕头提示",
 						content:"请检查是否已连接到枕头",
@@ -419,7 +408,6 @@
 				
 				uni.setStorageSync('lastMode', params);
 
-				callPushSmartPillowData(params.headHeight,params.neckHeight,params.sideHeadHeight,params.sideNeckHeight)
 				this.navHandle()
 				return;
 				// uni.showLoading({

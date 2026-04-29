@@ -27,7 +27,7 @@
 				</view>
 			</view>
 		</view>
-		<view v-if="selectItem.headHeight" class="send-btn" :class="{'sending': isSending}" @click.stop="sendItemHandler()">
+		<view v-if="hasSelectedMode" class="send-btn" :class="{'sending': isSending}" @click.stop="sendItemHandler()">
 			发送数据到枕头
 		</view>
 		<view class="kv" @click="navHandle">
@@ -42,10 +42,10 @@
 				</view>
 				<view class="info-right">
 					<view>
-						头枕高度{{selectItem.headHeight}}cm
+						头枕高度{{selectItem.headHeight}}mm
 					</view>
 					<view>
-						颈枕高度{{selectItem.neckHeight}}cm
+						颈枕高度{{selectItem.neckHeight}}mm
 					</view>
 				</view>
 			</view>
@@ -56,10 +56,10 @@
 				</view>
 				<view class="info-right">
 					<view>
-						头枕高度{{selectItem.sideHeadHeight}}cm
+						头枕高度{{selectItem.sideHeadHeight}}mm
 					</view>
 					<view>
-						颈枕高度{{selectItem.sideNeckHeight}}cm
+						颈枕高度{{selectItem.sideNeckHeight}}mm
 					</view>
 				</view>
 			</view>
@@ -99,44 +99,33 @@
 				</view>
 			</view>
 		</view>
-		<!-- <input-view ref="inputView"></input-view> -->
 	</view>
 </template>
 
 <script>
-	import InputView from '../../pages/shootView/InputView.vue'
-	import {
-		object2Query,
-		handPillowSideState,
-		handPillowFrontState,
-		handlePillowDelayState,
-		hexStringToArrayBuffer,
-		ab2hex,
-		hand1Shake,
-		write2tooth,
-		initPillow,
-		parsePillowState
-	} from '@/common/util.js'
+	import { object2Query } from '@/common/util.js'
+	import { PillowBleManager } from '@/utils/BlueUtils'
+	import { addUseLog } from '@/utils/miniapp.js'
+	import { stopSpineAdjustSession } from '@/common/spineSession.js'
 
-	import blue_class from '../../utils/BlueManager'
-	import {
-		addUseLog
-	} from '../../utils/miniapp'
 	export default {
-		components: {
-			InputView
-		},
 		onLoad(options) {
 			this.pillowName = decodeURIComponent(options.pillowName || '')
 			this.deviceId = options.deviceId || ''
 			this.serviceId = options.serviceId || ''
 			console.log('options:', options, this.pillowName)
 			uni.setNavigationBarTitle({
-				title: this.pillowName
+				title: this.pillowName || '我的模式'
 			})
 		},
 		onShow() {
-			let standard = uni.getStorageSync('standard');
+			if (PillowBleManager.getInstance().getSpineAdjusting()) {
+				stopSpineAdjustSession({
+					showModal: true,
+					modalContent: '进入默认数据/模式页后已结束脊柱微调'
+				});
+			}
+			let standard = uni.getStorageSync('standard')
 			if (standard) {
 				this.standard = JSON.parse(standard)
 			} else {
@@ -153,32 +142,27 @@
 				standard: {},
 				selectItem: {},
 				pillowName: '',
-				isSending: false, // 是否正在发送数据
-				options1: [{
-					text: '删除',
-					style: {
-						backgroundColor: '#f4220d',
-						borderRadius: '15rpx'
-					},
-				}],
-
-				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
+				isSending: false,
 				deviceId: '',
 				serviceId: '',
+				/** 与协议 0x02/0x03 索引一致：0 成年男性、1 成年女性、2 儿童 */
 				modeList: [{
 					name: '成年男性',
+					profileIndex: 0,
 					headHeight: 80,
 					neckHeight: 80,
 					sideHeadHeight: 80,
 					sideNeckHeight: 80,
 				}, {
 					name: '成年女性',
+					profileIndex: 1,
 					headHeight: 60,
 					neckHeight: 60,
 					sideHeadHeight: 60,
 					sideNeckHeight: 60,
 				}, {
 					name: '10-15岁儿童',
+					profileIndex: 2,
 					headHeight: 36,
 					neckHeight: 36,
 					sideHeadHeight: 36,
@@ -186,193 +170,72 @@
 				}]
 			}
 		},
+		computed: {
+			hasSelectedMode() {
+				const s = this.selectItem || {}
+				if (s.name) return true
+				return ['headHeight', 'neckHeight', 'sideHeadHeight', 'sideNeckHeight'].some((k) => {
+					const v = s[k]
+					if (v === '' || v === undefined || v === null) return false
+					return Number.isFinite(Number(v))
+				})
+			}
+		},
 		methods: {
-			onChange(e, indexxx) {
-				console.log(">>>>onChange>>>", indexxx)
-			},
-			/**
-			 * 列表 左滑按钮点击
-			 * 
-			 * @param {Object} e
-			 * content: "点击按钮的options参数",
-			 * index: "循环的时候的索引值",
-			 * buttonIndex: "点击按钮的索引值"
-			 */
-			async onButton(e, indexxx) {
-				// uni.showToast({
-				// 	title: '您点击了滑动列表' + (e.index + 1) + '的第' + (e.buttonIndex + 1) + '个按钮，按钮为‘' + e.content.text + '’',
-				// 	icon: 'none'
-				// });
-
-				// let indexx;
-				// this.modeList.map((item, index) => {
-				// 	if (index == indexxx) {
-				// 		indexx = index
-				// 	}
-				// })
-				// if (this.$refs.swaction)
-				// 	this.$refs.swaction.closeAll()
-				// console.log(">>>>删除>>>",shopData) 
-				// let params = {
-				// 	id: shopData.id
-				// }
-				// const res = await ShopApi.cartDel(params)
-				// if (res.success) {
-				// 	this.$u.toast("移出购物车成功")
-				// 	this.dataList.splice(e.index, 1) //删除值
-				// }
+			pushModeProfileToBle(item) {
+				return PillowBleManager.getInstance().applyModeProfileFromItem(item)
 			},
 			sendItemHandler() {
-				if(this.isSending) {
-					return; // 如果正在发送，直接返回
+				if (this.isSending) {
+					return
 				}
-				
-				if(!blue_class.getInstance().loginSuccess){
+				if (!PillowBleManager.getInstance().isConnected()) {
 					uni.showModal({
-						title:"未连接枕头提示",
-						content:"请检查是否已连接到枕头",
-						showCancel:false
-					});
-					return;
+						title: '未连接枕头提示',
+						content: '请检查是否已连接到枕头',
+						showCancel: false
+					})
+					return
 				}
-				
-				// 开始发送状态
-				this.isSending = true;
-				
-				addUseLog(this.selectItem);
-				console.log("mode已连接至枕头，发送数据",JSON.stringify(this.selectItem))
-				
-				var headSafeHeight;
-				var sideHeadSafeHeight;
-				// if(this.selectItem.headHeight >= 60){
-				// 	headSafeHeight = this.selectItem.headHeight -15
-				// }else{
-				// 	headSafeHeight = this.selectItem.headHeight < 30 ? 30 : this.selectItem.headHeight 
-				// }
-				// if(this.selectItem.sideHeadHeight >= 60){
-				// 	sideHeadSafeHeight = this.selectItem.sideHeadHeight - 15
-				// }else{
-				// 	sideHeadSafeHeight = this.selectItem.sideHeadHeight  < 30 ? 30 : this.selectItem.sideHeadHeight 
-				// }
-				headSafeHeight = this.selectItem.headHeight < 30 ? 30 : this.selectItem.headHeight 
-				sideHeadSafeHeight = this.selectItem.sideHeadHeight  < 30 ? 30 : this.selectItem.sideHeadHeight 
-				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
-				// let headSafeHeight = this.selectItem.headHeight  < 30 ? 30 : this.selectItem.headHeight 
-				let neckSafeHeight = this.selectItem.neckHeight - 30 < 30 ? 30 : this.selectItem.neckHeight - 30
-				let sideNeckSafeHeight = this.selectItem.sideNeckHeight - 30 < 30 ? 30 : this.selectItem.sideNeckHeight - 30
-	
-				// let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : this.selectItem.headHeight,
-				// this.selectItem.neckHeight > 100 ? 100 : this.selectItem.neckHeight, 200, 
-				// this.selectItem.sideHeadHeight > 100 ? 100 : this.selectItem.sideHeadHeight, 
-				// this.selectItem.sideNeckHeight >100 ?100 :this.selectItem.sideNeckHeight, 200);
-				
-				let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : headSafeHeight, 
-				this.selectItem.neckHeight > 100 ? 100 : neckSafeHeight, 200, 
-				this.selectItem.sideHeadHeight > 100 ? 100 : sideHeadSafeHeight, 
-				this.selectItem.sideNeckHeight >100 ?100 :sideNeckSafeHeight, 200);
-				
-				// 发送数据到枕头
-				blue_class.getInstance().write2tooth(init_arraybuffer);
-
-				// uni.setStorageSync('mode_switch_flag', true); // 旧标记逻辑，已改为切换时即停，保留为屏蔽
-
-				// 增加交互感
+				this.isSending = true
+				addUseLog(this.selectItem)
+				console.log('mode已连接至枕头，发送数据', JSON.stringify(this.selectItem))
+				if (!this.pushModeProfileToBle(this.selectItem)) {
+					this.isSending = false
+					uni.showToast({ title: '下发失败，请重试', icon: 'none' })
+					return
+				}
+				this.isSending = false
+				uni.showToast({ title: '已下发', icon: 'success' })
+				uni.setStorageSync('mode_sent_success', true)
+				this.addToMyMode(this.selectItem)
 				setTimeout(() => {
-					uni.showLoading({
-						title: '数据发送中',
-						mask: true
-					});
-					
-					this.isSending = false;
-					
-					// 延迟跳转，让用户看到成功提示
-					setTimeout(() => {
-						uni.hideLoading();
-						uni.setStorageSync('mode_sent_success', true)
-						
-						// 将发送的模式添加到"我的数据"中
-						this.addToMyMode(this.selectItem);
-						
-						uni.switchTab({
-							url: "/pages/status/status"
-						});
-					}, 3000);
-				}, 500); // 3秒后完成发送
+					uni.switchTab({ url: '/pages/status/status' })
+				}, 400)
 			},
-			// 将模式添加到"我的数据"中
 			addToMyMode(modeItem) {
 				try {
-					// 获取现有的"我的数据"列表
-					let myModeList = uni.getStorageSync('myMode');
-					let modes = myModeList ? JSON.parse(myModeList) : [];
-					
-					// 检查是否已存在相同名称的模式
-					const existingIndex = modes.findIndex(item => item.name === modeItem.name);
-					
+					let myModeList = uni.getStorageSync('myMode')
+					let modes = myModeList ? JSON.parse(myModeList) : []
+					const existingIndex = modes.findIndex(item => item.name === modeItem.name)
 					if (existingIndex >= 0) {
-						// 如果已存在，更新数据
-						modes[existingIndex] = { ...modeItem };
-						console.log('更新已存在的模式:', modeItem.name);
+						modes[existingIndex] = { ...modeItem }
+						console.log('更新已存在的模式:', modeItem.name)
 					} else {
-						// 如果不存在，添加新模式
-						modes.push({ ...modeItem });
-						console.log('添加新模式到我的数据:', modeItem.name);
+						modes.push({ ...modeItem })
+						console.log('添加新模式到我的数据:', modeItem.name)
 					}
-					
-					// 保存更新后的列表
-					uni.setStorageSync('myMode', JSON.stringify(modes));
-					console.log('我的数据已更新，当前模式数量:', modes.length);
+					uni.setStorageSync('myMode', JSON.stringify(modes))
+					console.log('我的数据已更新，当前模式数量:', modes.length)
 				} catch (error) {
-					console.error('添加模式到我的数据失败:', error);
+					console.error('添加模式到我的数据失败:', error)
 				}
 			},
-			// 发送模式设置
 			sendHandler(item) {
-				let params = this.modeList[item];
-				this.selectItem = params;
-				console.log("发送个人数据")
-				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
-				let init_arraybuffer = initPillow(this.selectItem.headHeight > 100 ? 100 : this.selectItem.headHeight, this
-					.selectItem
-					.neckHeight > 100 ? 100 : this.selectItem.neckHeight, 200, this
-					.selectItem.sideHeadHeight > 100 ? 100 : this.selectItem.sideHeadHeight, this.selectItem
-					.sideNeckHeight >
-					100 ?
-					100 :
-					this.selectItem.sideNeckHeight, 200);
-				// 如果有数据，默认调整枕头
-				// let init_arraybuffer = initPillow(this.selectItem.headHeight, this.selectItem.neckHeight, 200, this
-				// 	.selectItem
-				// 	.sideHeadHeight, this.selectItem.sideNeckHeight, 200);
-				// let app = getApp()
-				blue_class.getInstance().write2tooth(init_arraybuffer);
-
-
-				return;
-				uni.showLoading({
-					title: '调整中'
-				})
-				let arraybuffer
-				// 如果选择的仰卧
-				arraybuffer = handPillowFrontState(item.head, item
-					.neck)
-
-				// write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
-				// 	uni.hideLoading()
-				// }).catch(res => {
-				// 	uni.hideLoading()
-				// })
-				console.log('调低仰卧:', item.head, item.neck, ab2hex(arraybuffer))
-				// 如果选择的仰卧
-				arraybuffer = handPillowSideState(item.sideHead, item
-					.sideNeck)
-
-				write2tooth(this.deviceId, this.serviceId, this.characteristicId, arraybuffer).then((res) => {
-					uni.hideLoading()
-					this.back()
-				}).catch(res => {
-					uni.hideLoading()
-				})
+				const params = this.modeList[item]
+				this.selectItem = params
+				console.log('选择默认模式（仅选中，下发请点「发送数据到枕头」）', params.name)
+				// 不在此下发：避免与「发送数据到枕头」重复调用 applyModeProfileFromItem 导致同一套 BLE 打两遍
 			},
 			back() {
 				uni.navigateBack()
@@ -383,21 +246,26 @@
 				})
 			},
 			navHandle() {
-				if (!this.selectItem.headHeight && !this.selectItem.neckHeight) {
-					console.log("未选择默认数据");
+				const s = this.selectItem || {}
+				const hasDims = ['headHeight', 'neckHeight', 'sideHeadHeight', 'sideNeckHeight'].some((k) => {
+					const v = s[k]
+					if (v === '' || v === undefined || v === null) return false
+					return Number.isFinite(Number(v))
+				})
+				if (!s.name && !hasDims) {
+					console.log('未选择默认数据')
 					uni.showModal({
-						title:"默认数据未选择提示",
-						content:"请选择成年男性、成年女性、10-15岁儿童其中一个默认数据进行手动微调",
-						showCancel:false
+						title: '默认数据未选择提示',
+						content: '请选择成年男性、成年女性、10-15岁儿童其中一个默认数据进行手动微调',
+						showCancel: false
 					})
-					return;
+					return
 				}
-
 				uni.navigateTo({
-					url: "/page_subject/adjust/adjust" + object2Query(this.selectItem)
+					url: '/page_subject/adjust/adjust' + object2Query(this.selectItem)
 				})
 			},
-		},
+		}
 	}
 </script>
 

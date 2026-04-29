@@ -50,6 +50,7 @@
       <button class="btn" type="primary" @click="send('readPillowStatus')">读取枕头状态 0x04</button>
       <button class="btn" type="primary" @click="send('readHeadHeight')">读取头枕高度 0x05 读</button>
       <button class="btn" type="primary" @click="send('readNeckHeight')">读取颈枕高度 0x06 读</button>
+      <button class="btn" type="primary" @click="send('readPostureData')">读取睡姿数据 0x0B 读</button>
     </view>
 
     <view class="section">
@@ -69,6 +70,10 @@
         <input class="form-input" type="number" v-model.number="form.heatTemp" />
         <button class="btn-mini" type="warn" @click="send('startHeating')">开始加热</button>
         <button class="btn-mini" type="default" @click="send('stopHeating')">停止</button>
+      </view>
+      <view class="form-row">
+        <text class="form-label">加热时间(秒,uint16)</text>
+        <input class="form-input" type="number" v-model.number="form.heatDurationSeconds" />
       </view>
     </view>
 
@@ -113,21 +118,33 @@
 
     <view class="section">
       <view class="section-title">学习 / 脊柱微调 / 标定</view>
-      <button class="btn" type="warn" @click="send('startSupineLearn')">仰卧学习 开始 0x07</button>
-      <button class="btn" type="warn" @click="send('confirmSupineLearn')">仰卧学习 确认 0x07</button>
-      <button class="btn" type="warn" @click="send('startSideLearn')">侧卧学习 开始 0x07</button>
-      <button class="btn" type="warn" @click="send('confirmSideLearn')">侧卧学习 确认 0x07</button>
+      <view class="status-row" style="margin-bottom: 12rpx; font-size: 24rpx; color: #666;">
+        睡姿学习：每次「开始学习」前先读 0x0B；仰卧峰值1/2 为有效点位最小值与最大值；仰卧宽度 5、侧卧宽度 2；侧卧下发峰值 = 计算侧卧峰值 − x。
+      </view>
+      <view class="form-row">
+        <text class="form-label">侧卧偏移 x</text>
+        <input class="form-input" type="number" v-model.number="form.learnSidePeakOffsetX" placeholder="下发侧卧峰值=计算值−x" />
+      </view>
+      <view class="status-row" style="margin-bottom: 8rpx; font-size: 24rpx; color: #333;" v-if="learnPreviewText">
+        {{ learnPreviewText }}
+      </view>
+      <button class="btn" type="warn" @click="onLearnPostureClick('supine', 'start')">仰卧学习 开始 0x07</button>
+      <button class="btn" type="warn" @click="onLearnPostureClick('supine', 'confirm')">仰卧学习 确认 0x07</button>
+      <button class="btn" type="warn" @click="onLearnPostureClick('side', 'start')">侧卧学习 开始 0x07</button>
+      <button class="btn" type="warn" @click="onLearnPostureClick('side', 'confirm')">侧卧学习 确认 0x07</button>
       <button class="btn" type="warn" @click="send('stopHeating')">停止加热 0x08</button>
       <button class="btn" type="warn" @click="send('startSpineAdjust')">脊柱微调 启动 0x09</button>
-      <button class="btn" type="warn" @click="send('calibrateEnter')">标定枕头 进入模式 0x0A</button>
-      <button class="btn" type="warn" @click="send('calibrateExit')">标定枕头 退出模式 0x0A</button>
-	  <button class="btn" type="warn" @click="send('calibrateSuccess')">标定枕头 成功模式 0x0A</button>
+      <button class="btn" type="warn" @click="send('calibrateEnter')">标定 0x0A 双气囊同步进入(0x01)</button>
+      <button class="btn" type="warn" @click="send('calibrateNeck')">标定 0x0A 颈枕气囊(0x03)</button>
+      <button class="btn" type="warn" @click="send('calibrateHead')">标定 0x0A 头枕气囊(0x04)</button>
+      <button class="btn" type="warn" @click="send('calibrateSuccess')">标定 0x0A 成功(0x02)</button>
+      <button class="btn" type="warn" @click="send('calibrateExit')">标定 0x0A 退出(0x05)</button>
 	  
     </view>
 
     <view class="section">
       <view class="section-title">睡姿数据配置 / 读取 0x0B</view>
-      <view class="status-row">限位值与有效位均为 16 个点，使用英文逗号分隔。</view>
+      <view class="status-row">限位值与有效位均为 16 个点，使用英文逗号分隔。读取与上方「基础读取」中 0x0B 读为同一指令。</view>
       <view class="form-row">
         <text class="form-label">限位值(uint16×16)</text>
       </view>
@@ -205,6 +222,47 @@
     </view>
 
     <view class="section">
+      <view class="section-title">心率模块 0x0F 控制帧（仅蓝牙）</view>
+      <view class="status-row">
+        经枕头 BLE 下发 9 字节载荷（8 数据 + XOR 校验），不调用手机 Wi-Fi。设备写应答、心率模块回传（含 5A5A 等）在下方调试日志与「最近一次状态上报」中查看。
+      </view>
+      <view class="form-row align-switch">
+        <text class="form-label">配置 WiFi 位 0x0A</text>
+        <switch :checked="heartWifi.configWifi" @change="onHeartWifiSwitch('configWifi', $event)" />
+        <text class="form-label" style="margin-left: 24rpx;">查询状态位 0x0A</text>
+        <switch :checked="heartWifi.queryStatus" @change="onHeartWifiSwitch('queryStatus', $event)" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">字节4(byte3)</text>
+        <input class="form-input" type="number" v-model.number="heartWifi.byte3" />
+        <text class="form-label">备用×3</text>
+        <input class="form-input form-input-narrow" type="number" v-model.number="heartWifi.spare0" />
+        <input class="form-input form-input-narrow" type="number" v-model.number="heartWifi.spare1" />
+        <input class="form-input form-input-narrow" type="number" v-model.number="heartWifi.spare2" />
+      </view>
+      <view class="status-row mono-preview">
+        9 字节：{{ heartWifiFrameHex }}　｜　CHK=0x{{ heartWifiChkHex }}（十进制 {{ heartWifiChkDec }}）
+      </view>
+      <view class="status-row">
+        配网页默认参数：`configWifi=true`、`queryStatus=false`、`byte3=0`、备用字节全 0，对应 9 字节应为
+        `5A 5A 0A 00 00 00 00 00 0A`
+      </view>
+      <view class="ble-row">
+        <button class="btn-half" type="primary" @click="sendHeartWifi0x0F">下发指令 0x0F</button>
+        <button class="btn-half" type="default" @click="queryWifiNetworkStatus">查询联网状态</button>
+      </view>
+      <view class="ble-row">
+        <button class="btn-half" type="warn" @click="queryWifiStatusOnly8F">只发一包 0x8F</button>
+      </view>
+      <view class="status-row" style="font-size: 24rpx; color: #666;">
+        「查询联网状态」分两步：① **第一帧功能码必须是 0x0F（写）**，把 5A5A 查询帧透传给模块（故日志里仍是 …000f…，属正常）；② 约 200ms 后第二帧才是 **0x8F（读，0x0F|0x80）** 取回数据。请在日志中查看第二包 5501008f… 及后续 AA 长帧中含 5B5B（联网 0A/05）。
+      </view>
+      <view class="status-row" style="font-size: 24rpx; color: #2f855a;">
+        联网状态解析：{{ wifiLinkStatusText }}
+      </view>
+    </view>
+
+    <view class="section">
       <view class="section-title">实时枕头状态</view>
       <view class="status-row">工作状态：{{ statusInfo.workStatusText }}</view>
       <view class="status-row">故障码1：{{ statusInfo.fault1 }}，故障码2：{{ statusInfo.fault2 }}</view>
@@ -253,9 +311,8 @@
 </template>
 
 <script>
-import blue_class from '@/utils/BlueManager'
-import BluePillowProtocol, { crc16Modbus } from '@/utils/BlueUtils'
-import { ab2hex } from '@/common/util.js'
+import BluePillowProtocol, { crc16Modbus, PillowBleManager } from '@/utils/BlueUtils'
+import { ab2hex, buildHeartModuleWifiFrame9 } from '@/common/util.js'
 
 export default {
   data() {
@@ -269,6 +326,7 @@ export default {
       connected: false,
       connectedDeviceName: '',
       currentDeviceId: '',
+      wifiLinkStatusText: '未解析',
       statusInfo: {
         workStatus: 0,
         workStatusText: '',
@@ -289,6 +347,7 @@ export default {
         headHeight: 50,
         neckHeight: 40,
         heatTemp: 40,
+        heatDurationSeconds: 1800,
         readProfileIndex: 0,
         profileIndex: 0,
         supineHead: 50,
@@ -298,8 +357,20 @@ export default {
         sideHead: 60,
         sideNeck: 50,
         sideHeadWindow: 0,
-        sideNeckWindow: 0
+        sideNeckWindow: 0,
+        /** 侧卧下发峰值 = 0x0B 计算的侧卧峰值 − x */
+        learnSidePeakOffsetX: 0
       },
+      /** 与正式睡姿页一致：下发前由 0x0B 填充，确认步沿用缓存 */
+      learnProfile: {
+        supinePeak1: 0,
+        supinePeak2: 0,
+        supineWidth: 5,
+        sidePeak: 0,
+        sideWidth: 2
+      },
+      lastLearnValidCount: 0,
+      learnPreviewText: '',
       posture: {
         limitText: '',
         flagsText: ''
@@ -319,7 +390,36 @@ export default {
         channel: 0,
         mode: '',
         seconds: 30
+      },
+      /** 心率模块 0x0F 控制帧参数（与 util buildHeartModuleWifiFrame9 一致） */
+      heartWifi: {
+        configWifi: true,
+        queryStatus: false,
+        byte3: 0,
+        spare0: 0,
+        spare1: 0,
+        spare2: 0
       }
+    }
+  },
+  computed: {
+    heartWifiFrameBytes() {
+      return buildHeartModuleWifiFrame9({
+        configWifi: this.heartWifi.configWifi,
+        queryStatus: this.heartWifi.queryStatus,
+        byte3: this.heartWifi.byte3,
+        spare567: [this.heartWifi.spare0, this.heartWifi.spare1, this.heartWifi.spare2]
+      })
+    },
+    heartWifiFrameHex() {
+      return this.heartWifiFrameBytes.map((b) => ('0' + (b & 0xff).toString(16)).slice(-2).toUpperCase()).join(' ')
+    },
+    heartWifiChkHex() {
+      const c = this.heartWifiFrameBytes[8] & 0xff
+      return ('0' + c.toString(16)).slice(-2).toUpperCase()
+    },
+    heartWifiChkDec() {
+      return this.heartWifiFrameBytes[8] & 0xff
     }
   },
   onLoad() {
@@ -355,6 +455,104 @@ export default {
     uni.$off('ble_write_result', this.onBleWriteResult)
   },
   methods: {
+    // applyWifiProvisionPreset() {
+    //   this.heartWifi = {
+    //     configWifi: true,
+    //     queryStatus: false,
+    //     byte3: 0,
+    //     spare0: 0,
+    //     spare1: 0,
+    //     spare2: 0
+    //   }
+    //   this.appendBleLog('PRESET', `已恢复配网页默认 0x0F：${this.heartWifiFrameHex}`)
+    //   uni.showToast({ title: '已恢复配网页默认参数', icon: 'none' })
+    // },
+    onHeartWifiSwitch(key, e) {
+      const v = e.detail && e.detail.value
+      if (typeof v === 'boolean') {
+        this.$set(this.heartWifi, key, v)
+      }
+    },
+    sendHeartWifi0x0F() {
+      if (!this.ensureConnected()) return
+      const bytes = this.heartWifiFrameBytes
+      let buffer
+      try {
+        buffer = BluePillowProtocol.heartRateModule({ read: false, data: bytes })
+      } catch (err) {
+        console.error(err)
+        uni.showToast({ title: '组包失败', icon: 'none' })
+        return
+      }
+      this.lastHex = ab2hex(buffer)
+      this.appendBleLog(
+        '>>',
+        `0x0F_control CHK=0x${this.heartWifiChkHex} | ${this.lastHex}`
+      )
+      PillowBleManager.getInstance().write2tooth(buffer)
+    },
+    /**
+     * 固定「仅查联网状态」：先 0x0F 写透传（5A5A 且 queryStatus=1），间隔约 200ms 再发 **读命令 0x8F**（协议：0x0F|0x80，无数据区）；结果在 notify 长帧中含 5B5B 上发（联网字节 0A/05）。
+     */
+    queryWifiNetworkStatus() {
+      if (!this.ensureConnected()) return
+      const frame9 = buildHeartModuleWifiFrame9({
+        configWifi: false,
+        queryStatus: true,
+        byte3: 0,
+        spare567: [0, 0, 0]
+      })
+      let buffer
+      try {
+        buffer = BluePillowProtocol.heartRateModule({ read: false, data: frame9 })
+      } catch (err) {
+        console.error(err)
+        uni.showToast({ title: '组包失败', icon: 'none' })
+        return
+      }
+      this.lastHex = ab2hex(buffer)
+      const hex9 = frame9.map((b) => ('0' + (b & 0xff).toString(16)).slice(-2)).join(' ')
+      this.appendBleLog('>>', `0x0F 查询联网状态 写透传[${hex9}] | BLE ${this.lastHex}`)
+      PillowBleManager.getInstance().write2tooth(buffer)
+      const delayMs = 220
+      if (this._wifiStatusReadTimer) {
+        clearTimeout(this._wifiStatusReadTimer)
+        this._wifiStatusReadTimer = null
+      }
+      this._wifiStatusReadTimer = setTimeout(() => {
+        this._wifiStatusReadTimer = null
+        let readBuf
+        try {
+          readBuf = BluePillowProtocol.heartRateModule({ read: true })
+        } catch (e) {
+          console.error(e)
+          this.appendBleLog('ERR', `0x8F 读命令组包失败 ${e && e.message}`)
+          return
+        }
+        const readHex = ab2hex(readBuf)
+        this.appendBleLog('>>', `0x8F 读心率/WiFi模块(间隔 ${delayMs}ms) ${readHex}`)
+        PillowBleManager.getInstance().write2tooth(readBuf)
+      }, delayMs)
+      uni.showToast({ title: '已下发查询', icon: 'none' })
+    },
+    /** 仅发送一包 0x8F（55 01 00 8F FE E4），不做前置 0x0F 写透传。 */
+    queryWifiStatusOnly8F() {
+      if (!this.ensureConnected()) return
+      let readBuf
+      try {
+        readBuf = BluePillowProtocol.heartRateModule({ read: true })
+      } catch (e) {
+        console.error(e)
+        this.appendBleLog('ERR', `0x8F 单包组包失败 ${e && e.message}`)
+        uni.showToast({ title: '组包失败', icon: 'none' })
+        return
+      }
+      const readHex = ab2hex(readBuf)
+      this.lastHex = readHex
+      this.appendBleLog('>>', `0x8F 单包查询 ${readHex}`)
+      PillowBleManager.getInstance().write2tooth(readBuf)
+      uni.showToast({ title: '已发送0x8F', icon: 'none' })
+    },
     onBleWriteResult(payload) {
       if (!payload) return
       if (payload.ok) {
@@ -413,14 +611,26 @@ export default {
         if (n >= 5 && bodyLen === 2) {
           const ack = dv.getUint8(4)
           const ackText = ack === 0 ? '成功' : `失败码=${ack}`
-          return `AA 功能=${funcHex} 写应答 ${ackText}`
+          const fn = (func & 0x7f) === 0x0f ? '心率模块0x0F ' : ''
+          return `AA ${fn}功能=${funcHex} 写应答 ${ackText}`
         }
         // 协议：读应答功能字节 = 0x80 | 原功能号，故 0x04 读回应为 0x84；部分固件也可能发 0x04
         if ((func & 0x7f) === 0x04) {
           const st = this.parseStatusFromBuffer(buffer)
           if (st) {
-            return `AA 枕头数据(0x04) 功能=${funcHex} 工作:${st.workStatusText} 故障:${st.fault1}/${st.fault2} 温:${st.temperature}℃`
+            return `AA 枕头数据(0x04) 功能=${funcHex} 工作:${st.workStatusText} 故障:${st.fault1}/${st.fault2} 温:${st.temperature}℃ 头/颈高(0~100%):${st.headHeightPct}%/${st.neckHeightPct}%`
           }
+        }
+        if ((func & 0x7f) === 0x0f) {
+          let hint = ''
+          if (n >= 6 && dv.getUint8(4) === 0x5a && dv.getUint8(5) === 0x5a) {
+            hint = ' 载荷含5A5A(心率侧回显)'
+          }
+          if (n >= 6 && dv.getUint8(4) === 0x5b && dv.getUint8(5) === 0x5b) {
+            hint += (hint ? '；' : ' ') + '载荷含5B5B(WiFi/联网上发)'
+          }
+          const readTag = isAckBit ? '读应答' : '数据'
+          return `AA 心率模块 功能=${funcHex}(${readTag}) 声明len=${bodyLen} 总字节=${n}${hint}`
         }
         return `AA 功能=${funcHex}(${isAckBit ? '读类应答' : '数据'}) 声明len=${bodyLen} 总字节=${n}`
       } catch (e) {
@@ -428,7 +638,7 @@ export default {
       }
     },
     initBle() {
-      const instance = blue_class.getInstance()
+      const instance = PillowBleManager.getInstance()
       // 先停止扫描，避免适配器处于「正在搜寻」导致后续 open/scan 异常
       uni.stopBluetoothDevicesDiscovery({
         complete: () => {
@@ -571,6 +781,10 @@ export default {
     teardownBlePage() {
       if (this._bleTeardownDone) return
       this._bleTeardownDone = true
+      if (this._wifiStatusReadTimer) {
+        clearTimeout(this._wifiStatusReadTimer)
+        this._wifiStatusReadTimer = null
+      }
       this.clearScanPollTimer()
       this.scanning = false
       try {
@@ -581,7 +795,7 @@ export default {
       } catch (e) {
         console.warn('teardown offBluetoothDeviceFound', e)
       }
-      const instance = blue_class.getInstance()
+      const instance = PillowBleManager.getInstance()
       uni.stopBluetoothDevicesDiscovery({
         complete: () => {
           const deviceId = this.currentDeviceId || instance.deviceId
@@ -625,7 +839,7 @@ export default {
       })
     },
     connectDevice(device) {
-      const instance = blue_class.getInstance()
+      const instance = PillowBleManager.getInstance()
       const deviceId = device.deviceId
       const name = device.name || ''
 
@@ -636,8 +850,6 @@ export default {
           this.appendBleLog('CONN', `createBLEConnection 成功 name=${name || '-'} id=${deviceId}`)
           instance.deviceId = deviceId
           instance.updateDeviceName(name)
-          instance.loginSuccess = true
-          this.connected = true
           this.connectedDeviceName = name || deviceId
           this.currentDeviceId = deviceId
           // 列表中只保留当前已连接的设备
@@ -646,6 +858,7 @@ export default {
             deviceId
           }]
           this.stopScan()
+          this.updateConnectState()
           this.initServicesAndNotify(deviceId)
         },
         fail: (err) => {
@@ -659,7 +872,7 @@ export default {
       })
     },
     disconnectDevice() {
-      const instance = blue_class.getInstance()
+      const instance = PillowBleManager.getInstance()
       const deviceId = this.currentDeviceId || instance.deviceId
       if (!deviceId) {
         return
@@ -688,7 +901,7 @@ export default {
     },
     initServicesAndNotify(deviceId) {
       const that = this
-      const instance = blue_class.getInstance()
+      const instance = PillowBleManager.getInstance()
       uni.getBLEDeviceServices({
         deviceId,
         success(res) {
@@ -709,7 +922,7 @@ export default {
           const findChars = (index) => {
             if (index >= services.length) {
               if (writeServiceUUID && writeCharUUID && notifyServiceUUID && notifyCharUUID) {
-                // 将系统获取到的 serviceId / characteristicId 写回 BlueManager
+                // 将系统获取到的 serviceId / characteristicId 写回 PillowBleManager 实例
                 instance.serviceId = writeServiceUUID
                 instance.characteristicId = writeCharUUID
                 that.appendBleLog(
@@ -774,9 +987,10 @@ export default {
       })
     },
     updateConnectState() {
-      const instance = blue_class.getInstance()
-      this.connected = !!instance.loginSuccess
-      this.connectedDeviceName = instance.deviceName || instance.deviceId || ''
+      const instance = PillowBleManager.getInstance()
+      // notify 成功前：已有 deviceId 视为物理连接中；成功后以 loginSuccess 为准
+      this.connected = !!instance.loginSuccess || !!this.currentDeviceId
+      this.connectedDeviceName = instance.deviceName || instance.deviceId || this.connectedDeviceName || ''
     },
     handleNotify(res) {
       if (!res || !res.value) {
@@ -789,10 +1003,85 @@ export default {
       const summary = this.describeDevicePayload(buffer)
       this.appendBleLog('<<', `${summary} | ${hex}${cid ? ' | char=' + cid : ''}`)
       this.lastStatusHex = hex
+      const wifiStatus = this.parseWifiStatusFrom0x0F(buffer)
+      if (wifiStatus) {
+        this.wifiLinkStatusText = wifiStatus.statusText
+        this.appendBleLog('WIFI', `${wifiStatus.statusText} | ${wifiStatus.frameHex} | ${wifiStatus.source}`)
+      }
       const status = this.parseStatusFromBuffer(buffer)
       if (status) {
         this.statusInfo = status
       }
+    },
+    /**
+     * 解析 0x0F/0x8F 上报中的联网状态：
+     * - 二进制透传：直接包含 5B 5B xx xx xx xx xx xx CHK
+     * - ASCII 文本：例如 "5b 5b 0 0 a 0 0 0 a\\r\\n"
+     */
+    parseWifiStatusFrom0x0F(buffer) {
+      try {
+        const dv = new DataView(buffer)
+        const n = dv.byteLength
+        if (n < 6) return null
+        if (dv.getUint8(0) !== 0xaa) return null
+        const bodyLen = dv.getUint16(1, true)
+        const func = dv.getUint8(3)
+        if ((func & 0x7f) !== 0x0f) return null
+        const dataLen = bodyLen - 1
+        if (dataLen <= 0 || 4 + dataLen > n) return null
+        const payload = new Uint8Array(buffer, 4, dataLen)
+
+        const binFrame = this._findWifiFrame9(payload)
+        if (binFrame) {
+          return this._buildWifiStatusResult(binFrame, 'bin-5b5b')
+        }
+
+        const asciiBytes = this._extractAsciiHexBytes(payload)
+        if (!asciiBytes || !asciiBytes.length) return null
+        const asciiFrame = this._findWifiFrame9(Uint8Array.from(asciiBytes))
+        if (!asciiFrame) return null
+        return this._buildWifiStatusResult(asciiFrame, 'ascii-5b5b')
+      } catch (e) {
+        console.warn('parseWifiStatusFrom0x0F error', e)
+        return null
+      }
+    },
+    _extractAsciiHexBytes(payload) {
+      const txt = Array.from(payload)
+        .map((b) => String.fromCharCode(b & 0xff))
+        .join('')
+      const tokens = txt.match(/[0-9a-fA-F]{1,2}/g)
+      if (!tokens || tokens.length < 9) return []
+      const out = []
+      for (let i = 0; i < tokens.length; i++) {
+        const v = parseInt(tokens[i], 16)
+        if (!Number.isNaN(v)) out.push(v & 0xff)
+      }
+      return out
+    },
+    _findWifiFrame9(bytesLike) {
+      const bytes = bytesLike instanceof Uint8Array ? bytesLike : Uint8Array.from(bytesLike || [])
+      if (bytes.length < 9) return null
+      for (let i = 0; i <= bytes.length - 9; i++) {
+        if (bytes[i] !== 0x5b || bytes[i + 1] !== 0x5b) continue
+        let xor = 0
+        for (let j = 0; j < 8; j++) xor ^= bytes[i + j]
+        if ((xor & 0xff) === (bytes[i + 8] & 0xff)) {
+          return Array.from(bytes.slice(i, i + 9))
+        }
+      }
+      return null
+    },
+    _buildWifiStatusResult(frame9, source) {
+      const statusByte = frame9[4] & 0xff
+      const statusText =
+        statusByte === 0x0a
+          ? '已联网(0x0A)'
+          : statusByte === 0x05
+            ? '未联网(0x05)'
+            : `未知状态(0x${this._byte2hex(statusByte)})`
+      const frameHex = frame9.map((b) => this._byte2hex(b)).join(' ')
+      return { statusByte, statusText, frameHex, source }
     },
     parseStatusFromBuffer(buffer) {
       try {
@@ -806,8 +1095,8 @@ export default {
         if ((func & 0x7f) !== 0x04) return null
 
         let offset = 4
-        // 存在精简包与完整包，先保证基础状态字段可读。
-        if (n < offset + 7) return null
+        /** 0x04 数据区 21B（末两头枕/颈枕为 uint16 LE）+ 功能 1B；含 CRC 时总长 27 */
+        if (n < offset + 21) return null
         const workStatus = dv.getUint8(offset++)
         const fault1 = dv.getUint8(offset++)
         const fault2 = dv.getUint8(offset++)
@@ -846,48 +1135,24 @@ export default {
           valve,
           valveBits
         }
-        const fullPayloadNeed = 32 + 6 + 4
-        const compactPayloadNeed = 6 + 4
-        const remain = n - offset
-
-        if (remain >= fullPayloadNeed) {
-          // 完整包：含 16*uint16 睡姿 + RTC + 2 路压力
-          offset += 16 * 2
-          const year = dv.getUint8(offset++)
-          const month = dv.getUint8(offset++)
-          const day = dv.getUint8(offset++)
-          const hour = dv.getUint8(offset++)
-          const minute = dv.getUint8(offset++)
-          const second = dv.getUint8(offset++)
-          const press1 = dv.getUint16(offset, true)
-          offset += 2
-          const press2 = dv.getUint16(offset, true)
-          result.rtcText = `${year}-${month}-${day} ${hour}:${minute}:${second}`
-          result.press1 = press1
-          result.press2 = press2
-          result.packetType = 'full'
-          return result
-        }
-
-        if (remain >= compactPayloadNeed) {
-          // 简版包：无睡姿数组，仅带 RTC + 2 路压力（常见 len=18/总长=23）
-          const year = dv.getUint8(offset++)
-          const month = dv.getUint8(offset++)
-          const day = dv.getUint8(offset++)
-          const hour = dv.getUint8(offset++)
-          const minute = dv.getUint8(offset++)
-          const second = dv.getUint8(offset++)
-          const press1 = dv.getUint16(offset, true)
-          offset += 2
-          const press2 = dv.getUint16(offset, true)
-          result.rtcText = `${year}-${month}-${day} ${hour}:${minute}:${second}`
-          result.press1 = press1
-          result.press2 = press2
-          result.packetType = 'compact'
-          return result
-        }
-
-        result.packetType = 'base'
+        const year = dv.getUint8(offset++)
+        const month = dv.getUint8(offset++)
+        const day = dv.getUint8(offset++)
+        const hour = dv.getUint8(offset++)
+        const minute = dv.getUint8(offset++)
+        const second = dv.getUint8(offset++)
+        const press1 = dv.getUint16(offset, true)
+        offset += 2
+        const press2 = dv.getUint16(offset, true)
+        offset += 2
+        result.rtcText = `${year}-${month}-${day} ${hour}:${minute}:${second}`
+        result.press1 = press1
+        result.press2 = press2
+        result.headHeightPct = dv.getUint16(offset, true)
+        offset += 2
+        result.neckHeightPct = dv.getUint16(offset, true)
+        offset += 2
+        result.packetType = '0x04_full'
         return result
       } catch (e) {
         console.error('parseStatusFromBuffer error', e)
@@ -895,7 +1160,7 @@ export default {
       }
     },
     ensureConnected() {
-      const instance = blue_class.getInstance()
+      const instance = PillowBleManager.getInstance()
       if (!instance.loginSuccess) {
         uni.showModal({
           title: '提示',
@@ -906,6 +1171,131 @@ export default {
         return false
       }
       return true
+    },
+    /**
+     * 与正式睡姿页 study.vue 一致：仰卧峰值2 须大于峰值1；侧卧峰值下限等约束。
+     */
+    normalizeLearnProfileForBleTest() {
+      const clampU16 = (v) => {
+        let n = Number(v)
+        if (Number.isNaN(n)) n = 0
+        return Math.max(0, Math.min(65535, Math.floor(n)))
+      }
+      const clampU8 = (v) => {
+        let n = Number(v)
+        if (Number.isNaN(n)) n = 0
+        return Math.max(0, Math.min(255, Math.floor(n)))
+      }
+      let supinePeak1 = clampU16(this.learnProfile.supinePeak1)
+      let supinePeak2 = clampU16(this.learnProfile.supinePeak2)
+      let sidePeak = clampU16(this.learnProfile.sidePeak)
+      const supineWidth = clampU8(this.learnProfile.supineWidth)
+      const sideWidth = clampU8(this.learnProfile.sideWidth)
+      if (supinePeak2 <= supinePeak1) {
+        supinePeak2 = Math.min(65535, supinePeak1 + 2)
+      }
+      const minSidePeak = Math.min(65535, supinePeak2 + 100)
+      if (sidePeak < minSidePeak) {
+        sidePeak = minSidePeak
+      }
+      this.learnProfile = {
+        supinePeak1,
+        supinePeak2,
+        supineWidth,
+        sidePeak,
+        sideWidth
+      }
+    },
+    _collectValidPointsFromSnap(snap) {
+      const flags = Array.isArray(snap.validFlags) ? snap.validFlags : []
+      const samples = Array.isArray(snap.postureSamples) ? snap.postureSamples : []
+      const validValues = []
+      for (let i = 0; i < Math.min(flags.length, samples.length); i++) {
+        if (Number(flags[i])) {
+          validValues.push(Number(samples[i]) || 0)
+        }
+      }
+      return validValues
+    },
+    _updateLearnPreview(posture) {
+      const lp = this.learnProfile
+      const x = Number(this.form.learnSidePeakOffsetX)
+      const xn = Number.isNaN(x) ? 0 : Math.max(0, Math.floor(x))
+      if (posture === 'supine') {
+        this.learnPreviewText = `0x0B：仰卧峰值1=${lp.supinePeak1} 峰值2=${lp.supinePeak2} 仰卧宽/侧卧宽=${lp.supineWidth}/${lp.sideWidth} 有效点=${this.lastLearnValidCount}`
+      } else {
+        const sent = Math.max(0, lp.sidePeak - xn)
+        this.learnPreviewText = `0x0B：侧卧计算峰值=${lp.sidePeak} 下发侧卧峰值=${sent}(−${xn}) 仰卧1/2=${lp.supinePeak1}/${lp.supinePeak2} 有效点=${this.lastLearnValidCount}`
+      }
+    },
+    async onLearnPostureClick(posture, phase) {
+      if (!this.ensureConnected()) return
+      const ble = PillowBleManager.getInstance()
+      try {
+        if (phase === 'start') {
+          uni.showLoading({ title: '读取睡姿数据…', mask: true })
+          const snap = await ble.readPostureSnapshot0x0B({ silent: true, timeoutMs: 8000 })
+          uni.hideLoading()
+          if (!snap || !snap.ok) {
+            uni.showToast({ title: '读取睡姿数据失败', icon: 'none' })
+            return
+          }
+          this.lastLearnValidCount = Number(snap.validPointCount) || 0
+          const validValues = this._collectValidPointsFromSnap(snap)
+          if (posture === 'supine') {
+            if (validValues.length) {
+              this.learnProfile.supinePeak1 = Math.min(...validValues)
+              this.learnProfile.supinePeak2 = Math.max(...validValues)
+            } else {
+              this.learnProfile.supinePeak1 = 0
+              this.learnProfile.supinePeak2 = 0
+            }
+          } else {
+            const rawSide = validValues.length ? Math.max(...validValues) : 0
+            this.learnProfile.sidePeak = rawSide
+          }
+          this.learnProfile.supineWidth = 5
+          this.learnProfile.sideWidth = 2
+          this.normalizeLearnProfileForBleTest()
+          this._updateLearnPreview(posture)
+        }
+        const offsetX = Number(this.form.learnSidePeakOffsetX)
+        const x = Number.isNaN(offsetX) ? 0 : Math.max(0, Math.floor(offsetX))
+        let sidePeakSend = this.learnProfile.sidePeak
+        if (posture === 'side') {
+          sidePeakSend = Math.max(0, Math.min(65535, this.learnProfile.sidePeak - x))
+        }
+        const mode = posture === 'supine' ? 0x01 : 0x02
+        const state = phase === 'start' ? 0x02 : 0x04
+        const buffer = BluePillowProtocol.learnPosture({
+          mode,
+          state,
+          postureValidLimit: this.lastLearnValidCount,
+          supinePeak1: this.learnProfile.supinePeak1,
+          supinePeak2: this.learnProfile.supinePeak2,
+          supineWidth: this.learnProfile.supineWidth,
+          sidePeak: sidePeakSend,
+          sideWidth: this.learnProfile.sideWidth
+        })
+        this.lastHex = ab2hex(buffer)
+        const tag = `${posture}-${phase}`
+        const sideNote =
+          posture === 'side'
+            ? ` sidePeak下发=${sidePeakSend}(计算${this.learnProfile.sidePeak}-x${x})`
+            : ''
+        this.appendBleLog(
+          '>>',
+          `learn0x07 ${tag} valid=${this.lastLearnValidCount}${sideNote} | ${this.lastHex}`
+        )
+        PillowBleManager.getInstance().write2tooth(buffer)
+        uni.showToast({ title: '已下发 0x07', icon: 'none' })
+      } catch (e) {
+        uni.hideLoading()
+        console.warn('[bleTest] onLearnPostureClick', e)
+        const msg =
+          e && e.message === 'read_posture_timeout' ? '读取睡姿数据超时' : '读取睡姿数据失败'
+        uni.showToast({ title: msg, icon: 'none' })
+      }
     },
     send(action) {
       if (!this.ensureConnected()) return
@@ -955,49 +1345,28 @@ export default {
               neckWindow: this.form.sideNeckWindow
             })
             break
-          case 'startSupineLearn':
-            buffer = BluePillowProtocol.learnPosture({
-              mode: 0x01,
-              state: 0x02
-            })
-            break
-          case 'confirmSupineLearn':
-            buffer = BluePillowProtocol.learnPosture({
-              mode: 0x01,
-              state: 0x04
-            })
-            break
-          case 'startSideLearn':
-            buffer = BluePillowProtocol.learnPosture({
-              mode: 0x02,
-              state: 0x02
-            })
-            break
-          case 'confirmSideLearn':
-            buffer = BluePillowProtocol.learnPosture({
-              mode: 0x02,
-              state: 0x04
-            })
-            break
           case 'startHeating':
             // 限制加热温度在 0~45℃ 之间
             if (this.form.heatTemp < 0) this.form.heatTemp = 0
             if (this.form.heatTemp > 45) this.form.heatTemp = 45
             buffer = BluePillowProtocol.heating({
               on: true,
-              targetTemperature: this.form.heatTemp
+              targetTemperature: this.form.heatTemp,
+              durationSeconds: this.form.heatDurationSeconds
             })
             break
           case 'stopHeating':
             buffer = BluePillowProtocol.heating({
               on: false,
-              targetTemperature: 0
+              targetTemperature: 0,
+              durationSeconds: 0
             })
             break
           case 'startSpineAdjust':
             buffer = BluePillowProtocol.spineAdjust({
               headHeight: 60,
               neckHeight: 50,
+              neckRelaxHeight: 40,
               times: 1,
               holdTime1: 10,
               holdTime2: 10
@@ -1058,12 +1427,18 @@ export default {
           case 'calibrateEnter':
             buffer = BluePillowProtocol.calibrate(0x01)
             break
-          case 'calibrateExit':
+          case 'calibrateNeck':
+            buffer = BluePillowProtocol.calibrate(0x03)
+            break
+          case 'calibrateHead':
+            buffer = BluePillowProtocol.calibrate(0x04)
+            break
+          case 'calibrateSuccess':
             buffer = BluePillowProtocol.calibrate(0x02)
             break
-			case 'calibrateSuccess':
-			buffer = BluePillowProtocol.calibrate(0x03)
-			break
+          case 'calibrateExit':
+            buffer = BluePillowProtocol.calibrate(0x05)
+            break
           default:
             uni.showToast({
               title: '未知指令',
@@ -1093,7 +1468,7 @@ export default {
       this.appendBleLog('>>', `${action} | ${this.lastHex}`)
 
       // 真正下发到枕头
-      blue_class.getInstance().write2tooth(buffer)
+      PillowBleManager.getInstance().write2tooth(buffer)
     }
   }
 }
@@ -1260,6 +1635,33 @@ export default {
   line-height: 1.45;
   margin-bottom: 6rpx;
   word-break: break-all;
+}
+
+.picker-value {
+  flex: 1;
+  padding: 12rpx 16rpx;
+  border: 1px solid #ddd;
+  border-radius: 6rpx;
+  font-size: 26rpx;
+  color: #333;
+}
+
+.mono-preview {
+  font-family: monospace;
+  font-size: 22rpx;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.align-switch {
+  align-items: center;
+  gap: 8rpx;
+}
+
+.form-input-narrow {
+  flex: 0 0 100rpx;
+  min-width: 80rpx;
+  text-align: center;
 }
 </style>
 

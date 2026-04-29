@@ -2,6 +2,9 @@
 	<!-- 	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
 		title='枕头调整'></z-nav-bar> -->
 	<view class="main">
+		<view v-if="!bleConnected" class="ble-off-tip">
+			未连接枕头蓝牙，无法进行手动微调。请先在首页连接设备。
+		</view>
 		<view class="select-part">
 			<view :class="this.selectIndex==1?'select-btn':'select-btn unselect-btn'" v-if="this.selectIndex==1">
 				<image mode="widthFix" class="icon1" :src="'../static/adjust/SY_11_IconYWb.png'"></image>
@@ -16,57 +19,43 @@
 		<view class="info-part">
 			<view class="info-second-part">
 				<label class='desc1'>头枕部</label>
-				<label class='desc1size'>{{this.selectIndex==1?this.head:this.sideHead}}mm</label>
+				<label class='desc1size'>{{ displayHeadCm }}cm</label>
 				<label class='desc2'>颈枕部</label>
-				<label class='desc2size'>{{this.selectIndex==1?this.neck:this.sideNeck}}mm</label>
+				<label class='desc2size'>{{ displayNeckCm }}cm</label>
 				<image class="human-icon" :src="'../static/adjust/SY_11_bg01YW.png'"></image>
 				<image class="main-icon" :src="'../static/adjust/SY_11_bg.png'"></image>
-				<image class="down-icon" :class="touchingDown?['show-icon','down-icon-effect']:[]"
-					:src="'../static/adjust/SY_11_DOW.png'"></image>
-				<image class="up-icon" :class="touchingUp?['show-icon','up-icon-effect']:[]"
-					:src="'../static/adjust/SY_11_UP.png'">
-				</image>
+				<image class="down-icon" :src="'../static/adjust/SY_11_DOW.png'"></image>
+				<image class="up-icon" :src="'../static/adjust/SY_11_UP.png'"></image>
 				<!-- 				<image class="bzb-icon" :src="'../static/adjust/SY_11_buttonBZb.png'"></image>
 				<image class="tzb-icon" :src="'../static/adjust/SY_11_buttonTZb.png'"></image> -->
-				<view :class="this.selectHead?'bo bo-left':'bo bo-left select'" @click="selectHeadHandler(true)">
+				<view :class="this.selectHead?'bo bo-left':'bo bo-left select'" @click="onSelectHeadClick(true)">
 					头枕
 				</view>
-				<view :class="this.selectHead?'bo bo-right select':'bo bo-right'" @click="selectHeadHandler(false)">
+				<view :class="this.selectHead?'bo bo-right select':'bo bo-right'" @click="onSelectHeadClick(false)">
 					颈枕
 				</view>
 			</view>
-			<view class="version">
-				{{pillowVersion+':'+pillowStatus}}
-			</view>
 			<view class="opt-part">
-				<view class="opt-btn opt-btn-top" @touchstart="adjustHighSleepHandler"
-					@touchend="stopAdjustHighHandler">
-					<image mode="widthFix" class="icon" :src="'../static/adjust/SY_11_butUP.png'"></image>
-					<label>升高</label>
+				<view class="slider-row" :class="{ 'opt-disabled': !bleConnected }">
+					<view class="step-btn step-btn-minus" @click="onAdjustStepClick(-1)">
+						<text class="step-btn-txt">−</text>
+					</view>
+					<slider class="height-slider" :disabled="!bleConnected" :value="currentSliderPercent" min="0" max="100" step="1"
+						activeColor="#5d8ff8" backgroundColor="#e6e7eb" block-color="#7bc8e9" block-size="26"
+						@changing="onSliderChanging" @change="onSliderChange" />
+					<view class="step-btn step-btn-plus" @click="onAdjustStepClick(1)">
+						<text class="step-btn-txt">+</text>
+					</view>
 				</view>
-				<view class="opt-tip1">按住升高,放开停止</view>
-				<view class="opt-btn opt-btn-top" @touchstart="adjustLowSleepHandler" @touchend="stopAdjustHighHandler">
-					<image mode="widthFix" class="icon" style="transform: rotate(-180deg);"
-						:src="'../static/adjust/SY_11_butUP.png'">
-					</image>
-					<label>降低</label>
-				</view>
-				<view class="opt-tip2">按住降低,放开停止</view>
+				<view class="slider-pct">{{ currentSliderPercent }}%</view>
 			</view>
 			<view class="opt-part" v-if="false">
-				<view class="opt-btn" @click="uploadDataHandle" v-if="false">
-					<label>上报数据</label>
-				</view>
-
 				<view class="opt-btn" @click="resetHandle">
-					<label>设备校准</label>
-				</view>
-				<view class="opt-btn" @click="restartHandle">
-					<label>设备重启</label>
+					<label>设备校准（0x0A）</label>
 				</view>
 			</view>
 			<view class="bottom-part">
-				<view class="save" @click="saveModeHandler">保存{{selectIndex==1?'/侧卧调整':'/返回主页'}}</view>
+				<view class="save" :class="{ 'btn-disabled': !bleConnected }" @click="saveModeHandler">保存{{selectIndex==1?'/侧卧调整':'/返回主页'}}</view>
 				<view class="text-tips text-button bottom-btn" @click="cancelSaveHandle">
 					不保存{{this.selectIndex==1?'/继续调整侧卧高度':'/返回主页'}}
 				</view>
@@ -87,7 +76,7 @@
 					<text class="">名称</text>
 					<input v-model="inputName" class="flex1 input-area" placeholder="输入我的模式" />
 				</view>
-				<view class="send-btn" @click="saveHandler">保存{{selectIndex==1?'仰卧数据':'侧卧数据'}}</view>
+				<view class="send-btn" @click="onSaveHandlerClick">保存{{selectIndex==1?'仰卧数据':'侧卧数据'}}</view>
 				<image class="titleimg" src="../../static/adjust/SY_05_B001.png"></image>
 				<image class="close-btn" src="../../static/adjust/SY_05_buttonCOLa.png" mode="widthFix"
 					@click="closeSave">
@@ -109,66 +98,50 @@
 	</view>
 </template>
 <script>
-	import blue_class from '../../utils/BlueManager'
+	import BluePillowProtocol, { PillowBleManager } from '@/utils/BlueUtils'
 	import InputView from '../../pages/shootView/InputView.vue'
 	import RecommandInfo from './RecommandInfo.vue'
 	import { callPushSmartPillowData } from '../../utils/miniapp'
 	import {
-		object2Query,
-		parsePillowRealState,
-		handPillowStatus,
-		handPillowSideState,
-		handPillowFrontState,
-		handlePillowDelayState,
-		hexStringToArrayBuffer,
-		ab2hex,
-		resetPillow,
-		uploadDataRequest,
-		initPillow,
-		changeAdjustMode,
-		changeSaveAdjustMode,
-		hand1Shake,
-		write2tooth,
-		parsePillowState,
 		sendModeByName,
 		saveRandomMode,
-		getAIModeByName
+		getAIModeByName,
+		getMiniProgramEnv
 	} from '@/common/util.js'
-	import {
-		version
-	} from 'vue'
-	import {
-		appAnswer,
-		restartPillow
-	} from '../../common/util'
+	import { stopSpineAdjustSession } from '@/common/spineSession.js'
+
+	/** 手动微调：机械行程按最大 12cm 与协议 0~100% 对应；内部存 mm(0~120)，界面显示 cm */
+	const MANUAL_MAX_MM = 120
+	/** 加减按钮：协议百分数域每次步进（0x05/0x06） */
+	const MANUAL_PERCENT_STEP = 6
+
 	export default {
 		components: {
 			InputView,
 			RecommandInfo
 		},
 		computed: {
-			pillowStatusDesc() {
-
-				if (this.pillowPressStatus == 0) {
-					return '空闲'
-				} else if (this.pillowPressStatus == 1) {
-					return '平躺中'
-				} else if (this.pillowPressStatus == 2) {
-					return '侧卧中'
-				}
+			/** 头枕高度 cm 展示（内部 head/sideHead 为 mm 0~120） */
+			displayHeadCm() {
+				const mm = this.selectIndex === 1 ? this.head : this.sideHead
+				return (Number(mm) / 10).toFixed(1)
+			},
+			/** 颈枕高度 cm 展示 */
+			displayNeckCm() {
+				const mm = this.selectIndex === 1 ? this.neck : this.sideNeck
+				return (Number(mm) / 10).toFixed(1)
+			},
+			/** 当前选中通道（头/颈 × 仰/侧）对应的协议百分数 0~100，与滑块同步 */
+			currentSliderPercent() {
+				return this.mmToPct(this.getCurrentChannelMm())
 			}
 		},
 		data() {
 			return {
 				inputName: '模式',
-				pillowVersion: '固件版本:0.1',
-				pillowStatus: '未连接',
-				pillowStatusNum: 0, // 枕头状态
 				pillowPressStatus: 0,
 				saveOptions: {},
 				showMeasure: false, // 是否显示信息
-				touchingDown: false,
-				touchingUp: false,
 				deviceId: '', // 连接的蓝牙id
 				serviceId: '', // 连接的服务id
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
@@ -176,10 +149,10 @@
 				pillowName: '',
 				selectIndex: 1,
 				selectHead: true, // 是否选中调整头枕，否则是脖枕
-				head: 0, // 仰卧头部高度
-				sideHead: 0, // 侧卧头部高度
-				neck: 0, // 仰卧颈部高度
-				sideNeck: 0, // 侧卧颈部高度
+				head: 0, // 仰卧头部高度（mm，0~MANUAL_MAX_MM，对应 0~12cm）
+				sideHead: 0, // 侧卧头部高度（mm）
+				neck: 0, // 仰卧颈部高度（mm）
+				sideNeck: 0, // 侧卧颈部高度（mm）
 				initHeadHeight: 0,
 				initNeckHeight: 0,
 				initWidthHeight: 0,
@@ -187,6 +160,17 @@
 				initSideWdithHeight: 0,
 				standard: {},
 				step: 0, // 当前步骤
+				/** 0x02/0x03 用户索引 0~4（路由可传 profileIndex） */
+				profileIndex: 0,
+				/** 若恢复进标定：0x0A 进入用 0x01，离开需发 0x05 退出（见协议 0x0A） */
+				manualCalibrateEntered: false,
+				_enterCalibrateApplyTimer: null,
+				/** 非正式环境下 0x10 调试模式是否已进入（用于离场时补发退出） */
+				manualDebugModeEntered: false,
+				status04PollTimer: null,
+				status04StartTimer: null,
+				/** 与 PillowBleManager 同步，未连接时不允许微调下发 */
+				bleConnected: false,
 			}
 		},
 		onLoad(options) {
@@ -194,26 +178,38 @@
 			this.pillowName = decodeURIComponent(options.pillowName || '')
 			this.deviceId = options.deviceId || ''
 			this.serviceId = options.serviceId || ''
-			this.initHeadHeight = Math.floor(options.headHeight || 0)
-			this.initNeckHeight = Math.floor(options.neckHeight || 0)
+			// 路由一般为协议百分数 0~100，换算为 mm(0~120) 再参与微调
+			this.initHeadHeight = this.routePctToMm(options.headHeight)
+			this.initNeckHeight = this.routePctToMm(options.neckHeight)
 			this.initWidthHeight = Math.floor(options.shoulderHeight || 0)
-			this.initSideNeckHeight = Math.floor(options.sideNeckHeight || 0)
-			this.initSideHeadHeight = Math.floor(options.sideHeadHeight || 0)
+			this.initSideNeckHeight = this.routePctToMm(options.sideNeckHeight)
+			this.initSideHeadHeight = this.routePctToMm(options.sideHeadHeight)
 			this.initSideWdithHeight = Math.floor(options.sideShoulderHeight || 0)
 			this.saveOptions = options;
 			this.inputName = options.name ? decodeURIComponent(options.name) : '模式';
+			let pi = options.profileIndex
+			if (pi === undefined || pi === '') pi = options.userProfileIndex ?? options.userIndex
+			const idx = parseInt(pi, 10)
+			this.profileIndex = Number.isFinite(idx) ? Math.min(4, Math.max(0, idx)) : 0
 
 			this.head = this.initHeadHeight;
 			this.neck = this.initNeckHeight;
 			this.sideNeck = this.initSideNeckHeight;
 			this.sideHead = this.initSideHeadHeight
 			console.log(decodeURIComponent(options.name))
-			blue_class.getInstance().updateDeviceName(this.pillowName);
+			PillowBleManager.getInstance().updateDeviceName(this.pillowName);
 			uni.setNavigationBarTitle({
-				title: this.pillowName
+				title: '手动微调'
 			})
 		},
 		onShow() {
+			this.syncBleConnectedState()
+			if (PillowBleManager.getInstance().getSpineAdjusting()) {
+				stopSpineAdjustSession({
+					showModal: true,
+					modalContent: '进入手动微调后已结束脊柱微调'
+				});
+			}
 			// uni.setStorageSync('mode_switch_flag', true); // 旧标记逻辑，已改为切换时即停，保留为屏蔽
 			this.step = 0;
 			// 监听低功耗蓝牙设备的特征值变化事件.必须先启用 notifyBLECharacteristicValueChange 接口才能接收到设备推送的 notification。
@@ -221,28 +217,13 @@
 			uni.$on('xx', this.handleMessage);
 			uni.$on('update_pillow_info', this.updateInfo);
 			uni.$on('bluetooth_status_change', this.handleDisconnect);
+			uni.$on('pillow_status_0x04', this.handlePillowStatus0x04);
 
-			// let arraybuffer = changeAdjustMode();
-			// blue_class.getInstance().write2tooth(arraybuffer)
-
-			this.pillowPressStatus = blue_class.getInstance().getPillowStatus()
+			this.pillowPressStatus = PillowBleManager.getInstance().getPillowStatus()
 
 			if (this.initHeadHeight >= 0 && this.initNeckHeight >= 0) {
-				// let init_arraybuffer = initPillow(this.initHeadHeight, this.initNeckHeight, this.initWidthHeight, this
-				// 	.initSideHeadHeight, this.initSideNeckHeight, this.initSideWdithHeight);
-				// // let app = getApp()
-				// blue_class.getInstance().write2tooth(init_arraybuffer);
 				this.showMeasure = true;
-				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
-				// let init_arraybuffer = initPillow(this.initHeadHeight > 100 ? 100 : this.initHeadHeight, this
-				// 	.initNeckHeight > 100 ? 100 : this.initNeckHeight, 100, this
-				// 	.initSideHeadHeight > 100 ? 100 : this.initSideHeadHeight, this.initSideNeckHeight > 100 ? 100 :
-				// 	this.initSideNeckHeight, 100);
-				// // let app = getApp()
-				// blue_class.getInstance().write2tooth(init_arraybuffer);
-				this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
-					.initSideNeckHeight, 0)
-
+				this.enterManualCalibrateThenApplyHeights();
 
 				this.standard = getAIModeByName(this.inputName)
 				if (!this.standard) {
@@ -261,201 +242,395 @@
 		},
 		onUnload() {
 			console.log('work on onUnload!')
-			// 把模式还原成自动
-			let arraybuffer = changeAdjustMode(0);
-			blue_class.getInstance().write2tooth(arraybuffer)
-
+			this.stopPillowStatus0x04Polling()
+			this.exitManualDebugMode0x10()
+			this.exitManualCalibrateMode();
 			uni.$off('xx', this.handleMessage);
+			uni.$off('pillow_status_0x04', this.handlePillowStatus0x04);
 		},
 		onHide() {
 			console.log('work on hide!')
-			// 把模式还原成自动
-			let arraybuffer = changeAdjustMode(0);
-			blue_class.getInstance().write2tooth(arraybuffer)
+			this.stopPillowStatus0x04Polling()
+			this.exitManualDebugMode0x10()
+			this.exitManualCalibrateMode();
 			uni.$on('update_pillow_info', this.updateInfo);
 
 			uni.$off('xx', this.handleMessage);
 			uni.$off('bluetooth_status_change', this.handleDisconnect);
+			uni.$off('pillow_status_0x04', this.handlePillowStatus0x04);
 		},
 		methods: {
-			// 处理蓝牙断开连接
-			handleDisconnect() {
-				// 检查是否真的断开了
-				if (!blue_class.getInstance().loginSuccess) {
-					this.pillowStatus = '未连接';
-					console.log('调整页面检测到蓝牙断开');
-					
-					// 停止调整动画
-					this.touchingDown = false;
-					this.touchingUp = false;
+			syncBleConnectedState() {
+				this.bleConnected = PillowBleManager.getInstance().isConnected()
+			},
+			/** @returns {boolean} */
+			ensureBleConnected() {
+				this.syncBleConnectedState()
+				if (this.bleConnected) return true
+				uni.showToast({ title: '请先连接枕头蓝牙', icon: 'none' })
+				return false
+			},
+			onAdjustStepClick(direction) {
+				if (!this.ensureBleConnected()) return
+				this.adjustPercentStep(direction)
+			},
+			onSelectHeadClick(bool) {
+				if (!this.ensureBleConnected()) return
+				this.selectHeadHandler(bool)
+			},
+			onSaveHandlerClick() {
+				if (!this.ensureBleConnected()) return
+				this.saveHandler()
+			},
+			startPillowStatus0x04Polling(initialDelayMs = 0) {
+				this.stopPillowStatus0x04Polling()
+				const delay = Math.max(0, Math.floor(Number(initialDelayMs) || 0))
+				this.status04StartTimer = setTimeout(() => {
+					this.status04StartTimer = null
+					this.requestPillowStatus0x04()
+					this.status04PollTimer = setInterval(() => {
+						this.requestPillowStatus0x04()
+					}, 2000)
+				}, delay)
+			},
+			stopPillowStatus0x04Polling() {
+				if (this.status04StartTimer != null) {
+					clearTimeout(this.status04StartTimer)
+					this.status04StartTimer = null
+				}
+				if (this.status04PollTimer != null) {
+					clearInterval(this.status04PollTimer)
+					this.status04PollTimer = null
 				}
 			},
-			changeHandMode() {
-				let arraybuffer = changeAdjustMode();
-				blue_class.getInstance().write2tooth(arraybuffer)
+			/** 0x04 协议里头/颈高度为 uint16 小端，日志用 16 进制展示与协议一致 */
+			u16HexForLog(v) {
+				const n = Number(v)
+				if (!Number.isFinite(n)) return '0x0000'
+				return '0x' + (Math.max(0, Math.min(65535, Math.floor(n))) & 0xffff).toString(16).toUpperCase().padStart(4, '0')
+			},
+			/** 手动微调页主动读取 0x04：查询当前头枕/颈枕高度 */
+			requestPillowStatus0x04() {
+				const ble = PillowBleManager.getInstance()
+				if (!ble.isConnected()) {
+					return
+				}
+				ble.readPillowStatus({ silent: true })
+			},
+			/** 接收 0x04 结果并输出头枕/颈枕高度（协议百分比转 mm/cm 展示） */
+			handlePillowStatus0x04(payload) {
+				const parsed = payload && payload.parsed
+				if (!parsed || !parsed.ok) {
+					return
+				}
+				console.log(
+					`[手动微调][0x04] 头枕高度=${this.u16HexForLog(parsed.headHeightPct)}, 颈枕高度=${this.u16HexForLog(parsed.neckHeightPct)}, workState=${parsed.workState}`
+				)
+			},
+			/** 非正式环境（develop / trial）启用 0x10 睡姿注入；release 保持原流程 */
+			shouldInjectSleepStateBy0x10() {
+				const env = getMiniProgramEnv()
+				return !!(env && !env.isRelease)
+			},
+			/**
+			 * 0x10：调试模式 + 睡姿状态
+			 * @param {number} sleepState 1=仰卧，2=侧卧
+			 */
+			sendManualAdjustSleepState0x10(sleepState) {
+				if (!this.shouldInjectSleepStateBy0x10()) {
+					return
+				}
+				const ble = PillowBleManager.getInstance()
+				if (!ble.isConnected()) {
+					return
+				}
+				ble.headParams0x10({
+					read: false,
+					debugMode: 1,
+					sleepState: sleepState === 2 ? 2 : 1
+				})
+				this.manualDebugModeEntered = true
+			},
+			/** 非正式环境离开手动微调时退出 0x10 调试模式 */
+			exitManualDebugMode0x10() {
+				if (!this.shouldInjectSleepStateBy0x10()) {
+					return
+				}
+				if (!this.manualDebugModeEntered) {
+					return
+				}
+				const ble = PillowBleManager.getInstance()
+				if (ble.isConnected()) {
+					ble.headParams0x10({
+						read: false,
+						debugMode: 0,
+						sleepState: 0
+					})
+				}
+				this.manualDebugModeEntered = false
+			},
+			/**
+			 * 进入手动微调页：直接按当前睡姿下发头/颈目标（0x05/0x06）。
+			 * 标定模式（0x0A）已暂时关闭，原逻辑保留在注释中便于恢复。
+			 */
+			enterManualCalibrateThenApplyHeights() {
+				if (this._enterCalibrateApplyTimer != null) {
+					clearTimeout(this._enterCalibrateApplyTimer);
+					this._enterCalibrateApplyTimer = null;
+				}
+				const ble = PillowBleManager.getInstance();
+				if (!ble.isConnected()) {
+					return;
+				}
+				// —— 原流程：先 0x0A 进入标定，约 220ms 后再下发 0x05/0x06 ——
+				// ble.send(BluePillowProtocol.calibrate(0x01), { silent: true });
+				// this.manualCalibrateEntered = true;
+				// this._enterCalibrateApplyTimer = setTimeout(() => {
+				// 	this._enterCalibrateApplyTimer = null;
+				// 	if (!PillowBleManager.getInstance().isConnected()) {
+				// 		return;
+				// 	}
+				// 	this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
+				// 		.initSideNeckHeight, 0);
+				// }, 220);
+				// 入口 4 条命令按 200ms 间隔发送：0x10(调试环境) -> 0x05 -> 0x06 -> 0x04
+				const cmdGapMs = 200
+				let cmdIndex = 0
+				const schedule = (fn) => {
+					setTimeout(() => {
+						const m = PillowBleManager.getInstance()
+						if (!m.isConnected()) return
+						fn(m)
+					}, cmdGapMs * cmdIndex)
+					cmdIndex += 1
+				}
+				const sleepState = this.selectIndex === 2 ? 2 : 1
+				if (this.shouldInjectSleepStateBy0x10()) {
+					schedule(() => {
+						this.sendManualAdjustSleepState0x10(sleepState)
+					})
+				}
+				const headPct = this.mmToPct(this.selectIndex === 1 ? this.initHeadHeight : this.initSideHeadHeight)
+				const neckPct = this.mmToPct(this.selectIndex === 1 ? this.initNeckHeight : this.initSideNeckHeight)
+				schedule((m) => {
+					m.send(BluePillowProtocol.headHeight(headPct), { silent: true })
+				})
+				schedule((m) => {
+					m.send(BluePillowProtocol.neckHeight(neckPct), { silent: true })
+				})
+				this.step = 0
+				this.startPillowStatus0x04Polling(cmdGapMs * cmdIndex)
+			},
+			/** 离开微调页。若曾进 0x0A 标定，应发 calibrate(0x05) 退出；当前标定流程已关闭，仅清理定时器。 */
+			exitManualCalibrateMode() {
+				if (this._enterCalibrateApplyTimer != null) {
+					clearTimeout(this._enterCalibrateApplyTimer);
+					this._enterCalibrateApplyTimer = null;
+				}
+				// if (!this.manualCalibrateEntered) {
+				// 	return;
+				// }
+				// const ble = PillowBleManager.getInstance();
+				// if (ble.isConnected()) {
+				// 	ble.send(BluePillowProtocol.calibrate(0x05), { silent: true });
+				// }
+				// this.manualCalibrateEntered = false;
+			},
+			// 蓝牙连接状态变化（含断开 / 重连）
+			handleDisconnect() {
+				this.syncBleConnectedState()
+				const mgr = PillowBleManager.getInstance()
+				if (!mgr.loginSuccess) {
+					console.log('调整页面检测到蓝牙断开');
+					this.stopPillowStatus0x04Polling()
+
+					if (this._enterCalibrateApplyTimer != null) {
+						clearTimeout(this._enterCalibrateApplyTimer);
+						this._enterCalibrateApplyTimer = null;
+					}
+					this.manualCalibrateEntered = false;
+				} else if (this.showMeasure) {
+					this.startPillowStatus0x04Polling()
+				}
+			},
+			/** 路由入参多为协议 0~100%，映射到 mm 0~120（12cm 满行程） */
+			routePctToMm(v) {
+				const p = Math.max(0, Math.min(100, Math.floor(Number(v) || 0)))
+				return Math.round((p / 100) * MANUAL_MAX_MM)
+			},
+			/** 内部高度 mm 夹紧 0~120 */
+			clampHeightMm(v) {
+				return Math.max(0, Math.min(MANUAL_MAX_MM, Math.round(Number(v) || 0)))
+			},
+			/** mm → 协议 0x05/0x06/0x02/0x03 用的百分数 0~100 */
+			mmToPct(mm) {
+				const m = this.clampHeightMm(mm)
+				return Math.max(0, Math.min(100, Math.round((m / MANUAL_MAX_MM) * 100)))
+			},
+			/** 设备上报 0~100 为百分数时 → mm；若 >100 视为历史 mm 直夹紧 */
+			deviceHeightToMm(v) {
+				const n = Number(v) || 0
+				if (n <= 100) {
+					return Math.round((n / 100) * MANUAL_MAX_MM)
+				}
+				return this.clampHeightMm(n)
+			},
+			/** 有效窗口：按“上下浮动 10 个百分点”（固定值 10） */
+			heightWindows(headMm, neckMm) {
+				const h = this.mmToPct(headMm)
+				const n = this.mmToPct(neckMm)
+				return {
+					headWindow: Math.max(0, Math.min(65535, 10)),
+					neckWindow: Math.max(0, Math.min(65535, 10))
+				}
+			},
+			getCurrentChannelMm() {
+				if (this.selectIndex === 1) {
+					return this.selectHead ? this.head : this.neck
+				}
+				return this.selectHead ? this.sideHead : this.sideNeck
+			},
+			setCurrentChannelMm(mm) {
+				const m = this.clampHeightMm(mm)
+				if (this.selectIndex === 1) {
+					if (this.selectHead) this.head = m
+					else this.neck = m
+				} else {
+					if (this.selectHead) this.sideHead = m
+					else this.sideNeck = m
+				}
+			},
+			/** 协议 0~100% → mm */
+			pctToMm(pct) {
+				return this.routePctToMm(pct)
+			},
+			sendCurrentChannelBle() {
+				const ble = PillowBleManager.getInstance()
+				if (!ble.isConnected()) return
+				const mm = this.getCurrentChannelMm()
+				const pct = this.mmToPct(mm)
+				if (this.selectIndex === 1) {
+					if (this.selectHead) {
+						ble.send(BluePillowProtocol.headHeight(pct), { silent: true })
+					} else {
+						ble.send(BluePillowProtocol.neckHeight(pct), { silent: true })
+					}
+				} else {
+					if (this.selectHead) {
+						ble.send(BluePillowProtocol.headHeight(pct), { silent: true })
+					} else {
+						ble.send(BluePillowProtocol.neckHeight(pct), { silent: true })
+					}
+				}
+			},
+			/** 拖动中只更新本地高度与界面，不下发 BLE */
+			onSliderChanging(e) {
+				if (!this.bleConnected) return
+				const v = e.detail.value
+				this.setCurrentChannelMm(this.pctToMm(v))
+			},
+			/** 松手时下发 0x05/0x06 */
+			onSliderChange(e) {
+				if (!this.ensureBleConnected()) return
+				const v = e.detail.value
+				this.setCurrentChannelMm(this.pctToMm(v))
+				this.sendCurrentChannelBle()
+			},
+			/**
+			 * 加减：协议百分数每次 ±6，下发 0x05/0x06；低于 0 为 0，超过 100 为 100
+			 * @param {number} direction +1 或 -1 表示加/减方向
+			 */
+			adjustPercentStep(direction) {
+				const step = MANUAL_PERCENT_STEP * (direction > 0 ? 1 : -1)
+				const prev = this.currentSliderPercent
+				const p = Math.max(0, Math.min(100, prev + step))
+				if (p === prev) return
+				this.setCurrentChannelMm(this.pctToMm(p))
+				this.sendCurrentChannelBle()
 			},
 			updateInfo() {
-				this.pillowPressStatus = blue_class.getInstance().getPillowStatus()
+				this.pillowPressStatus = PillowBleManager.getInstance().getPillowStatus()
 				if (this.showMeasure) {
-					// 如果是手动微调，不主动根据压力测试改变页签
+					// 手动微调页：滑动条与高度值仅以本地设置为准，不用设备上报回写，避免数值抖动/被覆盖
 				} else {
 
 					switch (this.pillowPressStatus) {
 						case 0:
 							this.selectIndex = 1;
-							this.pillowStatus = '空闲';
 							break;
 						case 1:
 							console.log('枕头平躺状态')
-							this.pillowStatus = "平躺中";
 							this.selectIndex = 1;
 							break;
 						case 2:
 							console.log('枕头侧卧状态')
-							this.pillowStatus = '侧卧中';
 							this.selectIndex = 2;
 					}
 				}
 
-				if (this.selectIndex == 2) {
-					this.$set(this, 'sideNeck', blue_class.getInstance().pillowSideHeight);
-					this.$set(this, 'sideHead', blue_class.getInstance().pillowHeight);
-				} else {
-					this.$set(this, 'neck', blue_class.getInstance().pillowSideHeight);
-					this.$set(this, 'head', blue_class.getInstance().pillowHeight);
+				const mgr = PillowBleManager.getInstance();
+				if (!this.showMeasure) {
+					if (this.selectIndex == 2) {
+						this.$set(this, 'sideNeck', this.deviceHeightToMm(mgr.pillowSideHeight));
+						this.$set(this, 'sideHead', this.deviceHeightToMm(mgr.pillowHeight));
+					} else {
+						this.$set(this, 'neck', this.deviceHeightToMm(mgr.pillowSideHeight));
+						this.$set(this, 'head', this.deviceHeightToMm(mgr.pillowHeight));
+					}
 				}
 
-				this.$set(this, 'pillowPower', blue_class.getInstance().pillowPower);
-				this.$set(this, 'pillowPowerCharging', blue_class.getInstance().chargingStatus);
-				this.$set(this, 'pillowStatus', blue_class.getInstance().pillowStatus);
-				// 判断是否结束
-				console.log('pillowPlasticHead:', blue_class.getInstance().pillowPlasticHead)
-				console.log('pillowPlasticNeck:', blue_class.getInstance().pillowPlasticNeck)
-				// 这段先隐藏,不需要锁屏
-				return;
-				if (blue_class.getInstance().pillowPlasticHead == 0 && blue_class.getInstance().pillowPlasticNeck == 0) {
-					try {
-						// uni.hideLoading();
-					} catch (e) {
-						//TODO handle the exception
-					}
-					if (this.step == 1) {
-						this.selectIndex = 2;
-					} else if (this.step == 2) {
-						// 跳转首页
-						uni.switchTab({
-							url: '/pages/status/status'
-						})
-					}
-
-					// if (this.selectIndex == 1) {
-					// 	this.selectIndex = 2;
-					// } else {
-					// 	// 跳转首页
-					// 	uni.switchTab({
-					// 		url: '/pages/status/status'
-					// 	})
-					// }
-				}
+				this.$set(this, 'pillowPower', PillowBleManager.getInstance().pillowPower);
+				this.$set(this, 'pillowPowerCharging', PillowBleManager.getInstance().chargingStatus);
 			},
-			uploadDataHandle() {
-				let upload_data = uploadDataRequest(5)
-				blue_class.getInstance().write2tooth(upload_data)
-			},
-			restartHandle() {
-				let arraybuffer = restartPillow(77);
-				blue_class.getInstance().write2tooth(arraybuffer)
-			},
+			/** 原：0x0A 再次进入标定（入口已隐藏）；标定关闭后此处已注释 */
 			resetHandle() {
-				let reset_data = resetPillow(88);
-				blue_class.getInstance().write2tooth(reset_data)
+				// PillowBleManager.getInstance().send(BluePillowProtocol.calibrate(0x01), { silent: true });
+				// this.manualCalibrateEntered = true;
 			},
-			// 请求枕头状态
-			requestStatus() {
-				let shake1 = handPillowStatus()
-				blue_class.getInstance().write2tooth(shake1)
-			},
-			//带缓冲机制的发送高度
+			// 按当前睡姿用 0x05/0x06 设置头枕、颈枕目标高度（入参为 mm 0~120，下发为协议百分数）
 			send2Pillow(headHeight, neckHeight, sideHeadHeight, sideNeckHeight, step) {
-				// 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
-				// 默认发送高度减2cm 或者3 cm
-				var headSafeHeight; //仰卧头部
-				var sideHeadSafeHeight; //侧卧头部
-				// if(headHeight >= 60){
-				// 	headSafeHeight = headHeight -15
-				// }else{
-				// 	headSafeHeight = headHeight < 30 ? 30 : headHeight 
-				// }
-				// if(sideHeadHeight >= 60){
-				// 	sideHeadSafeHeight = sideHeadHeight - 15
-				// }else{
-				// 	sideHeadSafeHeight = sideHeadHeight  < 30 ? 30 : sideHeadHeight 
-				// }
-				// headSafeHeight = headHeight < 30 ? 30 : headHeight 
-                // sideHeadSafeHeight = sideHeadHeight  < 30 ? 30 : sideHeadHeight 
-                // let neckSafeHeight = neckHeight - 30 < 30 ? 30 : neckHeight - 30 //仰卧颈部
-                // let sideNeckSafeHeight = sideNeckHeight - 30 < 30 ? 30 : sideNeckHeight - 30 //侧卧颈部
-				headSafeHeight = headHeight 
-				sideHeadSafeHeight = sideHeadHeight 
-				let neckSafeHeight = neckHeight - 30 < 0 ? 0 : neckHeight - 30 //仰卧颈部，允许到0
-				let sideNeckSafeHeight = sideNeckHeight - 30 < 0 ? 0 : sideNeckHeight - 30 //侧卧颈部，允许到0
-				let init_arraybuffer = initPillow(headHeight > 100 ? 80 : headSafeHeight, neckHeight > 100 ? 100 :
-					neckSafeHeight,200, sideHeadHeight > 100 ? 100 : sideHeadSafeHeight, 
-					sideNeckHeight > 100 ? 100 :sideNeckSafeHeight, 200);
-				blue_class.getInstance().write2tooth(init_arraybuffer);
+				const ble = PillowBleManager.getInstance();
+				if (!ble.isConnected()) return
+				const ch = (mm) => this.mmToPct(mm);
+				if (this.selectIndex === 1) {
+					ble.send(BluePillowProtocol.headHeight(ch(headHeight)), { silent: true });
+					ble.send(BluePillowProtocol.neckHeight(ch(neckHeight)), { silent: true });
+				} else {
+					ble.send(BluePillowProtocol.headHeight(ch(sideHeadHeight)), { silent: true });
+					ble.send(BluePillowProtocol.neckHeight(ch(sideNeckHeight)), { silent: true });
+				}
 				this.step = step;
 			},
-			//AI计算得出的高度
-			// send2Pillow(headHeight, neckHeight, sideHeadHeight, sideNeckHeight, step) {
-			//     // 如果有数据，默认调整枕头 限制最高高度不能超过100mm！！！！！！！！！！！
-			//     let init_arraybuffer = initPillow(
-			//         headHeight > 100 ? 100 : headHeight, 
-			//         neckHeight > 100 ? 100 : neckHeight,
-			//         200, 
-			//         sideHeadHeight > 100 ? 100 : sideHeadHeight, 
-			//         sideNeckHeight > 100 ? 100 : sideNeckHeight, 
-			//         200
-			//     );			    
-			//     blue_class.getInstance().write2tooth(init_arraybuffer);
-			//     this.step = step;
-			// },
 			// 不保存
 			cancelSaveHandle() {
-				//  还原数据
 				if (this.selectIndex == 1) {
-					// 切换成自动模式
-					let changeAdjust = changeAdjustMode(0);
-					blue_class.getInstance().write2tooth(changeAdjust);
-
+					if (!this.ensureBleConnected()) return
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
 						.initSideNeckHeight, 1);
 
 					this.selectIndex = 2;
+					this.sendManualAdjustSleepState0x10(2)
 				} else {
-					// 切换成自动模式
-					let changeAdjust = changeAdjustMode(0);
-					blue_class.getInstance().write2tooth(changeAdjust);
+					const ble = PillowBleManager.getInstance()
+					if (ble.isConnected()) {
+						this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
+							.initSideNeckHeight, 2);
+					}
 
-					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
-						.initSideNeckHeight, 2);
-
-					// 设置手动微调完成标记（取消也算完成流程）
 					uni.setStorageSync('manual_adjust_completed', true)
-					
-					// 跳转首页
+
 					uni.switchTab({
 						url: '/pages/status/status'
 					})
 				}
-			  // 调用复用函数构建参数（取消调整）
 			  const pillowParams = this.buildPillowParams();
-		
-			  // 调用util里的方法
-			  callPushSmartPillowData(pillowParams.headHeight,pillowParams.neckHeight,pillowParams.sideHeadHeight,pillowParams.sideNeckHeight)
-				.then(res => console.log(`${adjustMode}取消调整数据提交成功:`, res))
-				.catch(err => console.error(`${adjustMode}取消调整数据提交失败:`, err));
+
+				callPushSmartPillowData(pillowParams.headHeight,pillowParams.neckHeight,pillowParams.sideHeadHeight,pillowParams.sideNeckHeight)
+				.then(res => console.log('手动微调取消调整数据提交成功:', res))
+				.catch(err => console.error('手动微调取消调整数据提交失败:', err));
 			},
 			saveModeHandler() {
+				if (!this.ensureBleConnected()) return
 				this.$refs.popupSave.open('bottom');
 			},
 			closeTipsSave() {
@@ -468,13 +643,13 @@
 			saveHandler() {
 				let result;
 				if (this.selectIndex == 1) {
-					// 仰卧数据
+					// 仰卧数据（存储仍为协议 0~100%）
 					result = saveRandomMode({
 						name: this.inputName,
-						headHeight: this.head,
-						neckHeight: this.neck,
-						sideHeadHeight: this.initSideHeadHeight,
-						sideNeckHeight: this.initSideNeckHeight,
+						headHeight: this.mmToPct(this.head),
+						neckHeight: this.mmToPct(this.neck),
+						sideHeadHeight: this.mmToPct(this.initSideHeadHeight),
+						sideNeckHeight: this.mmToPct(this.initSideNeckHeight),
 					})
 
 					if (result == false) {
@@ -487,14 +662,19 @@
 					this.initHeadHeight = this.head
 					this.initNeckHeight = this.neck
 
-					// 切换成自动模式
-					let changeAdjust = changeAdjustMode(0);
-					blue_class.getInstance().write2tooth(changeAdjust);
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
 						.initSideNeckHeight, 1);
-
+					const sw = this.heightWindows(this.head, this.neck);
+					PillowBleManager.getInstance().writeSupineConfig({
+						index: this.profileIndex,
+						headHeight: this.mmToPct(this.head),
+						headWindow: sw.headWindow,
+						neckHeight: this.mmToPct(this.neck),
+						neckWindow: sw.neckWindow
+					});
 
 					this.selectIndex = 2;
+					this.sendManualAdjustSleepState0x10(2)
 					this.closeSave()
 					this.$refs.popupTips.open('center')
 
@@ -505,10 +685,10 @@
 				} else {
 					result = saveRandomMode({
 						name: this.inputName,
-						headHeight: this.head,
-						neckHeight: this.neck,
-						sideHeadHeight: this.sideHead,
-						sideNeckHeight: this.sideNeck,
+						headHeight: this.mmToPct(this.head),
+						neckHeight: this.mmToPct(this.neck),
+						sideHeadHeight: this.mmToPct(this.sideHead),
+						sideNeckHeight: this.mmToPct(this.sideNeck),
 					})
 
 					if (result == false) {
@@ -519,12 +699,16 @@
 					this.initSideHeadHeight = this.sideHead
 					this.initSideNeckHeight = this.sideNeck
 
-					// 切换成自动模式
-					let changeAdjust = changeAdjustMode(0);
-					blue_class.getInstance().write2tooth(changeAdjust);
-
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
 						.initSideNeckHeight, 2);
+					const swSide = this.heightWindows(this.sideHead, this.sideNeck);
+					PillowBleManager.getInstance().writeSideConfig({
+						index: this.profileIndex,
+						headHeight: this.mmToPct(this.sideHead),
+						headWindow: swSide.headWindow,
+						neckHeight: this.mmToPct(this.sideNeck),
+						neckWindow: swSide.neckWindow
+					});
 
 					let inputName = this.inputName;
 					// 设置手动微调完成标记（只有真正保存了数据才算完成）
@@ -548,179 +732,38 @@
 				  sideNeckHeight: this.selectIndex === 1 ? this.initSideNeckHeight : this.sideNeck,
 				});
 				callPushSmartPillowData(pillowParams.headHeight,pillowParams.neckHeight,pillowParams.sideHeadHeight,pillowParams.sideNeckHeight)
-				.then(res => console.log(`${adjustMode}保存调整数据提交成功:`, res))
-				.catch(err => console.error(`${adjustMode}保存调整数据提交失败:`, err));
+				.then(res => console.log('手动微调保存调整数据提交成功:', res))
+				.catch(err => console.error('手动微调保存调整数据提交失败:', err));
 			},
+			/** 仅处理新协议上行帧 0xAA（与 PillowBleManager.handleNotifyBuffer 一致） */
 			handleMessage(res) {
-				// console.log(`value:`, res.value)
-				let arrayBuffer_res = new Uint8Array(res.value);
-				// let arrayBuffer_DateView = new DataView(arrayBuffer_res);
-				let mark = arrayBuffer_res[0];
-				console.log('handleMessage 接收到数据 mark:', parseInt(mark))
-				let length = arrayBuffer_res[1];
-				console.log('handleMessage 接收到数据 length:', parseInt(length))
-				let arrayBuffer = new ArrayBuffer(length);
-				let receive_dataView = new DataView(arrayBuffer);
-				for (var index = 0; index < arrayBuffer.byteLength; index++) {
-					receive_dataView.setUint8(index, arrayBuffer_res[index + 2])
+				const raw = res && res.value;
+				if (!raw) {
+					return;
 				}
-				console.log('handleMessage adjust 接收到数据', ab2hex(res.value), mark);
-				switch (parseInt(mark)) {
-					case 1:
-						let result = receive_dataView.getUint8(0)
-						switch (parseInt(result)) {
-							case 0:
-								console.log("[调整模式成功]")
-								break;
-							case 1:
-								console.log("[调整模式参数非法]")
-								break;
-							case 2:
-								console.log("[不支持的指令]")
-								break;
-						}
-						break;
-					case 2:
-						let result2 = receive_dataView.getUint8(0)
-						console.log("[2222调整模式成功]")
-						switch (parseInt(result2)) {
-							case 0:
-								console.log("[调整模式成功]")
-								uni.showToast({
-									title: '发送枕头参数成功'
-								})
-								break;
-							case 1:
-								console.log("[调整模式参数非法]")
-								uni.showToast({
-									title: '输入参数非法'
-								})
-								break;
-							case 2:
-								console.log("[不支持的指令]")
-								uni.showToast({
-									title: '不支持的指令'
-								})
-								break;
-						}
-						break;
-					case 4:
-						let result4 = receive_dataView.getUint8(0)
-						switch (parseInt(result4)) {
-							case 0:
-								console.log("[调整枕头成功]")
-								break;
-							case 1:
-								console.log("[调整模式参数非法]")
-								break;
-							case 2:
-								console.log("[不支持的指令]")
-								break;
-						}
-						break;
-					case 5:
-						this.parsePillowSleepData(arrayBuffer)
-						break;
-					case 6:
-						this.parsePillowStatus(arrayBuffer)
-						break;
-					case 88:
-						break;
+				const u8 = new Uint8Array(raw);
+				if (u8[0] !== 0xaa) {
+					return;
 				}
-				return;
-
-			},
-			parsePillowStatus(arraybuffer) {
-				blue_class.getInstance().parsePillowStatus(arraybuffer)
-				return;
-				// //默认是枕头状态 5s收到一次
-				let receive16 = ab2hex(arraybuffer);
-				// （0：0--空闲，1--平躺，2--侧卧；1：（备用）2：头部气囊高度值；3：颈部气囊高度值；4:固件版本； 5是否校准；6~7：电池电压值）
-				let status = receive16.slice(0, 2);
-				let status1 = '0x' + status;
-
-				let status10 = parseInt(status1);
-				this.pillowStatusNum = status10;
-				switch (status10) {
-					case 0:
-						console.log('枕头空闲状态');
-						this.pillowStatus = '枕头空闲状态';
-						this.selectIndex = 1;
-						break;
-					case 1:
-						console.log('枕头平躺状态')
-						this.pillowStatus = '枕头平躺状态';
-						this.selectIndex = 1;
-						break;
-					case 2:
-						console.log('枕头侧卧状态')
-						this.pillowStatus = '枕头侧卧状态';
-						this.selectIndex = 2;
-						break;
+				const mgr = PillowBleManager.getInstance();
+				const parsed = mgr.handleNotifyBuffer(raw);
+				if (!parsed) {
+					return;
 				}
-
-				let detail_status_16 = receive16.slice(2, 4);
-				let detail_status = '0x' + detail_status_16;
-				let n1 = (detail_status & 0x01);
-				// 0--空闲，1--充电中，2--充电完成
-				switch (n1) {
-					case 0:
-						console.log('枕头在空闲状态');
-						break;
-					case 1:
-						console.log('枕头在充电中状态');
-						break;
-					case 2:
-						console.log('枕头在充电完成状态');
-						break;
+				if (parsed.type === 'write_ack' && parsed.parsed) {
+					const p = parsed.parsed;
+					if (p.success === false) {
+						uni.showToast({
+							title: p.code === 1 ? '指令执行失败' : '设备应答异常',
+							icon: 'none'
+						});
+					}
+					return;
 				}
-				let n2 = (detail_status >> 2) & 0x01;
-				console.log('泵1电流:', n2);
-				let n3 = (detail_status >> 3) & 0x01;
-				console.log('泵2电流:', n3);
-				let n4 = (detail_status >> 4) & 0x01;
-				console.log('气囊1升高超时:', n4);
-				let n5 = (detail_status >> 5) & 0x01;
-				console.log('气囊2升高超时:', n5);
-				let n6 = (detail_status >> 6) & 0x01;
-				console.log('气囊1气压超高:', n6);
-				let n7 = (detail_status >> 7) & 0x01;
-
-				let headHeight = receive16.slice(4, 6);
-				let headHeight10 = parseInt('0x' + headHeight);
-				let neckHeight = receive16.slice(6, 8);
-				let neckHeight10 = parseInt('0x' + neckHeight);
-				let vesrion = receive16.slice(8, 10);
-				let vesrion10 = parseInt('0x' + vesrion);
-				let isright = receive16.slice(10, 12);
-				let isright10 = parseInt('0x' + isright);
-				let press = receive16.slice(12, 16);
-				let press10 = parseInt('0x' + press);
-
-				this.head = headHeight10;
-				this.neck = neckHeight10;
-
-				this.sideHead = headHeight10;
-				this.sideNeck = neckHeight10;
-				// let status1 = '0x' + status;
-				this.pillowVersion = '固件版本:' + vesrion10;
-
-
-				blue_class.getInstance().setPillowCharging(n1)
-				blue_class.getInstance().setPillowHeight(headHeight10)
-				blue_class.getInstance().setPillowSideHeight(neckHeight10)
-				blue_class.getInstance().setPillowPower(press10)
-				console.log('adjust12 =>', status, headHeight, neckHeight, vesrion, isright, press)
-				console.log('adjust12 mm=>', status10, headHeight10 + 'mm', neckHeight10 + 'mm', 'v:' + vesrion10,
-					isright10,
-					press10)
-			},
-			parsePillowSleepData(array_buffer) {
-				//解析枕头睡眠阶段状态	
-				// 数据1-姿态（U8）(1--平躺，2--侧卧) + 数据2开始时间（T4）+数据3结束时间（T4）+ 数据4-姿态（U8）(1--平躺，2--侧卧) + 数据5开始时间（T4）+数据6结束时间（T4）+ ... ,关于该指令的说明，是多个姿态+开始时间和结束时间的条目的组合，根据数据长度计算一条指令中包含多少组数据
-				// let receive8 = new Uint8Array(array_buffer);
-				// console.log('姿态:', receive8.getUint8(0))
-				blue_class.getInstance().write2tooth(appAnswer(5))
+				if (parsed.type === 'pillow_status' && parsed.parsed && parsed.parsed.ok) {
+					const ws = parsed.parsed.workState;
+					this.pillowPressStatus = ws;
+				}
 			},
 			selectHeadHandler(bool) {
 				this.selectHead = bool
@@ -728,147 +771,20 @@
 			selectHandler(index) {
 				this.selectIndex = index
 			},
-			// 调低枕头
-			adjustLowSleepHandler() {
-				this.touchingDown = true
-				this.changeHandMode()
-				let action = 2
-				let arraybuffer
-				// 如果选择的仰卧
-				if (this.selectIndex == 1) {
-					// 如果选择的是调整头枕
-					if (this.selectHead) {
-						// this.head -= 1
-						if (this.head <= 0) {
-							this.head = 0
-						}
-					} else {
-						// this.neck -= 1
-						if (this.neck <= 0) {
-							this.neck = 0
-						}
-					}
-					arraybuffer = handPillowFrontState(action, this.selectHead)
-					console.log('调低仰卧:', this.selectHead ? '调整头部' : '调整颈部', action, ab2hex(arraybuffer))
-				} else {
-					// 如果选择的侧卧
-					if (this.selectHead) {
-						// this.sideHead -= 1
-						if (this.sideHead <= 0) {
-							this.sideHead = 0
-						}
-					} else {
-						// this.sideNeck -= 1
-						if (this.sideNeck <= 0) {
-							this.sideNeck = 0
-						}
-					}
-					arraybuffer = handPillowFrontState(action, this
-						.selectHead)
-					console.log('调低侧卧:', action, ab2hex(arraybuffer))
-				}
-				// console.log('调低:', ab2hex(arraybuffer))
-				blue_class.getInstance().write2tooth(arraybuffer)
-			},
-			stopAdjustHighHandler() {
-				this.touchingDown = false;
-				this.touchingUp = false;
-				// 停止调节枕头
-				// 如果选择的仰卧
-				let action = 0
-				let arraybuffer = null;
-				if (this.selectIndex == 1) {
-					if (this.selectHead) {
-						// this.head += 1
-						if (this.head >= 100) {
-							this.head = 100
-						}
-					} else {
-						// this.neck += 1
-						if (this.neck >= 100) {
-							this.neck = 100
-						}
-					}
-					arraybuffer = handPillowFrontState(action, this.selectHead)
-					console.log('停止调节仰卧:', action, ab2hex(arraybuffer))
-				} else {
-					if (this.selectHead) {
-						// this.sideHead += 1
-						if (this.sideHead >= 100) {
-							this.sideHead = 100
-						}
-					} else {
-						// this.sideNeck += 1
-						if (this.sideNeck >= 100) {
-							this.sideNeck = 100
-						}
-					}
-					// 如果选择的侧卧
-					arraybuffer = handPillowFrontState(action, this
-						.selectHead)
-					console.log('停止调节侧卧:', action, ab2hex(arraybuffer))
-				}
-				// console.log('调高:', ab2hex(arraybuffer))
-				blue_class.getInstance().write2tooth(arraybuffer)
-			},
-			// 调高枕头
-			adjustHighSleepHandler() {
-				// uni.showLoading({
-				// 	title: '调高中'
-				// })
-				let arraybuffer
-				let action = 1;
-				this.touchingUp = true
-
-				this.changeHandMode()
-				// 如果选择的仰卧
-				if (this.selectIndex == 1) {
-					if (this.selectHead) {
-						// this.head += 1
-						if (this.head >= 100) {
-							this.head = 100
-						}
-					} else {
-						// this.neck += 1
-						if (this.neck >= 100) {
-							this.neck = 100
-						}
-					}
-					arraybuffer = handPillowFrontState(action, this.selectHead)
-					console.log('调高仰卧:', this.selectHead ? '调整头部' : '调整颈部', ab2hex(arraybuffer))
-				} else {
-					if (this.selectHead) {
-						// this.sideHead += 1
-						if (this.sideHead >= 100) {
-							this.sideHead = 100
-						}
-					} else {
-						// this.sideNeck += 1
-						if (this.sideNeck >= 100) {
-							this.sideNeck = 100
-						}
-					}
-					// 如果选择的侧卧
-					arraybuffer = handPillowFrontState(action, this.selectHead)
-					console.log('调高侧卧:', action, ab2hex(arraybuffer))
-				}
-				// console.log('调高:', ab2hex(arraybuffer))
-				blue_class.getInstance().write2tooth(arraybuffer)
-			},
-			  // 通用参数构建函数
+			  // 通用参数构建函数（入参为 mm 时合并后统一转为协议百分数给云端）
 			  buildPillowParams(heightData = {}) {
-			    // 默认高度数据（未传则用初始值）
-			    const defaultHeight = {
+			    const defaultMm = {
 			      headHeight: this.initHeadHeight,
 			      neckHeight: this.initNeckHeight,
 			      sideHeadHeight: this.initSideHeadHeight,
 			      sideNeckHeight: this.initSideNeckHeight
 			    };
-			    // 合并默认高度和传入的自定义高度
-			    const finalHeight = { ...defaultHeight, ...heightData };
-			
+			    const merged = { ...defaultMm, ...heightData };
 			    return {
-			      ...finalHeight, // 高度参数
+			      headHeight: this.mmToPct(merged.headHeight),
+			      neckHeight: this.mmToPct(merged.neckHeight),
+			      sideHeadHeight: this.mmToPct(merged.sideHeadHeight),
+			      sideNeckHeight: this.mmToPct(merged.sideNeckHeight)
 			    };
 			  },
 		}
@@ -880,6 +796,25 @@
 		bottom: 0 !important;
 	}
 
+	.ble-off-tip {
+		margin: 16rpx 24rpx 0;
+		padding: 20rpx 24rpx;
+		background: #fff3cd;
+		color: #856404;
+		font-size: 26rpx;
+		border-radius: 12rpx;
+		line-height: 1.45;
+	}
+
+	.opt-disabled {
+		opacity: 0.55;
+	}
+
+	.save.btn-disabled {
+		opacity: 0.5;
+		pointer-events: none;
+	}
+
 	.selected {
 		background-color: #1c4485;
 	}
@@ -887,12 +822,6 @@
 	.unselect-btn {
 		background-color: #d5e0f7 !important;
 		color: #354D5B !important;
-	}
-
-	.version {
-		width: 100%;
-		text-align: center;
-		font-size: 18rpx;
 	}
 
 	.select-btn {
@@ -1268,57 +1197,69 @@
 		}
 
 		.opt-part {
-			display: flex;
-			justify-content: space-around;
-			margin-top: 62rpx;
-			position: relative;
+			margin-top: 48rpx;
+			padding: 0 20rpx 8rpx;
+			background: transparent;
+			border-radius: 20rpx;
 
-			.opt-tips-con {
+			.slider-row {
 				display: flex;
-				justify-content: space-around;
-				position: relative;
-			}
-
-			.opt-tip1 {
-				position: absolute;
-				top: 95rpx;
-				left: 50rpx;
-				text-align: center;
-				color: #676767;
-			}
-
-			.opt-tip2 {
-				position: absolute;
-				top: 95rpx;
-				right: 50rpx;
-				text-align: center;
-				color: #676767;
-			}
-
-			.opt-btn {
-				width: 284rpx;
-				height: 90rpx;
-				display: flex;
-				justify-content: space-around;
 				align-items: center;
-				background-color: rgb(28, 68, 133);
-				border-radius: 30rpx;
-				line-height: 56rpx;
-				color: white;
-
-				label {
-					margin-left: -55rpx;
-				}
+				min-height: 78rpx;
 			}
 
-			.opt-btn-top {
-				background-color: rgb(79, 128, 191);
+			.step-btn {
+				width: 54rpx;
+				height: 54rpx;
+				flex-shrink: 0;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border-radius: 50%;
+				background: rgba(255, 255, 255, 0.75);
+				border: 1rpx solid rgba(93, 143, 248, 0.2);
+				box-shadow: none;
+				position: relative;
+				top: -1rpx;
 			}
 
+			.step-btn:active {
+				transform: scale(0.96);
+			}
 
-			.icon {
-				width: 56rpx;
-				height: 56rpx;
+			.step-btn-txt {
+				font-size: 38rpx;
+				line-height: 1;
+				color: #3c64d1;
+				font-weight: 500;
+			}
+
+			.height-slider {
+				flex: 1;
+				margin: 0 22rpx;
+				height: 54rpx;
+			}
+
+			::v-deep .height-slider .wx-slider {
+				padding: 0 !important;
+				margin: 0 !important;
+				height: 54rpx !important;
+				display: flex;
+				align-items: center;
+			}
+
+			::v-deep .height-slider .wx-slider-track {
+				height: 12rpx !important;
+				border-radius: 999rpx !important;
+			}
+
+			.slider-pct {
+				text-align: center;
+				color: #2c56b8;
+				font-size: 30rpx;
+				margin-top: 10rpx;
+				font-weight: 600;
+				letter-spacing: 1rpx;
 			}
 		}
 	}

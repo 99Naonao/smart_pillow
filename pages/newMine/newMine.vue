@@ -1,240 +1,253 @@
 <template>
-	<view class="container">
-		<z-nav-bar :bgColor="bgColorList" backState=2000 home='false' bgColorAngle="90"></z-nav-bar>
-		<view class="info">
-			<view class="user_info">
-				<view class="top_info">
-					<view class="avatar_bg">
-						<image v-if="hasLogin" class="avatar" :src="userInfo.avatar || '/static/default-avatar.png'"
-							@click="toUserInfo"></image>
-						<button v-else class="avatar-btn" open-type="getPhoneNumber" @getphonenumber="onGetPhoneNumber">
-							<image class="avatar" :src="userInfo.avatar || '/static/default-avatar.png'"></image>
-						</button>
-					</view>
-					<view class="usernameInfo">
-						<view class="userNickNameInfo" v-if="nickNameInputFlag">
-							<text class="username">{{ userInfo.nickName || '点击头像唤醒快捷登录' }}</text>
-						</view>
-						<view class="username" v-else>
-							<input class="username" type="text" placeholder="请输入新的昵称" @blur="inputClose()"
-								v-model="newNickName" />
-						</view>
-					</view>
-				</view>
-			</view>
-			<view class="score_part">
-				<view class="score_info">
-					<view class="sub_score_info">
-						<image class="icon" src="../../static/score/SY_13_IconJF.png"></image>
-						<view>我的积分</view>
-					</view>
-					<view class="score_txt">{{score}}</view>
-				</view>
-				<view class="btn" @click="go2Use">去使用</view>
-			</view>
-			<view class="desc">
-				<view class="rule-title">积分规则</view>
-				<view class="popup__body">
-					会员积分是“眠加好物”小程序商城针对会员购物、参加会员活动等情况而给予的奖励，积分可在“眠加好物”和“眠加睡商检测”中使用。您可在眠加会员中心（ 我的--会员中心--
-					积分）查看所获得的积分。具体的积分获取、使用规则详见如文规定。<br>
-					<text>\n</text>
-					一、积分获取规则：<br><br>
-					<text>\n</text>
-					1. 注册积分：在“眠加好物”小程序商城完成注册，送200初始积分；<br>
-					2. 消费积分：会员在“眠加好物”小程序商城消费时，每消费1元可获得1积分，积分可累计；<br>
-					3. 签到积分：会员每天签到可获得1积分，每月签到次数不超过31次；<br>
-					4. 积分回馈的数量以订单完成时的商品实付金额和比例为准，且仅计取整数。例如购买1000.9元的商品，发放1000个积分。<br>
-					<text>\n</text>
-					二、积分兑换规则：<br><br>
-					<text>\n</text>
-					1. 适用范围：积分仅可在“眠加好物”小程序商城”和“眠加睡商检测”中使用，可用于商品购买、睡商检测、礼品兑换、活动抽奖等；<br>
-					2. 购物积分抵扣：会员可使用积分抵扣购物金额，每20积分可抵扣1元，最高可抵扣订单总金额的40%；<br>
-					3. 睡商检测积分抵扣：90积分可进行睡商检测一次，睡商检测无次数限制；<br>
-					4. 积分兑换礼品：会员可使用积分兑换"眠加好物"小程序商城指定的礼品，兑换所需积分以具体兑换礼品为准；<br>
-					5. 订单内全部商品确认收货后，且7天内未发生退货的情况下，所发放积分才可使用；<br>
-					6. 若使用现金+积分购买商品，所使用积分不享受积分回馈权益，只有使用的现金享受积分回馈权益，且单个商品不能连续15次用积分购买；<br>
-					7. 若使用优惠券购买商品，则优惠券折扣部分不享受积分回馈；<br>
-					8. 支付订单一经提交则该笔订单中所使用的积分将会预扣处理，如您最终取消付款，所使用的积分将在一定时间内返还到您的眠加帐号；<br>
-					9. 积分使用后无法退还，兑换所需要的积分数量可能发生变动，具体以实际兑换所需积分数量为准；<br>
-					10. 积分不可兑现、转让、售卖或跨帐号使用，使用积分抵扣商品金额的部分作为销售折扣在发票上单独列示，使用积分抵扣全部金额的则不开发票；<br>
-					11. 可使用积分抵扣的金额可能会根据情况相应调整，具体请以实际页面提示为准。<br><br>
-					<text>\n</text>
-					三、特别声明：<br><br>
-					<text>\n</text>
-					1. “眠加好物”小程序商城对本规则拥有最终解释权，保留对细则进行变更，解释，及终止权利；<br>
-					2. 如用户注销“眠加好物”小程序商城帐号，所获的积分将被清空并作废；<br>
-					3. 当订单已完成，发生增值税发票更换普通发票情况时，不补发对应积分；发生普通发票更换增值税发票情况时，则需要扣减该笔订单发放的积分；<br>
-					4.凡以违反积分规则的方式或采用不正当手段（包括但不限于作弊、恶意刷分、扰乱/破坏系统、恶意利用系统或者规则漏洞）获取、使用积分，我们有权根据其行为恶劣程度决定扣除您帐号内所有或部分积分，对于已使用积分，有权要求您返还已抵扣的订单金额或所兑换的礼品或权益；<br>
-					5. 以上积分规则自2024年8月13日生效。<br>
-				</view>
-				<view class="info-part">
-					<view class="opt-part">   
-						<view class="opt-btn" @click="uploadDataHandle" v-if="false">
-							<label>上报数据</label>
-						</view>
+	<view class="mine-page">
+		<z-nav-bar
+			bg-color="#ffffff"
+			title="我的"
+			font-color="#1e293b"
+			:shadow="true"
+			:backState="2000"
+			:homeState="2000"
+			bgColorAngle="90"
+		/>
 
-						<view class="opt-btn" @click="resetHandle" v-if ="!miniProgramEnv.isRelease">
-							<label>设备校准</label>
+		<scroll-view scroll-y class="mine-scroll" :show-scrollbar="false">
+			<!-- 顶部用户区 -->
+			<view class="profile-hero">
+				<view class="profile-card">
+					<view class="profile-row">
+						<view class="avatar-wrap">
+							<image
+								v-if="hasLogin"
+								class="avatar"
+								:src="userInfo.avatar || '/static/icon/default_avatar.png'"
+								mode="aspectFill"
+							/>
+							<button
+								v-else
+								class="avatar-btn"
+								open-type="getPhoneNumber"
+								@getphonenumber="onGetPhoneNumber"
+							>
+								<image
+									class="avatar"
+									:src="userInfo.avatar || '/static/icon/default_avatar.png'"
+									mode="aspectFill"
+								/>
+							</button>
 						</view>
-						<view class="opt-btn" @click="restartHandle" v-if ="!miniProgramEnv.isRelease">
-							<label>设备重启</label>
+						<view class="profile-text">
+							<text class="profile-name">{{ hasLogin ? (userInfo.nickName || '会员用户') : '点击头像登录' }}</text>
+							<text v-if="hasLogin && displayMobile" class="profile-sub">{{ displayMobile }}</text>
+							<text v-else-if="!hasLogin" class="profile-sub">登录后可同步积分与睡眠数据</text>
 						</view>
-						<view class="opt-btn" @click="goBleTest" v-if ="!miniProgramEnv.isRelease">
-							<label>蓝牙协议测试</label>
-						</view>
-						<view v-if="hasLogin">
-							<view class="opt-btn" @click="logout">退出登录</view>
+						<view v-if="hasLogin" class="profile-badge">
+							<text class="profile-badge-txt">已登录</text>
 						</view>
 					</view>
 				</view>
-			</view>
-		</view>
 
-		<view class="flex justify-content-space-around align-center" style="background-color: white;" v-if="false">
-			<label class="tips">输入肩宽(mm)</label>
-			<input ref="inputView" class="input-area" v-model="shoulderWidthNum" placeholder=""
-				@blur="saveWdithHandle" />
+				<!-- 积分条 -->
+				<view class="stat-card" @click="go2Use">
+					<view class="stat-left">
+						<image class="stat-ico" src="../../static/score/SY_13_IconJF.png" mode="aspectFit" />
+						<view class="stat-info">
+							<text class="stat-label">我的积分</text>
+							<text class="stat-value">{{ score }}</text>
+						</view>
+					</view>
+					<view class="stat-action">
+						<text class="stat-action-txt">去使用</text>
+						<text class="stat-arrow">›</text>
+					</view>
+				</view>
+			</view>
+
+			<!-- 常用功能 -->
+			<view class="menu-section">
+				<text class="menu-section-title">常用功能</text>
+				<view class="menu-card">
+<!-- 					<view class="menu-item" @click="go2Use">
+						<image class="menu-ico" src="../../static/icon/study.png" mode="aspectFit" />
+						<text class="menu-label">健康检测</text>
+						<text class="menu-arrow">›</text>
+					</view> -->
+					<view class="menu-divider" />
+					<view class="menu-item" @click="goSleepReportList">
+						<image class="menu-ico" src="../../static/icon/report.png" mode="aspectFit" />
+						<text class="menu-label">睡眠报告</text>
+						<text class="menu-arrow">›</text>
+					</view>
+					<view class="menu-divider" />
+					<view class="menu-item" @click="openPolicySheet('points')">
+						<image class="menu-ico" src="../../static/icon/warm.png" mode="aspectFit" />
+						<text class="menu-label">积分规则</text>
+						<text class="menu-arrow">›</text>
+					</view>
+				</view>
+			</view>
+
+			<!-- 协议与政策（对应 protocol 目录下 txt） -->
+			<view class="menu-section">
+				<text class="menu-section-title">协议与政策</text>
+				<view class="menu-card">
+					<view class="menu-item" @click="openPolicySheet('user')">
+						<image class="menu-ico" src="../../static/icon/remind.png" mode="aspectFit" />
+						<text class="menu-label">用户协议</text>
+						<text class="menu-arrow">›</text>
+					</view>
+					<view class="menu-divider" />
+					<view class="menu-item" @click="openPolicySheet('privacy')">
+						<image class="menu-ico" src="../../static/icon/question.png" mode="aspectFit" />
+						<text class="menu-label">隐私政策</text>
+						<text class="menu-arrow">›</text>
+					</view>
+					<view class="menu-divider" />
+					<view class="menu-item" @click="openPolicySheet('service')">
+						<image class="menu-ico" src="../../static/icon/report.png" mode="aspectFit" />
+						<text class="menu-label">服务协议</text>
+						<text class="menu-arrow">›</text>
+					</view>
+					<view class="menu-divider" />
+					<view class="menu-item" @click="goAbout">
+						<image class="menu-ico" src="../../static/icon/mine.png" mode="aspectFit" />
+						<text class="menu-label">关于我们</text>
+						<text class="menu-arrow">›</text>
+					</view>
+				</view>
+			</view>
+
+			<!-- 设备环境：仅开发版 / 体验版显示，正式版（release）隐藏 -->
+			<view v-if="showDeviceEnvSection" class="menu-section">
+				<text class="menu-section-title">设备环境</text>
+				<view class="menu-card">
+					<view class="menu-item" @click="goBleTest">
+						<image class="menu-ico" src="../../static/icon/bluetooth.png" mode="aspectFit" />
+						<text class="menu-label">蓝牙协议测试</text>
+						<text class="menu-arrow">›</text>
+					</view>
+				</view>
+			</view>
+
+			<view v-if="hasLogin" class="logout-block">
+				<button class="logout-btn" @click="logout">退出登录</button>
+			</view>
+
+			<view class="mine-footer-space" />
+		</scroll-view>
+
+		<!-- 积分规则 / 协议政策（可滚动） -->
+		<view v-if="showPolicySheet" class="rules-mask" @click.self="closePolicySheet">
+			<view class="rules-panel" @click.stop>
+				<view class="rules-head">
+					<text class="rules-title">{{ policySheetTitle }}</text>
+					<text class="rules-close" @click="closePolicySheet">关闭</text>
+				</view>
+				<scroll-view
+					scroll-y
+					:show-scrollbar="true"
+					:enable-back-to-top="true"
+					class="rules-scroll"
+				>
+					<view class="rules-inner">
+						<view class="rules-text">{{ policySheetBody }}</view>
+					</view>
+				</scroll-view>
+			</view>
 		</view>
 	</view>
 </template>
 
 <script>
-	import blue_class from '../../utils/BlueManager'
+	import { getPhoneByCode, onGetCode } from '@/utils/miniapp.js';
 	import {
-		getPhoneByCode,
-		onGetCode
-	} from '@/utils/miniapp.js'
-	import {
-		object2Query,
-		parsePillowRealState,
-		handPillowStatus,
-		handPillowSideState,
-		handPillowFrontState,
-		handlePillowDelayState,
-		hexStringToArrayBuffer,
-		ab2hex,
-		resetPillow,
-		uploadDataRequest,
-		initPillow,
-		changeAdjustMode,
-		changeSaveAdjustMode,
-		hand1Shake,
-		write2tooth,
-		parsePillowState,
-		sendModeByName,
-		saveRandomMode,
-		restartPillow,
-		getAIModeByName,
 		getMiniProgramEnv
-	} from '@/common/util.js'
+	} from '@/common/util.js';
+	import {
+		RULES_POINTS,
+		PROTOCOL_USER,
+		PROTOCOL_PRIVACY,
+		PROTOCOL_SERVICE
+	} from '@/common/protocolTexts.js';
+
 	export default {
 		computed: {
+			/** 非正式环境（develop / trial）才展示设备环境入口；正式版 release 不展示 */
+			showDeviceEnvSection() {
+				const env = this.miniProgramEnv;
+				return !!(env && env.isRelease === false);
+			},
 			shoulderWidth() {
-				return this.shoulderWidthNum
+				return this.shoulderWidthNum;
+			},
+			displayMobile() {
+				const m = this.userInfo && this.userInfo.mobile;
+				if (!m || String(m).length < 7) return '';
+				const s = String(m);
+				if (s.length === 11) {
+					return s.slice(0, 3) + '****' + s.slice(7);
+				}
+				return s;
 			}
 		},
 		data() {
 			return {
-				bgColorList: [{
-						color: "#5794d2",
-						scale: "0%"
-					},
-					{
-						color: "#607796",
-						scale: "100%"
-					}
-				],
-				title: 'Hello12123',
 				hasLogin: false,
-				nickNameInputFlag: true,
 				score: 0,
 				userInfo: {
 					avatar: ''
 				},
 				shoulderWidthNum: '',
-				miniProgramEnv:getMiniProgramEnv() //当前小程序环境信息
-			}
+				miniProgramEnv: getMiniProgramEnv(),
+				wxLoginCode: '',
+				wxLoginCodeAt: 0,
+				showPolicySheet: false,
+				policySheetTitle: '',
+				policySheetBody: ''
+			};
 		},
 		onShow() {
-			let curPages = getCurrentPages()[0]
+			this.miniProgramEnv = getMiniProgramEnv();
+			const curPages = getCurrentPages()[0];
 			if (typeof curPages.getTabBar === 'function' && curPages.getTabBar()) {
-				curPages.getTabBar().setData({
-					selected: 1
-				});
+				curPages.getTabBar().setData({ selected: 2 });
 			}
-
 			let shoulderWidth = uni.getStorageSync('shoulderWidth');
-			if (Number(shoulderWidth) > 0) {
-
-			} else {
+			if (Number(shoulderWidth) <= 0) {
 				shoulderWidth = 200;
 			}
-
 			this.shoulderWidthNum = shoulderWidth;
-
 			this.refreshUserInfo();
+			if (!this.hasLogin) {
+				// 避免沿用页面实例里过期的 wx_code（例如长时间登录期间从未预取、退出后未切换 Tab 未触发 onShow）
+				this.wxLoginCode = '';
+				this.wxLoginCodeAt = 0;
+				this.prefetchWxLoginCodeForPhone();
+			}
 		},
 		methods: {
-			restartHandle() {
-				// 检查枕头是否连接
-				if (!blue_class.getInstance().loginSuccess) {
-					uni.showModal({
-						title: '提示',
-						content: '请先连接枕头设备',
-						showCancel: false,
-						confirmText: '我知道了'
-					});
-					return;
-				}
-				
-				uni.showModal({
-					title: '警告',
-					content: '设备重启为专业操作，非专业人士請勿进行此操作。確定要重启设备吗？',
-					confirmText: '确定重启',
-					cancelText: '取消',
-					success: (res) => {
-						if (res.confirm) {
-							let arraybuffer = restartPillow(77);
-							blue_class.getInstance().write2tooth(arraybuffer);
-							uni.showToast({
-								title: '设备重启指令已发送',
-								icon: 'success'
-							});
-						}
-					}
-				});
+			toUserInfo() {
+				uni.showToast({ title: '个人资料', icon: 'none' });
 			},
-			resetHandle() {
-				// 检查枕头是否连接
-				if (!blue_class.getInstance().loginSuccess) {
-					uni.showModal({
-						title: '提示',
-						content: '请先连接枕头设备',
-						showCancel: false,
-						confirmText: '我知道了'
-					});
+			openPolicySheet(type) {
+				const map = {
+					points: { title: '积分规则', content: RULES_POINTS },
+					user: { title: '用户协议', content: PROTOCOL_USER },
+					privacy: { title: '隐私政策', content: PROTOCOL_PRIVACY },
+					service: { title: '服务协议', content: PROTOCOL_SERVICE }
+				};
+				const item = map[type];
+				if (!item) {
 					return;
 				}
-				
-				uni.showModal({
-					title: '警告',
-					content: '设备校准为专业操作，非专业人士请勿进行此操作。確定要校准设备吗？',
-					confirmText: '确定校准',
-					cancelText: '取消',
-					success: (res) => {
-						if (res.confirm) {
-							let reset_data = resetPillow(88);
-							blue_class.getInstance().write2tooth(reset_data);
-							uni.showToast({
-								title: '设备校准指令已发送',
-								icon: 'success'
-							});
-						}
-					}
-				});
+				this.policySheetTitle = item.title;
+				this.policySheetBody = item.content;
+				this.showPolicySheet = true;
+			},
+			closePolicySheet() {
+				this.showPolicySheet = false;
 			},
 			refreshUserInfo() {
-				let userInfo = uni.getStorageSync('userInfo')
+				const userInfo = uni.getStorageSync('userInfo');
 				if (userInfo && userInfo.token) {
 					this.score = userInfo.score || 0;
 					this.userInfo = userInfo;
@@ -246,37 +259,60 @@
 				}
 			},
 			go2Use() {
-				const url5 = 'https://sleep.xinglu.shop/sleeph5'
-				const navtitle = '健康检测'
-				console.log('go2use:', url5)
-				wx.navigateTo({
-					// 跳转到webview页面
-					url: `/pages/mine/webview?url=${url5}&nav=${navtitle}`,
+				const url5 = 'https://sleep.xinglu.shop/sleeph5';
+				const navtitle = '健康检测';
+				const q = `url=${encodeURIComponent(url5)}&nav=${encodeURIComponent(navtitle)}`;
+				uni.navigateTo({
+					url: `/pages/mine/webview?${q}`,
+					fail: (err) => {
+						console.error('navigateTo webview 失败', err);
+						uni.showToast({ title: '页面打开失败，请稍后重试', icon: 'none' });
+					}
+				});
+			},
+			goSleepReportList() {
+				uni.navigateTo({
+					url: '/pages/sleepReportList/sleepReportList'
 				});
 			},
 			goBleTest() {
-				uni.navigateTo({
-					url: '/pages/bleTest/bleTest'
-				})
+				uni.navigateTo({ url: '/pages/bleTest/bleTest' });
+			},
+			goAbout() {
+				uni.navigateTo({ url: '/pages/about/about' });
+			},
+			async prefetchWxLoginCodeForPhone() {
+				try {
+					const code = await onGetCode();
+					this.wxLoginCode = code;
+					this.wxLoginCodeAt = Date.now();
+				} catch (err) {
+					this.wxLoginCode = '';
+					this.wxLoginCodeAt = 0;
+				}
 			},
 			async onGetPhoneNumber(e) {
 				if (!e.detail || e.detail.errMsg !== 'getPhoneNumber:ok') {
-					uni.showToast({
-						title: '已取消授权手机号',
-						icon: 'none'
-					});
+					uni.showToast({ title: '已取消授权手机号', icon: 'none' });
 					return;
 				}
 				const { encryptedData, iv } = e.detail;
 				if (!encryptedData || !iv) {
+					uni.showToast({ title: '获取手机号数据失败', icon: 'none' });
+					return;
+				}
+				/** 微信 login code 有效期约 5 分钟，略缩短避免临界时刻与 session_key 不一致导致解密失败 */
+		const CODE_MAX_AGE_MS = 3 * 60 * 1000;
+				const wx_code = this.wxLoginCode;
+				if (!wx_code || Date.now() - this.wxLoginCodeAt > CODE_MAX_AGE_MS) {
 					uni.showToast({
-						title: '获取手机号数据失败',
+						title: '登录态未就绪或已过期，请稍后再点一次头像',
 						icon: 'none'
 					});
+					this.prefetchWxLoginCodeForPhone();
 					return;
 				}
 				try {
-					const wx_code = await onGetCode();
 					const params = {
 						encryptedData,
 						iv,
@@ -286,7 +322,8 @@
 						version: '1.0.10'
 					};
 					const res = await getPhoneByCode(params);
-					console.log('微信手机号快捷登录结果:', res);
+					this.wxLoginCode = '';
+					this.wxLoginCodeAt = 0;
 					if (res && res.code === 1 && res.data) {
 						const data = res.data;
 						const userInfo = {
@@ -302,13 +339,9 @@
 						this.score = userInfo.score;
 						this.userInfo = userInfo;
 						this.hasLogin = true;
-						uni.showToast({
-							title: '登录成功',
-							icon: 'success'
-						});
+						uni.showToast({ title: '登录成功', icon: 'success' });
 					} else {
 						const msg = (res && res.msg) || '登录失败，请重试';
-						// 特殊处理：微信手机号解密失败，给出明确引导
 						if (msg.indexOf('微信手机号解密失败') > -1) {
 							uni.showModal({
 								title: '授权失败',
@@ -317,14 +350,15 @@
 								confirmText: '我知道了'
 							});
 						} else {
-							uni.showToast({
-								title: msg,
-								icon: 'none'
-							});
+							uni.showToast({ title: msg, icon: 'none' });
 						}
+						this.prefetchWxLoginCodeForPhone();
 					}
 				} catch (error) {
 					console.error('微信手机号快捷登录异常:', error);
+					this.wxLoginCode = '';
+					this.wxLoginCodeAt = 0;
+					this.prefetchWxLoginCodeForPhone();
 					uni.showModal({
 						title: '授权失败',
 						content: '授权信息校验异常，请再次点击头像重新完成授权',
@@ -336,7 +370,7 @@
 			logout() {
 				uni.showModal({
 					title: '退出登录',
-					content: '退出后将无法使用枕头功能，是否确认？',
+					content: '退出后将无法使用枕头相关能力，是否确认？',
 					confirmText: '退出登录',
 					cancelText: '取消',
 					success: (res) => {
@@ -345,236 +379,329 @@
 							this.hasLogin = false;
 							this.userInfo = { avatar: '' };
 							this.score = 0;
-							uni.showToast({
-								title: '已退出登录',
-								icon: 'success'
-							});
+							// 退出后立即换新 code，避免下次点头像仍用旧 session 对应关系导致「微信手机号解密失败」
+							this.wxLoginCode = '';
+							this.wxLoginCodeAt = 0;
+							this.prefetchWxLoginCodeForPhone();
+							uni.showToast({ title: '已退出登录', icon: 'success' });
 						}
 					}
 				});
-			},
-			saveWdithHandle() {
-				uni.setStorageSync('shoulderWidth', this.shoulderWidthNum);
-				uni.showToast({
-					title: '保存成功'
-				})
 			}
 		}
-	}
+	};
 </script>
 
-<style lang="scss">
-	.container {
-		// background-color: line-gradient(90deg, #5794d2, #607796);
-		background: linear-gradient(90deg, rgb(87, 148, 210), rgb(96, 119, 150));
+<style lang="scss" scoped>
+	.mine-page {
+		min-height: 100vh;
+		height: 100vh;
+		background-color: #e8eef2;
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+	}
 
-		.input-area {
-			margin: 20rpx;
-			letter-spacing: 2rpx;
-			text-align: center;
-			background-color: #406dafb2;
-			border-radius: 10rpx;
-			padding: 20rpx;
-			color: white;
-		}
+	.mine-scroll {
+		flex: 1;
+		height: 0;
+		padding: 0 28rpx;
+		padding-bottom: calc(180rpx + env(safe-area-inset-bottom));
+		box-sizing: border-box;
+	}
 
-		.tips {
-			color: black;
-			font-size: 28rpx;
+	.profile-hero {
+		padding-top: 20rpx;
+		margin-bottom: 24rpx;
+	}
 
-		}
+	.profile-card {
+		background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+		border-radius: 24rpx;
+		padding: 36rpx 28rpx 32rpx;
+		box-shadow: 0 8rpx 32rpx rgba(15, 23, 42, 0.06);
+		border: 1rpx solid rgba(148, 163, 184, 0.12);
+		margin-bottom: 20rpx;
+	}
 
-		.info {
-			margin: 0 auto;
-			background-color: white;
-			border-top-left-radius: 30rpx;
-			border-top-right-radius: 30rpx;
-			margin-top: 200rpx;
+	.profile-row {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
 
-			.user_info {
-				position: relative;
-				// overflow: hidden;
-			}
+	.avatar-wrap {
+		flex-shrink: 0;
+		margin-right: 24rpx;
+	}
 
-			.top_info {
-				top: -50rpx;
-				margin: 0 auto;
-				// left: 50%;
-				// margin-left: 50%;
-				text-align: center;
-				position: relative;
-			}
+	.avatar {
+		width: 128rpx;
+		height: 128rpx;
+		border-radius: 50%;
+		background-color: #f1f5f9;
+		border: 4rpx solid #fff;
+		box-shadow: 0 4rpx 16rpx rgba(37, 99, 235, 0.12);
+	}
 
+	.avatar-btn {
+		padding: 0;
+		margin: 0;
+		border: none;
+		background: transparent;
+		line-height: 1;
+		border-radius: 50%;
+		overflow: hidden;
+	}
 
+	.avatar-btn::after {
+		border: none;
+	}
 
-			.avatar_bg {
-				width: 114upx;
-				height: 114upx;
-				border-radius: 100%;
-				margin: 0 auto;
-				border: 5px solid #fff;
-				background-color: #FFF4EA;
+	.profile-text {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 10rpx;
+	}
 
-				.avatar-btn {
-					padding: 0;
-					margin: 0;
-					border: none;
-					background: transparent;
-					width: 114upx;
-					height: 114upx;
-					border-radius: 100%;
-					display: flex;
-					align-items: center;
-					justify-content: center;
-				}
+	.profile-name {
+		font-size: 36rpx;
+		font-weight: 600;
+		color: #0f172a;
+		line-height: 1.3;
+	}
 
-				.avatar {
-					flex-shrink: 0;
-					width: 114upx;
-					height: 114upx;
-					transform: scale(1);
-					border-radius: 100%;
-					background-color: #FFF4EA;
-				}
-			}
+	.profile-sub {
+		font-size: 24rpx;
+		color: #64748b;
+		line-height: 1.4;
+	}
 
-			.username {
-				color: #32455B;
-				font-size: 35rpx;
-			}
+	.profile-badge {
+		flex-shrink: 0;
+		padding: 8rpx 18rpx;
+		background: rgba(37, 99, 235, 0.08);
+		border-radius: 999rpx;
+	}
 
-			.score_part {
-				width: 700rpx;
-				height: 130rpx;
-				border-radius: 20rpx;
-				margin: 0 auto;
-				display: flex;
-				line-height: 130rpx;
-				font-size: 38rpx;
-				color: #5B7897;
-				justify-content: center;
-				align-items: center;
-				box-shadow: 0px 0px 22px #BBB;
+	.profile-badge-txt {
+		font-size: 22rpx;
+		color: #2563eb;
+	}
 
-				.sub_score_info {
-					display: flex;
-					justify-content: center;
-					align-items: center;
-					padding: 10rpx;
-				}
+	.stat-card {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		background-color: #fff;
+		border-radius: 20rpx;
+		padding: 28rpx 24rpx;
+		box-shadow: 0 4rpx 20rpx rgba(15, 23, 42, 0.05);
+		border: 1rpx solid #e2e8f0;
+	}
 
-				.score_txt {
-					flex: 1;
-					text-align: center;
-					line-height: 60rpx;
-					border-radius: 10rpx;
-					margin-left: 10rpx;
-					margin-right: 10rpx;
-					font-size: 36rpx;
-					background-color: #dadada;
-				}
+	.stat-left {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
 
-				.icon {
-					width: 54rpx;
-					height: 49rpx;
-					padding: 10rpx;
-				}
+	.stat-ico {
+		width: 72rpx;
+		height: 72rpx;
+		margin-right: 20rpx;
+	}
 
-				.score_info {
-					flex: 1;
-					display: flex;
-					justify-content: space-around;
-					align-items: center;
-				}
+	.stat-info {
+		display: flex;
+		flex-direction: column;
+		gap: 6rpx;
+	}
 
-				.btn {
-					width: 202rpx;
-					height: 68rpx;
-					line-height: 68rpx;
-					text-align: center;
-					font-size: 36rpx;
-					background-color: rgb(238, 126, 39);
-					border-radius: 10rpx;
-					color: white;
-					margin-right: 20rpx;
-				}
-			}
+	.stat-label {
+		font-size: 24rpx;
+		color: #64748b;
+	}
 
+	.stat-value {
+		font-size: 40rpx;
+		font-weight: 700;
+		color: #0f172a;
+		letter-spacing: 1rpx;
+	}
 
-			.desc {
-				font-size: 32rpx;
-				color: #5B7897;
-				line-height: 40rpx;
-				padding-left: 66rpx;
-				padding-right: 66rpx;
-				padding-top: 60rpx;
-				overflow: scroll;
-				height: calc(100vh - 980rpx);
+	.stat-action {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
 
-				.subtitle {
-					padding-top: 20rpx;
-					padding-bottom: 20rpx;
-				}
+	.stat-action-txt {
+		font-size: 28rpx;
+		color: #2563eb;
+		font-weight: 500;
+	}
 
-				.title {
-					font-size: 40rpx;
-					padding-top: 20rpx;
-					padding-bottom: 20rpx;
-				}
-			}
-		}
+	.stat-arrow {
+		font-size: 36rpx;
+		color: #94a3b8;
+		margin-left: 4rpx;
+		line-height: 1;
+	}
 
-		.opt-part {
-			display: flex;
-			justify-content: space-around;
-			background-color: white;
-			padding-top: 62rpx;
-			position: relative;
+	.menu-section {
+		margin-bottom: 28rpx;
+	}
 
-			.opt-tips-con {
-				display: flex;
-				justify-content: space-around;
-				position: relative;
-			}
+	.menu-section-title {
+		display: block;
+		font-size: 26rpx;
+		color: #64748b;
+		margin-bottom: 16rpx;
+		padding-left: 8rpx;
+	}
 
-			.opt-tip1 {
-				position: absolute;
-				top: 95rpx;
-				left: 50rpx;
-				text-align: center;
-				color: #676767;
-			}
+	.menu-card {
+		background-color: #fff;
+		border-radius: 20rpx;
+		overflow: hidden;
+		box-shadow: 0 2rpx 12rpx rgba(15, 23, 42, 0.04);
+		border: 1rpx solid #e2e8f0;
+	}
 
-			.opt-tip2 {
-				position: absolute;
-				top: 95rpx;
-				right: 50rpx;
-				text-align: center;
-				color: #676767;
-			}
+	.menu-item {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 28rpx 24rpx;
+		min-height: 96rpx;
+		box-sizing: border-box;
+	}
 
-			.opt-btn {
-				width: 284rpx;
-				height: 90rpx;
-				margin-right: 10rpx;
-				display: flex;
-				justify-content: space-around;
-				align-items: center;
-				background-color: rgb(28, 68, 133);
-				border-radius: 30rpx;
-				line-height: 56rpx;
-				color: white;
-			}
+	.menu-item:active {
+		background-color: #f8fafc;
+	}
 
-			.opt-btn-top {
-				background-color: rgb(79, 128, 191);
-			}
+	.menu-ico {
+		width: 40rpx;
+		height: 40rpx;
+		margin-right: 20rpx;
+		flex-shrink: 0;
+	}
 
+	.menu-label {
+		flex: 1;
+		font-size: 30rpx;
+		color: #1e293b;
+	}
 
-			.icon {
-				width: 56rpx;
-				height: 56rpx;
-			}
-		}
+	.menu-arrow {
+		font-size: 32rpx;
+		color: #cbd5e1;
+		line-height: 1;
+	}
+
+	.menu-divider {
+		height: 1rpx;
+		background-color: #f1f5f9;
+		margin-left: 84rpx;
+	}
+
+	.logout-block {
+		padding: 16rpx 0 32rpx;
+	}
+
+	.logout-btn {
+		width: 100%;
+		height: 88rpx;
+		line-height: 88rpx;
+		background-color: #fff;
+		color: #64748b;
+		font-size: 30rpx;
+		border-radius: 20rpx;
+		border: 1rpx solid #e2e8f0;
+		box-shadow: 0 2rpx 8rpx rgba(15, 23, 42, 0.04);
+	}
+
+	.logout-btn::after {
+		border: none;
+	}
+
+	.mine-footer-space {
+		height: 24rpx;
+	}
+
+	.rules-mask {
+		position: fixed;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		background: rgba(15, 23, 42, 0.45);
+		z-index: 300;
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+	}
+
+	.rules-panel {
+		width: 100%;
+		height: 82vh;
+		max-height: 82vh;
+		background: #fff;
+		border-radius: 24rpx 24rpx 0 0;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		padding-bottom: env(safe-area-inset-bottom);
+		box-sizing: border-box;
+	}
+
+	.rules-head {
+		flex-shrink: 0;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		padding: 28rpx 32rpx;
+		border-bottom: 1rpx solid #f1f5f9;
+	}
+
+	.rules-title {
+		font-size: 34rpx;
+		font-weight: 600;
+		color: #0f172a;
+	}
+
+	.rules-close {
+		font-size: 28rpx;
+		color: #2563eb;
+	}
+
+	/* 小程序 scroll-view 必须占满剩余高度，父级需固定高度 + overflow:hidden */
+	.rules-scroll {
+		flex: 1;
+		height: 0;
+		min-height: 0;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.rules-inner {
+		padding: 24rpx 32rpx calc(120rpx + env(safe-area-inset-bottom));
+		box-sizing: border-box;
+	}
+
+	.rules-text {
+		display: block;
+		font-size: 26rpx;
+		color: #475569;
+		line-height: 1.65;
+		white-space: pre-wrap;
+		word-break: break-word;
 	}
 </style>

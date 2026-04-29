@@ -27,7 +27,7 @@
 			</div>
 		</view>
 		<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" border-radius="40rpx 40rpx 0rpx 0rpx"
-			background-color='white' safe-area="false" class="popup" :mask-click="false" @change="change">
+			background-color='white' :safe-area="false" class="popup" :mask-click="false" @change="change">
 			<view class="container">
 				<image class="close-btn" @click="closePopUpHandle"
 					src="@/page_subject/static/adjust/SY_05_buttonCOLa.png" mode="widthFix">
@@ -56,31 +56,20 @@
 	import {
 		object2Query,
 		ab2hex,
-		hand1Shake,
 		ensureLoginBeforeConnectBle
 	} from '@/common/util.js'
-	import blue_class from '../../utils/BlueManager';
-	import {
-		appAnswer,
-		parseTime
-	} from '../../common/util';
+	import { PillowBleManager, BlueWifiToolManager } from '@/utils/BlueUtils';
 	import {
 		nextTick
 	} from 'vue';
-	import {
-		addHistoryLog
-	} from '../../utils/miniapp';
 	export default {
 		computed: {
 			loginDeviceId() {
-				return blue_class.getInstance().deviceId;
+				return PillowBleManager.getInstance().deviceId;
 			},
 			blueDeviceIdList() {
-				return blue_class.getInstance().deviceIdList;
+				return PillowBleManager.getInstance().deviceIdList;
 			}
-		},
-		components: {
-
 		},
 		onShow() {
 			// 每次页面显示时重置蓝牙错误弹窗标记，避免上一轮的状态影响本次
@@ -90,24 +79,34 @@
 
 			this.onShowing = true;
 			// 初始化连接状态
-			this.isConnected = blue_class.getInstance().loginSuccess;
+			this.isConnected = PillowBleManager.getInstance().loginSuccess;
 			let app = getApp();
 			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 80) + 'px');
 			
-			// 监听蓝牙适配器状态变化，当蓝牙重新打开时自动重新搜索
-			uni.onBluetoothAdapterStateChange((res) => {
+			// 先移除旧监听，避免 onShow 多次注册重复触发
+			if (this.adapterStateHandler) {
+				if (typeof uni.offBluetoothAdapterStateChange === 'function') {
+					uni.offBluetoothAdapterStateChange(this.adapterStateHandler);
+				} else {
+					uni.onBluetoothAdapterStateChange(null);
+				}
+				this.adapterStateHandler = null;
+			}
+			this.adapterStateHandler = (res) => {
 				console.log('蓝牙适配器状态变化:', res);
+				if (!this.onShowing) {
+					return;
+				}
 				if (res.available) {
-					// 蓝牙已打开，重新开始搜索
 					console.log('检测到蓝牙已打开，重新开始搜索设备');
-					this.bluetoothErrorShown = false; // 重置错误标记
+					this.bluetoothErrorShown = false;
 					this.openBlueTooth();
 				} else {
-					// 蓝牙已关闭
 					console.log('检测到蓝牙已关闭');
 					this.searching = false;
 				}
-			});
+			};
+			uni.onBluetoothAdapterStateChange(this.adapterStateHandler);
 
 			// this.deviceIdList = [];
 			// 如果正在搜索中
@@ -119,28 +118,27 @@
 				// })
 			} else {
 				// 如果正在连接
-				if (blue_class.getInstance().deviceId != '') {
-					// console.log(blue_class.getInstance().deviceName, blue_class.getInstance().deviceId)
-					// blue_class.getInstance().deviceIdList.push({
-					// 	name: blue_class.getInstance().deviceName,
-					// 	deviceId: blue_class.getInstance().deviceId
+				if (PillowBleManager.getInstance().deviceId != '') {
+					// console.log(PillowBleManager.getInstance().deviceName, PillowBleManager.getInstance().deviceId)
+					// PillowBleManager.getInstance().deviceIdList.push({
+					// 	name: PillowBleManager.getInstance().deviceName,
+					// 	deviceId: PillowBleManager.getInstance().deviceId
 					// });
 				} else {
 					if (app.globalData.versionCode == 0) {
-						blue_class.getInstance().deviceIdList.push({
+						PillowBleManager.getInstance().deviceIdList.push({
 							name: this.testName,
 							deviceId: 'deviceId'
 						})
 					}
 				}
 			}
-			uni.$on('xx', this.handleMessage)
-			// 保存事件处理函数的引用，以便后续可以正确移除
+			// 新协议走 0xAA 帧，由各自页面监听 uni.$emit('xx')；本页不再做旧握手解析
 			this.bluetoothStatusChangeHandler = () => {
 				this.handleDisconnect();
 				// 根據全局狀態同步當前設備ID，便於按鈕顯示
-				if (blue_class.getInstance().loginSuccess) {
-					this.currentDeviceId = blue_class.getInstance().deviceId;
+				if (PillowBleManager.getInstance().loginSuccess) {
+					this.currentDeviceId = PillowBleManager.getInstance().deviceId;
 				} else {
 					this.currentDeviceId = '';
 				}
@@ -150,14 +148,10 @@
 			// uni.onBLECharacteristicValueChange(this.handleMessage)
 		},
 		onHide() {
-			// uni.offBLECharacteristicValueChange(this.handleMessage)
-			this.onShowing = false;
-			uni.$off('xx', this.handleMessage)
-			uni.$off('bluetooth_status_change', this.bluetoothStatusChangeHandler)
-			this.stopBlueTooth();
-			uni.onBluetoothDeviceFound(null)
-			// 移除蓝牙适配器状态变化监听
-			uni.onBluetoothAdapterStateChange(null);
+			this.teardownBluetoothPage();
+		},
+		onUnload() {
+			this.teardownBluetoothPage();
 		},
 		onLoad() {
 			// 监听设备发现
@@ -166,7 +160,7 @@
 		},
 		data() {
 			return {
-				currentDeviceId: blue_class.getInstance().deviceId,
+				currentDeviceId: PillowBleManager.getInstance().deviceId,
 				menuStyle: {
 					'--menuButtonTop': "0",
 				},
@@ -185,14 +179,95 @@
 				connectList: [], // 连接列表
 				isConnected: false, // 连接状态
 				bluetoothErrorShown: false, // 是否已弹出过蓝牙初始化失败提示
+				deviceFoundHandler: null,
+				adapterStateHandler: null,
+				isIOS: false,
+				wifiMacToolManager: null,
 			}
 		},
 		methods: {
+			isGoodSleepName(name) {
+				const n = String(name || '').trim();
+				return /^goodsleep/i.test(n);
+			},
+			isTargetPillowDevice(device) {
+				const d = device || {};
+				const name = String(d.name || '').trim();
+				const localName = String(d.localName || '').trim();
+				const startsWithMinga = (s) => /^minga/i.test(String(s || '').trim());
+				return startsWithMinga(name) || startsWithMinga(localName);
+			},
+			resolveCachedSoapMac() {
+				const keys = ['wifi_device_mac', 'soap_device_mac', 'device_mac', 'wifiMac', 'mac'];
+				for (let i = 0; i < keys.length; i++) {
+					const v = uni.getStorageSync(keys[i]);
+					if (typeof v === 'string' && v.trim()) return v.trim();
+				}
+				return '';
+			},
+			tryPersistIosMacFromScanDevice(device) {
+				if (!this.isIOS) return;
+				const d = device || {};
+				const name = d.name || d.localName || '';
+				if (!this.isGoodSleepName(name)) return;
+				if (!d.advertisData || typeof d.advertisData !== 'string') return;
+				// 首次扫描阶段拿到并落库即可，避免后续反复覆盖。
+				if (this.resolveCachedSoapMac()) return;
+				if (!this.wifiMacToolManager) {
+					this.wifiMacToolManager = new BlueWifiToolManager(this);
+				}
+				const saved = this.wifiMacToolManager.persistWifiMacForSoap({
+					advertisData: d.advertisData,
+					deviceId: d.deviceId || '',
+					uuid: d.uuid || ''
+				});
+				if (saved) {
+					try {
+						uni.setStorageSync('ios_goodsleep_advertisData', d.advertisData);
+					} catch (e) {}
+					console.log('[work] iOS 首次扫描已保存 MAC:', saved);
+				}
+			},
+			/** 离开连接页时必须停止扫描并卸监听，避免回到首页仍持续搜蓝牙 */
+			teardownBluetoothPage() {
+				this.onShowing = false;
+				if (this.bluetoothStatusChangeHandler) {
+					uni.$off('bluetooth_status_change', this.bluetoothStatusChangeHandler);
+				}
+				uni.stopBluetoothDevicesDiscovery({
+					complete: () => {
+						this.searching = false;
+					}
+				});
+				if (this.deviceFoundHandler && typeof uni.offBluetoothDeviceFound === 'function') {
+					try {
+						uni.offBluetoothDeviceFound(this.deviceFoundHandler);
+					} catch (e) {
+						console.warn('offBluetoothDeviceFound', e);
+					}
+					this.deviceFoundHandler = null;
+				} else {
+					uni.onBluetoothDeviceFound(null);
+					this.deviceFoundHandler = null;
+				}
+				if (this.adapterStateHandler) {
+					if (typeof uni.offBluetoothAdapterStateChange === 'function') {
+						try {
+							uni.offBluetoothAdapterStateChange(this.adapterStateHandler);
+						} catch (e) {
+							console.warn('offBluetoothAdapterStateChange', e);
+						}
+					} else {
+						uni.onBluetoothAdapterStateChange(null);
+					}
+					this.adapterStateHandler = null;
+				}
+			},
 			// 处理蓝牙断开连接
 			handleDisconnect() {
-				console.log('handleDisconnect 被调用，当前 loginSuccess:', blue_class.getInstance().loginSuccess);
+				console.log('handleDisconnect 被调用，当前 loginSuccess:', PillowBleManager.getInstance().loginSuccess);
 				// 检查是否真的断开了
-				if (!blue_class.getInstance().loginSuccess) {
+				if (!PillowBleManager.getInstance().loginSuccess) {
 					console.log('工作页面检测到蓝牙断开');
 					
 					// 更新连接状态
@@ -214,7 +289,7 @@
 			disconnectBlueToothHandler(item) {
 				let that = this;
 				// 标记为手动断开，避免弹出“意外断开”提示
-				blue_class.getInstance().setManualDisconnecting(true);
+				PillowBleManager.getInstance().setManualDisconnecting(true);
 				uni.closeBLEConnection({
 					deviceId: item.deviceId,
 					success: function(res) {
@@ -225,9 +300,9 @@
 							that.tempDeviceIdList.splice(index, 1);
 						}
 						that.currentDeviceId = '';
-						blue_class.getInstance().deviceId = '';
-						blue_class.getInstance().deviceName = '';
-						blue_class.getInstance().loginSuccess = false;
+						PillowBleManager.getInstance().deviceId = '';
+						PillowBleManager.getInstance().deviceName = '';
+						PillowBleManager.getInstance().loginSuccess = false;
 						console.log('手动断开：设置 loginSuccess = false，准备触发事件');
 						// 触发连接状态变化事件，通知页面更新
 						uni.$emit('bluetooth_status_change');
@@ -248,45 +323,59 @@
 			},
 			refreshDeviceList() {
 				this.tempDeviceIdList.length = 0;
-				for (var item in blue_class.getInstance().deviceIdList) {
-					this.tempDeviceIdList.push(blue_class.getInstance().deviceIdList[item]);
+				for (var item in PillowBleManager.getInstance().deviceIdList) {
+					this.tempDeviceIdList.push(PillowBleManager.getInstance().deviceIdList[item]);
 				}
-				// this.tempDeviceIdList = blue_class.getInstance().deviceIdList;
+				// this.tempDeviceIdList = PillowBleManager.getInstance().deviceIdList;
 				console.log("refreshDeviceList:", this.tempDeviceIdList)
 			},
 			addCallBack() {
-				let that = this;
-				let deviceIdList = blue_class.getInstance().deviceIdList;
-				uni.onBluetoothDeviceFound((result) => {
-					// 剔除重复设备，兼容不同设备API的不同返回值
-					let isnotexist = !deviceIdList.some(device => device.deviceId === result.devices[0].deviceId);
-					let devices = result.devices;
+				const that = this;
+				const deviceIdList = PillowBleManager.getInstance().deviceIdList;
+				if (this.deviceFoundHandler && typeof uni.offBluetoothDeviceFound === 'function') {
+					try {
+						uni.offBluetoothDeviceFound(this.deviceFoundHandler);
+					} catch (e) {}
+					this.deviceFoundHandler = null;
+				}
+				this.deviceFoundHandler = (result) => {
+					if (!that.onShowing) {
+						return;
+					}
+					const rawDevices = (result && result.devices) || [];
+					if (!rawDevices[0]) {
+						return;
+					}
+					const first = rawDevices[0];
+					let isnotexist = !deviceIdList.some(device => device.deviceId === first.deviceId);
+					let devices = rawDevices;
 					console.log("onBluetoothDeviceFound:", result);
 
-					if (result.devices) {
-						if (result.devices[0].advertisData) {
-							result.devices[0].advertisData = ab2hex(result.devices[0].advertisData);
-						} else {
-							result.devices[0].advertisData = '';
-						}
+					if (first.advertisData) {
+						first.advertisData = ab2hex(first.advertisData);
+					} else {
+						first.advertisData = '';
+					}
+					that.tryPersistIosMacFromScanDevice(first);
 
-						if (isnotexist) {
-							if (result.devices[0].name.indexOf('Minga') > -1) {
-								deviceIdList.push(result.devices[0]);
-								that.refreshDeviceList();
-							}
-							console.log('result.devices[0].name:', result.devices[0].name);
+					if (isnotexist) {
+						if (that.isTargetPillowDevice(first)) {
+							deviceIdList.push(first);
+							that.refreshDeviceList();
 						}
+						console.log('result.devices[0].name:', first.name);
 					}
 
 					console.log('new device list has founded', deviceIdList.length, devices.length, devices);
-				});
+				};
+				uni.onBluetoothDeviceFound(this.deviceFoundHandler);
 			},
 			checkBlueToothSetting() {
 				console.log("checkBlueToothSetting");
 				let that = this;
 				const systemInfo = uni.getSystemInfoSync();
 				const isIOS = systemInfo.platform === 'ios';
+				this.isIOS = isIOS;
 				// 每次进来先重置蓝牙错误弹窗标记，避免上一轮的状态影响本次
 				this.bluetoothErrorShown = false;
 
@@ -429,6 +518,10 @@
 			},
 			// 开始搜索蓝牙设备（提取为独立方法，避免重复代码）
 			startBluetoothDiscovery() {
+				if (!this.onShowing) {
+					console.log('startBluetoothDiscovery 跳过：页面已离开');
+					return;
+				}
 				this.addCallBack();
 				uni.startBluetoothDevicesDiscovery({
 					services: [],
@@ -450,179 +543,40 @@
 				})
 			},
 			openBlueTooth() {
+				if (!this.onShowing) {
+					console.log('openBlueTooth 跳过：页面已离开');
+					return;
+				}
 				// 先检查适配器状态，避免重复初始化
 				uni.getBluetoothAdapterState({
 					success: (res) => {
-						console.log('蓝牙适配器已打开，直接开始搜索设备')
-						// 适配器已打开，直接开始搜索
+						if (!this.onShowing) {
+							return;
+						}
+						console.log('蓝牙适配器已打开，直接开始搜索设备');
 						this.startBluetoothDiscovery();
 					},
 					fail: (err) => {
-						// 适配器未打开，尝试打开
-						console.log('蓝牙适配器未打开，尝试初始化:', err)
+						if (!this.onShowing) {
+							return;
+						}
+						console.log('蓝牙适配器未打开，尝试初始化:', err);
 						this.addCallBack();
 						uni.openBluetoothAdapter({
 							success: (res) => {
-								console.log('openBluetoothAdapter success')
-								// 打开成功后开始搜索
+								if (!this.onShowing) {
+									return;
+								}
+								console.log('openBluetoothAdapter success');
 								this.startBluetoothDiscovery();
 							},
 							fail: (res) => {
 								console.log('openBluetoothAdapter fail:', JSON.stringify(res));
-								// 根據錯誤碼給出更精準的提示
 								this.handleOpenBluetoothFail(res);
 							}
-						})
+						});
 					}
 				})
-			},
-			handleMessage(res) {
-				console.log('handleMessage 被调用，当前 onShowing:', this.onShowing)
-				console.log(`characteristic ${res.characteristicId} has changed, now is ${res.value}`)
-				let arrayBuffer = new Uint8Array(res.value);
-				let mark = arrayBuffer[0];
-				console.log('接收到数据', ab2hex(res.value), arrayBuffer.length)
-				// 如果收到数据是4个字节,虽然发的是8个字节，但是只有后4个字节有数据
-				if (arrayBuffer.length == 4) {
-					let receive16 = ab2hex(res.value);
-					let last = '0x' + receive16
-					let total = 0;
-					Array.prototype.map.call(
-						arrayBuffer,
-						function(bit) {
-							total += Number(bit.toString(10))
-							return ('00' + bit.toString(16)).slice(-2)
-						}
-					)
-					let shake1 = hand1Shake(Number(
-						total), arrayBuffer)
-					console.log("total:", total, shake1)
-					if (blue_class.getInstance().loginSuccess) {
-						console.log('已经握手成功了!')
-
-
-						// this.showAdjustHandler()
-						return;
-					}
-					blue_class.getInstance().write2tooth(shake1)
-					console.log('第一次握手', ab2hex(shake1))
-				} else if (arrayBuffer.length == 2) {
-					console.log('接收到回复数据2:', ab2hex(res.value))
-					let hexValue = ab2hex(res.value);
-					let mark2 = arrayBuffer[0].toString(16); // 获取 mark 值
-					if (hexValue.indexOf('55') > -1) {
-						console.log('接收到回复数据', hexValue)
-						// console.log('校验长度', parseInt('0x' + len))
-						console.log('握手成功可以发送ssid了')
-						blue_class.getInstance().loginSuccess = true
-						console.log('设置 loginSuccess = true，当前状态:', blue_class.getInstance().loginSuccess)
-
-						// 触发连接状态变化事件，通知页面更新
-						console.log('触发 bluetooth_status_change 事件')
-						uni.$emit('bluetooth_status_change');
-
-						// 连接成功，跳转调整界面
-						nextTick(() => {
-							console.log('准备跳转到首页')
-							this.showAdjustHandler()
-						})
-						// blue_class.getInstance().write2tooth(this.characteristicStringId,
-						// 	hexStringToArrayBuffer('jimlee'))
-					} else if (mark2 == '66') {
-						console.log('握手成功可以发送ssid密码了')
-						// 发送wifi密码
-						// blue_class.getInstance().write2tooth(this.characteristicStringId,
-						// 	hexStringToArrayBuffer('lijiming'))
-					} else if (mark2 == 'aa') {
-						console.log('发送成功了ssid了')
-					} else if (mark2 == '33') {
-						console.log('收到成功调整枕头')
-						// 注意：2字节数据中没有 len 和 receive16，这些变量只在4字节数据中存在
-						// console.log('8个字节指令的校验和', parseInt('0x' + len))
-						// console.log('后四位', receive16, receive16.slice(4, 1), receive16.slice(5, 1))
-					}
-				} else {
-					mark = arrayBuffer[0];
-					let length = arrayBuffer[1];
-					let arrayBuffer_order = new ArrayBuffer(length);
-					let receive_dataView = new DataView(arrayBuffer_order);
-					for (var index = 0; index < arrayBuffer_order.byteLength; index++) {
-						receive_dataView.setUint8(index, arrayBuffer[index + 2])
-					}
-					console.log('handleMessage 接收到数据 mark:', parseInt(mark))
-					switch (parseInt(mark)) {
-						case 1:
-							let result = receive_dataView.getUint8(0)
-							switch (parseInt(result)) {
-								case 0:
-									console.log("[调整模式成功]")
-									break;
-								case 1:
-									console.log("[调整模式参数非法]")
-									break;
-								case 2:
-									console.log("[不支持的指令]")
-									break;
-							}
-							break;
-						case 2:
-							break;
-						case 4:
-							let result4 = receive_dataView.getUint8(0)
-							switch (parseInt(result4)) {
-								case 0:
-									console.log("[调整枕头成功]")
-									break;
-								case 1:
-									console.log("[调整模式参数非法]")
-									break;
-								case 2:
-									console.log("[不支持的指令]")
-									break;
-							}
-							break;
-						case 5:
-							this.parsePillowSleepData(receive_dataView)
-							break;
-						case 6:
-							this.parsePillowStatus(arrayBuffer_order)
-							// this.parsePillowSleepData(null)
-							break;
-						case 11:
-							console.error('study success！')
-							break;
-						case 88:
-							break;
-					}
-					return;
-				}
-			},
-			parsePillowStatus(arraybuffer) {
-				blue_class.getInstance().parsePillowStatus(arraybuffer)
-				return;
-			},
-			parsePillowSleepData(receive_dataView) {
-
-				blue_class.getInstance().write2tooth(appAnswer(5))
-				//解析枕头睡眠阶段状态	
-				// 数据1-姿态（U8）(1--平躺，2--侧卧) + 数据2开始时间（T4）+数据3结束时间（T4）+ 数据4-姿态（U8）(1--平躺，2--侧卧) + 数据5开始时间（T4）+数据6结束时间（T4）+ ... ,关于该指令的说明，是多个姿态+开始时间和结束时间的条目的组合，根据数据长度计算一条指令中包含多少组数据
-				// let receive8 = new ArrayBuffer(array_buffer);
-				let dataView = receive_dataView;
-				let pose = dataView.getUint8(0);
-				console.log('姿态:', dataView.getUint8(0));
-				let uint32_s = dataView.getUint32(1);
-				let unit32_e = dataView.getUint32(5);
-				// parseTime(uint32_s)
-				// 秒：0-5bit，分：6-11bit，时：12-16bit，日：17-21bit，月：22-25bit，年：26-31bit），年基于2020，月取值1-12
-				console.log('开始时间:', uint32_s, parseTime(uint32_s))
-				console.log('结束时间:', unit32_e, parseTime(unit32_e))
-
-				addHistoryLog({
-					'pose': pose,
-					'start': parseTime(uint32_s),
-					'end': parseTime(unit32_e)
-				});
-
 			},
 			// ai识别
 			autoHandler() {
@@ -664,14 +618,10 @@
 			// 停止蓝牙扫描（连接前只停止扫描，不关闭适配器，参考 xxxx.vue）
 			stopBlueTooth() {
 				uni.stopBluetoothDevicesDiscovery({
-					success: (res) => {
-						console.log("stopBlueTooth success!")
-						this.searching = false
-					},
-					fail: (res) => {
-						console.log("stopBlueTooth fail!")
+					complete: () => {
+						this.searching = false;
 					}
-				})
+				});
 			},
 
 			// 连接蓝牙
@@ -700,9 +650,9 @@
 					app.globalData.deviceId = 'deviceId';
 					app.globalData.deviceName = this.testName;
 
-					blue_class.getInstance().deviceId = 'deviceId';
-					blue_class.getInstance().deviceName = this.testName;
-					blue_class.getInstance().loginSuccess = true;
+					PillowBleManager.getInstance().deviceId = 'deviceId';
+					PillowBleManager.getInstance().deviceName = this.testName;
+					PillowBleManager.getInstance().loginSuccess = true;
 					
 					// 同步當前已連接設備ID，便於按鈕狀態即時切換
 					this.currentDeviceId = 'deviceId';
@@ -730,8 +680,8 @@
 						this.stopBlueTooth();
 						app.globalData.deviceId = deviceId;
 
-					blue_class.getInstance().deviceId = deviceId;
-					blue_class.getInstance().deviceName = item.name;
+					PillowBleManager.getInstance().deviceId = deviceId;
+					PillowBleManager.getInstance().deviceName = item.name;
 					// 不要在这里设置 loginSuccess = true，让握手流程正常进行
 
 					console.log('connectBluetooth success!:', deviceId, res)
@@ -775,29 +725,45 @@
 			},
 			// 获取蓝牙设备某个服务中所有特征值(characteristic)。
 			getBLEDeviceCharacteristics(deviceId, serviceId) {
-				let that = this
-				// serviceId = '6E400003-B5A3-F393-E0A9-E50E24DCCA9E'
-				console.log('getBLEDeviceCharacteristics123:', deviceId, serviceId)
+				const mgr = PillowBleManager.getInstance()
+				console.log('getBLEDeviceCharacteristics:', deviceId, serviceId)
 				uni.getBLEDeviceCharacteristics({
 					deviceId: deviceId,
 					serviceId: serviceId,
 					success: (res) => {
-						console.log("%c getBLEDeviceCharacteristics success", "color:red;", res
-							.characteristics);
-						let notify_character = ''
-						if (res.characteristics[1]) {
-							// 启用notify
-							notify_character = res.characteristics[1].uuid
-							blue_class.getInstance().startNotice({
+						const chars = res.characteristics || []
+						let notifyUUID = ''
+						let writeUUID = ''
+						chars.forEach((ch) => {
+							const p = ch.properties || {}
+							if (!notifyUUID && p.notify) notifyUUID = ch.uuid
+							if (!writeUUID && (p.write || p.writeNoResponse)) writeUUID = ch.uuid
+						})
+						if (!notifyUUID && chars[1]) notifyUUID = chars[1].uuid
+						if (!notifyUUID && chars[0]) notifyUUID = chars[0].uuid
+						if (!writeUUID && chars[0]) writeUUID = chars[0].uuid
+						if (!notifyUUID) {
+							uni.showToast({ title: '未找到通知特征', icon: 'none' })
+							return
+						}
+						mgr.startNotice(
+							{
 								deviceUUID: deviceId,
 								serviceUUID: serviceId,
-								notifyUUID: notify_character
-							})
-
-						}
+								notifyUUID,
+								writeUUID: writeUUID || mgr.characteristicId
+							},
+							{
+								onReady: () => {
+									nextTick(() => {
+										this.showAdjustHandler()
+									})
+								}
+							}
+						)
 					},
 					fail: (res) => {
-						console.log("%c getBLEDeviceCharacteristics fail", "color:red;", res);
+						console.log('%c getBLEDeviceCharacteristics fail', 'color:red;', res)
 					}
 				})
 			},

@@ -1,14 +1,14 @@
 <template>
 	<z-nav-bar backState=2000 home='false'></z-nav-bar>
 	<view class='container'>
-		<image mode="widthFix" class="image1" src="../../static/product/SY_12_bgJY.png" @click='productMallHandler'>
+<!-- 		<image mode="widthFix" class="image1" src="../../static/product/SY_12_bgJY.png" @click='productMallHandler'>
 		</image>
 		<image mode="widthFix" class="image2" src="../../static/product/SY_12_bgQZY.png" @click='productSleepHandler'>
+		</image> -->
+		<image mode="widthFix" class="image2" src="../../static/SY_01_000.png" @click='productHandler'>
 		</image>
-		<image mode="widthFix" class="image2" src="../../static/product/SY_12_bgJKJC.png" @click='productHandler'>
-		</image>
-		<image mode="widthFix" class="image3" src="../../static/product/SY_12_bgFJZS.png" @click='go2Use'>
-		</image>
+<!-- 		<image mode="widthFix" class="image3" src="../../static/product/SY_12_bgFJZS.png" @click='go2Use'>
+		</image> -->
 	</view>
 </template>
 
@@ -55,12 +55,15 @@
 				})
 			},
 			go2Use() {
-				const url5 = 'https://sleep.xinglu.shop/sleeph5'
-				const navtitle = '健康检测'
-				console.log('go2use:', url5)
-				wx.navigateTo({
-					// 跳转到webview页面
-					url: `/pages/mine/webview?url=${url5}&nav=${navtitle}`,
+				const url5 = 'https://sleep.xinglu.shop/sleeph5';
+				const navtitle = '健康检测';
+				const q = `url=${encodeURIComponent(url5)}&nav=${encodeURIComponent(navtitle)}`;
+				uni.navigateTo({
+					url: `/pages/mine/webview?${q}`,
+					fail: (err) => {
+						console.error('navigateTo webview 失败', err);
+						uni.showToast({ title: '页面打开失败，请稍后重试', icon: 'none' });
+					}
 				});
 			},
 		}

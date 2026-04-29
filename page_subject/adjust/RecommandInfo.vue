@@ -13,10 +13,10 @@
 					</view>
 					<view class="info-r2">
 						<view>
-							头枕高度{{standard.headHeight}}mm
+							头枕高度{{ pctToCm(standard.headHeight) }}cm
 						</view>
 						<view>
-							颈枕高度{{standard.neckHeight}}mm
+							颈枕高度{{ pctToCm(standard.neckHeight) }}cm
 						</view>
 					</view>
 				</view>
@@ -26,10 +26,10 @@
 					</view>
 					<view class="info-r2">
 						<view>
-							头枕高度{{standard.sideHeadHeight}}mm
+							头枕高度{{ pctToCm(standard.sideHeadHeight) }}cm
 						</view>
 						<view>
-							颈枕高度{{standard.sideNeckHeight}}mm
+							颈枕高度{{ pctToCm(standard.sideNeckHeight) }}cm
 						</view>
 					</view>
 				</view>
@@ -53,6 +53,13 @@
 		data() {
 			return {
 
+			}
+		},
+		methods: {
+			/** 协议百分数 0~100 → 按 12cm 满行程换算为 cm 展示 */
+			pctToCm(pct) {
+				const p = Math.max(0, Math.min(100, Number(pct) || 0))
+				return ((p / 100) * 12).toFixed(1)
 			}
 		},
 		mounted() {

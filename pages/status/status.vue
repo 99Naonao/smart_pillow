@@ -1,93 +1,157 @@
 <template>
 	<view class="main" v-if="hasLogin">
-		<!-- 引导悬浮提示已移除 -->
-		<!-- 悬浮球：位于"头枕高度"下方、"脊柱微调"上方，可拖拽，只在模式发送成功后显示 -->
-		<view
-			v-if="showFloatingBall"
-			class="floating-ball"
-			:style="{ left: floatX + 'rpx', top: floatY + 'rpx' }"
-			@touchstart="onFloatStart"
-			@touchmove.stop.prevent="onFloatMove"
-			@touchend="onFloatEnd"
-			@click.stop="onFloatClick"
-		>
-			<view class="float-label">
-				<text>手动</text>
-				<text>微调</text>
-			</view>
-		</view>
-		<view class="bg" :style="menuInfo">
-			<image mode="widthFix" class="backimg" src="../../static/index/SY_00A_001.jpg"></image>
-			<view class="logoleft">
-				<image mode="widthFix" src="../../static/index/SY_00A_LOGO01.png"></image>
-			</view>
-			<view class="rightBatteryInfo" :style="menuInfo">
-				<view class="fillprogress" :style="menuInfo"></view>
-				<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconDLa.png"></image>
-				<image class="icon" v-if="pillowPowerCharging==1" mode="widthFix"
-					src="../../static/index/SY_00A_IconDLaing.png"></image>
-				<image class="icon" v-if="pillowPowerCharging==2" mode="widthFix"
-					src="../../static/index/SY_00A_IconDLaing.png"></image>
-				<label class="batedesc" for="">{{getPillowPower}}%</label>
-			</view>
-			<view class="rightInfo" :style="menuInfo">
-				<image class="icon" mode="widthFix" src="../../static/index/SY_00A_IconCW.png"></image>
-				<label class="desc" for="">{{pillowStatusDesc}}</label>
-			</view>
-			<view class="headInfo" :style="menuInfo">
-				<view>颈枕高度</view>
-				<view>{{pillowSideHeight}}mm</view>
-			</view>
-			<!-- 颈枕高度变化箭头 -->
-			<image v-if="showNeckArrow" class="neck-arrow-icon" 
-				:src="neckArrowSrc" mode="widthFix"></image>
-			
-			<view class="neckInfo" :style="menuInfo">
-				<view>头枕高度</view>
-				<view>{{pillowHeight}}mm</view>
-			</view>
-			<!-- 头枕高度变化箭头 -->
-			<image v-if="showHeadArrow" class="head-arrow-icon" 
-				:src="headArrowSrc" mode="widthFix"></image>
-			<view class="">
-				<view v-for="(item,index) in deviceIdList" :key="index">
-					{{item.name}}
-					<button @click="connectSleepHandler(item)">{{item.deviceId == connectDeviceId ?'已连接':'连接'}}</button>
+		<!-- 与微信胶囊同一行的顶栏：白底，标题居中；右侧仅睡姿（已连接时） -->
+		<view class="status-nav" :style="navHeaderStyle">
+			<view class="status-nav-row" :style="navRowStyle">
+				<view class="nav-title-wrap">
+					<text class="nav-title">{{ navTitle }}</text>
+				</view>
+				<view v-if="loginStatus" class="nav-pillow-status nav-pillow-status--on">
+					<text class="pillow-status-sub">睡姿 · {{ blePostureOnly }}</text>
 				</view>
 			</view>
 		</view>
-		<view class="">
-			<view class="status-part flex">
-				<view class="item" @click="adjustHandler()">
-					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
-					<label class="title" for="">连接状况</label>
-					<image class="icon1" src="../../static/index/SY_00A_IconLJ.png" mode="widthFix"></image>
-					<label class="desc" for="">{{login?'已连接':'未连接'}}</label>
+		<scroll-view scroll-y class="status-scroll" :show-scrollbar="false">
+			<!-- 横幅仅展示图片，信息已移到顶栏 -->
+			<view class="banner-card">
+				<image class="banner-img" mode="aspectFill" src="../../static/SY_01_000.png"></image>
+				<view class="banner-mask"></view>
+			</view>
+
+			<!-- 生命特征：每栏两行 — [图标+标签]、[数值+单位] -->
+			<view class="card card-vitals">
+				<view class="vital-col">
+					<view class="vital-col-head">
+						<image class="vital-icon" src="../../static/icon/heart.png" mode="aspectFit"></image>
+						<text class="vital-label">心率</text>
+					</view>
+					<view class="vital-row-metric">
+						<text class="vital-value">{{ realtimeHeartRateDisplay }}</text>
+						<text class="vital-unit">次/分</text>
+					</view>
 				</view>
-				<view class="item" @click="aiHandler()">
-					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
-					<label class="title" for="">AI拍照</label>
-					<image class="icon2" src="../../static/index/SY_00A_IconAI.png" mode="widthFix"></image>
-				</view>
-				<view class="item" @click="hotHandler()">
-					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
-					<label class="title" for="">模式选择</label>
-					<image class="icon3" src="../../static/index/SY_00A_IconRFa.png" mode="widthFix"></image>
-				</view>
-				<view class="item" @click="statusCheck()">
-					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
-					<label class="title" for="">睡姿学习</label>
-					<image class="icon4" src="../../static/index/SY_00A_IconJZWT1.png" mode="widthFix"></image>
-				</view>
-				<view class="item" @click="spineCheck()">
-					<image class="item-back" src="../../static/index/SY_00A_buttonA.png" mode="widthFix"></image>
-					<label class="title" for="">脊柱微调</label>
-					<image class="icon4" src="../../static/index/SY_00A_IconJZWT.png" mode="widthFix"></image>
+				<view class="vital-v-divider"></view>
+				<view class="vital-col">
+					<view class="vital-col-head">
+						<image class="vital-icon" src="../../static/icon/breath.png" mode="aspectFit"></image>
+						<text class="vital-label">呼吸率</text>
+					</view>
+					<view class="vital-row-metric">
+						<text class="vital-value">{{ realtimeBreathRateDisplay }}</text>
+						<text class="vital-unit">次/分</text>
+					</view>
 				</view>
 			</view>
-		</view>
+
+			<!-- 枕头加热：开关打开后展开档位与温度（仅 UI，功能暂未接入） -->
+			<view class="card card-heat">
+				<view class="heat-row heat-row-between">
+					<view class="heat-title-wrap">
+						<image class="heat-title-icon" src="../../static/icon/warm.png" mode="aspectFit"></image>
+						<text class="heat-title">颈部加热</text>
+					</view>
+					<view class="heat-switch-wrap">
+						<switch
+							:key="'heat-sw-' + heatSwitchKey"
+							:checked="heatSwitchOn"
+							:disabled="!loginStatus"
+							color="#22c55e"
+							class="heat-switch"
+							@change="onHeatSwitchChange"
+						/>
+						<!-- 未连接时拦截触摸：避免微信小程序 switch 先翻状态再进 @change，导致 UI 与数据不一致 -->
+						<view
+							v-if="!loginStatus"
+							class="heat-switch-mask"
+							@tap.stop="onNeckHeatSwitchBlocked"
+						/>
+					</view>
+				</view>
+				<!-- 已连接即显示当前温度；首页每 5s 主动读 0x04（硬件不主动推）；首次 0x04 后 5s 再尝试读 0x01 固件信息 -->
+				<view v-if="loginStatus" class="heat-row heat-row-between heat-row-temp">
+					<text class="heat-sub-label">当前温度</text>
+					<text class="heat-temp">{{ heatPlateTempDisplay }}</text>
+				</view>
+				<view v-if="heatSwitchOn" class="heat-expand">
+					<view class="heat-row">
+						<text class="heat-sub-label">加热档位</text>
+						<view class="heat-levels">
+							<view
+								v-for="(lv, idx) in heatLevels"
+								:key="idx"
+								class="heat-level-btn"
+								:class="{ active: heatLevelIndex === idx }"
+								@click="onHeatLevelTap(idx)"
+							>{{ lv }}</view>
+						</view>
+					</view>
+				</view>
+			</view>
+
+			<!-- 功能入口：上排 3 个，下排 脊柱调整 + 手动微调 + 设备配网 -->
+			<view class="card card-grid">
+				<view class="grid-row grid-row-3">
+					<view class="grid-item" @click="aiHandler">
+						<view class="grid-icon-wrap">
+							<image class="grid-icon" src="../../static/icon/take_picture.png" mode="aspectFit"></image>
+						</view>
+						<text class="grid-text">AI拍照</text>
+					</view>
+					<view class="grid-item" @click="hotHandler">
+						<view class="grid-icon-wrap">
+							<image class="grid-icon" src="../../static/icon/bluetooth.png" mode="aspectFit"></image>
+						</view>
+						<text class="grid-text">模式选择</text>
+					</view>
+					<view class="grid-item" @click="statusCheck">
+						<view class="grid-icon-wrap">
+							<image class="grid-icon" src="../../static/icon/study.png" mode="aspectFit"></image>
+						</view>
+						<text class="grid-text">睡姿学习</text>
+					</view>
+				</view>
+				<view class="grid-row grid-row-3 grid-row-bottom">
+					<view class="grid-item" @click="spineCheck">
+						<view class="grid-icon-wrap">
+							<image class="grid-icon" src="../../static/icon/spine.png" mode="aspectFit"></image>
+						</view>
+						<text class="grid-text">脊柱调整</text>
+					</view>
+					<view class="grid-item" @click="manualFineTune">
+						<view class="grid-icon-wrap">
+							<image class="grid-icon" src="../../static/icon/operation.png" mode="aspectFit"></image>
+						</view>
+						<text class="grid-text">手动微调</text>
+					</view>
+					<view class="grid-item" @click="openDeviceProvision">
+						<view class="grid-icon-wrap">
+							<image class="grid-icon" src="../../static/icon/device_config.png" mode="aspectFit"></image>
+						</view>
+						<text class="grid-text">设备配网</text>
+					</view>
+				</view>
+			</view>
+
+			<!-- 底部：设备连接；已连接时设备名在按钮内主文案下方 -->
+			<view class="bottom-btns">
+				<view
+					class="btn-primary btn-full"
+					:class="loginStatus ? 'btn-ble-connected' : 'btn-outline'"
+					@click="adjustHandler"
+				>
+					<view class="btn-ble-inner">
+						<view class="btn-ble-line1">
+							<image class="btn-icon" src="../../static/icon/bluetooth.png" mode="aspectFit"></image>
+							<text>{{ loginStatus ? '已连接 · 点按管理设备' : '连接设备' }}</text>
+						</view>
+						<text v-if="loginStatus && connectedDeviceName" class="btn-ble-device-name">{{ connectedDeviceName }}</text>
+					</view>
+				</view>
+			</view>
+			<view class="scroll-bottom-spacer"></view>
+		</scroll-view>
 		<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" border-radius="40rpx 40rpx 0rpx 0rpx"
-			background-color='white' safe-area="false" class="popup" :mask-click="false" @change="change">
+			background-color='white' :safe-area="false" class="popup" :mask-click="false" @change="change">
 			<view class="popupcontainer">
 				<image class="close-btn" @click="closePopUpHandle" :src="'../../static/adjust/SY_05_buttonCOLa.png'"
 					mode="widthFix">
@@ -117,34 +181,44 @@
 	import {
 		nextTick
 	} from 'vue';
-  import blue_class from '../../utils/BlueManager';
-  import { object2Query } from '@/common/util.js'
+  import { PillowBleManager, readFirmwareVersionCache } from '@/utils/BlueUtils';
+  import { object2Query, buildHeartModuleWifiFrame9, parseHeartWifiStatusFromPayloadHex } from '@/common/util.js'
 	import {
 		getappVersion
 	} from '../../utils/miniapp';
 	import base from '@/utils/baseUrl';
+	import soapDeviceApi from '@/utils/soapDeviceApi.js';
+
+	/** 首页 0x04 readPillowStatus 周期性轮询间隔（毫秒） */
+	const HOME_PILLOW_STATUS_POLL_MS = 5000
+	/** 首页 0x01 固件版本读取轮询间隔（毫秒） */
+	const HOME_FIRMWARE_01_POLL_MS = 2000
+	/** 首页 0x0F 联网状态查询轮询间隔（毫秒） */
+	const HOME_WIFI_STATUS_QUERY_POLL_MS = 3000
+	/** 先 0x0F 写透传后，再发 0x8F 读取的间隔（毫秒） */
+	const HOME_WIFI_STATUS_READ_DELAY_MS = 220
+	/** 命中一次联网成功（0x0A）即停止 0x0F 轮询 */
+	const HOME_WIFI_STATUS_SUCCESS_STREAK_TARGET = 1
+
 	export default {
 		computed: {
-			pillowStatusDesc() {
-				if (this.loginStatus) {
-					let baseStatus = '';
-					if (this.pillowStatus == 0) {
-						baseStatus = '空闲'
-					} else if (this.pillowStatus == 1) {
-						baseStatus = '平躺'
-					} else if (this.pillowStatus == 2) {
-						baseStatus = '侧卧'
-					}
-					
-					// 检查是否正在进行脊柱调整
-					if (this.isSpineAdjusting) {
-						baseStatus = '微调中'
-					}
-					
-					return baseStatus;
-				} else {
-					return '未连接'
+			/** 已连接时：睡姿文案（顶栏右侧） */
+			blePostureOnly() {
+				if (!this.loginStatus) {
+					return ''
 				}
+				let baseStatus = ''
+				if (this.pillowStatus == 0) {
+					baseStatus = '空闲'
+				} else if (this.pillowStatus == 1) {
+					baseStatus = '仰卧'
+				} else if (this.pillowStatus == 2) {
+					baseStatus = '侧卧'
+				}
+				if (this.isSpineAdjusting) {
+					baseStatus = '微调中'
+				}
+				return baseStatus
 			},
 			login() {
 				return this.loginStatus;
@@ -154,9 +228,6 @@
 			},
 			pillowSideHeight() {
 				return this.pillowSideHeight;
-			},
-			getPillowPower() {
-				return Math.floor((this.pillowPower * 100) / 100) / 10
 			},
 			showNeckArrow() {
 				return this.showNeckArrowFlag;
@@ -169,6 +240,19 @@
 			},
 			headArrowSrc() {
 				return this.headArrowDirection === 'up' ? '../../static/SY_11_UP.png' : '../../static/SY_11_DOW.png';
+			},
+			/** 0x04 读应答里的加热片温度（须先 readPillowStatus）；无数据时显示 -- */
+			heatPlateTempDisplay() {
+				if (this.heatPlateTemp === null || this.heatPlateTemp === undefined) {
+					return '--';
+				}
+				return this.heatPlateTemp + '℃';
+			},
+			realtimeHeartRateDisplay() {
+				return this.realtimeHeartRate == null ? '--' : String(this.realtimeHeartRate);
+			},
+			realtimeBreathRateDisplay() {
+				return this.realtimeBreathRate == null ? '--' : String(this.realtimeBreathRate);
 			}
 		},
 		watch: {
@@ -208,9 +292,6 @@
 		},
 		data() {
 			return {
-				menuInfo: {
-					'--menuButtonTop': '30px'
-				},
 				hasLogin: true,
 				hotLast: 0, // 热敷持续时间
 				show: false,
@@ -249,11 +330,37 @@
 				lastHeadHeight: 0, // 记录最后一次头枕高度
 				isInitialized: false, // 标记是否已初始化
 				isSpineAdjusting: false, // 是否正在进行脊柱调整
-				// 顶部引导悬浮提示已移除
-				// 悬浮球
-				showFloatingBall: false, // 是否显示悬浮球，只在模式发送成功后显示
-				floatX: 600, // 默认靠右
-				floatY: 1000, // 头枕高度下方、状态区上方
+				// 枕头加热区 UI 占位（未接协议）
+				heatSwitchOn: false,
+				/** -1 表示未选档位，不默认「低」 */
+				heatLevelIndex: -1,
+				heatLevels: ['低', '中', '高'],
+				/** 0x04 应答里的加热片温度（uint8），与协议「读取枕头高度」表一致 */
+				heatPlateTemp: null,
+				/** 0x08 加热持续时间（秒），与协议 uint16 一致 */
+				heatDurationSeconds: 1800,
+				/** 首页 0x04 readPillowStatus 轮询定时器 */
+				pillow04PollTimer: null,
+				/** 首页 0x01 版本读取轮询定时器：拿到有效版本后自动停止 */
+				firmware01PollTimer: null,
+				/** 最近一次确认的固件版本原始字节（0x01 data[0]） */
+				firmwareVersionRawCache: null,
+				/** 微信小程序 switch 拒绝切换时需变更 key 才能与 :checked 同步 */
+				heatSwitchKey: 0,
+				navHeaderStyle: {},
+				navRowStyle: {},
+				navTitle: '首页',
+				/** 蓝牙连接后展示设备名（来自 PillowBleManager） */
+				connectedDeviceName: '',
+				/** SOAP 实时生命体征 */
+				realtimeHeartRate: null,
+				realtimeBreathRate: null,
+				realtimeVitalTimer: null,
+				/** 首页 0x0F 联网状态查询轮询 */
+				wifiStatusQueryTimer: null,
+				wifiStatusReadTimer: null,
+				wifiStatusSuccessStreak: 0,
+				wifiStatusPollingDone: false,
 			}
 		},
 
@@ -274,28 +381,33 @@
 			this.checkStudyCompleted()
 			// 检查手动微调是否完成，显示弹窗
 			this.checkManualAdjustCompleted()
-			// 检查模式发送完成，提示可使用悬浮球手动微调
+			// 检查模式发送完成，提示可手动微调
 			this.checkModeSentCompleted()
-			
-			// 检查悬浮球显示状态
-			this.checkFloatingBallStatus()
 
 			let app = getApp();
-			this.$set(this.menuInfo, '--menuButtonTop', (app.globalData.top + 120) + 'px');
-			this.$set(this.menuInfo, '--menuButtonTop1', (app.globalData.top + 12) + 'px');
-			this.$set(this.menuInfo, '--menuHead', (app.globalData.top + 332) + 'px');
-			this.$set(this.menuInfo, '--menuNeck', (app.globalData.top + 362) + 'px');
+			this.initNavLayout();
 
-			console.log('menui:', (app.globalData.top + 120) + 'px', this.menuInfo)
+			console.log('menui:', (app.globalData.top + 120) + 'px')
 
-			this.loginStatus = blue_class.getInstance().loginSuccess;
+			const mgr = PillowBleManager.getInstance()
+			this.loginStatus = mgr.loginSuccess
+			this.connectedDeviceName = mgr.loginSuccess ? (mgr.deviceName || '') : ''
 			getappVersion({
 				appId: base.publicAppId
 			}).then(res => {
-				console.log('aba', res)
+				// console.log('aba', res)
 				app.globalData.versionCode = res.versionCode;
 			})
 			uni.$on('bluetooth_status_change',this.updateConnectionStatus);
+			uni.$on('xx', this.onStatusBleNotify);
+			uni.$on('pillow_firmware_version', this.onFirmwareVersionEvent);
+			this.initFirmwareVersionState();
+			if (this.loginStatus) {
+				this.startHomePillow04Poll();
+				this.startHomeFirmware01Poll();
+				this.startRealtimeVitalPoll();
+				this.startWifiStatusQueryPoll();
+			}
 		},
 		onHide() {
 			let that = this
@@ -323,68 +435,16 @@
 
 			uni.$off('update_pillow_info', this.updateInfo);
 			uni.$off('bluetooth_status_change',this.updateConnectionStatus);
+			uni.$off('xx', this.onStatusBleNotify);
+			uni.$off('pillow_firmware_version', this.onFirmwareVersionEvent);
+			this.stopHomePillow04Poll();
+			this.stopHomeFirmware01Poll();
+			this.stopRealtimeVitalPoll();
+			this.stopWifiStatusQueryPoll();
 		},
 		onLoad() {
-			// 监听设备发现
-			let that = this
-			uni.onBluetoothDeviceFound((result) => {
-				//剔除重复设备，兼容不同设备API的不同返回值
-				var isnotexist = true
-				let devices = result.devices
-				// 1
-				if (result.deviceId) {
-
-				} else if (result.devices) {
-					if (result.devices[0].advertisData) {
-						result.devices[0].advertisData = that.ab2hex(result.devices[0].advertisData)
-					} else {
-						result.devices[0].advertisData = ''
-					}
-					console.log('devices.devices:', result.devices[0])
-					for (var i = 0; i < that.deviceIdList.length; i++) {
-						if (result.devices[0].deviceId == that.deviceIdList[i].deviceId) {
-							isnotexist = false
-						}
-					}
-					if (isnotexist && result.devices[0].name != '') {
-						that.deviceIdList.push(result.devices[0])
-					}
-				} else if (result[0]) {
-					if (result[0].advertisData) {
-						result[0].advertisData = that.ab2hex(result[0].advertisData)
-					} else {
-						result[0].advertisData = ''
-					}
-
-					for (var i = 0; i < that.deviceIdList.length; i++) {
-						if (result[0].deviceId == that.deviceIdList[i].deviceId) {
-							isnotexist = false
-						}
-					}
-					if (isnotexist && result[0].name != '') {
-						that.deviceIdList.push(result[0])
-					}
-				}
-
-				let first_device = devices[0]
-				for (var i = 0; i < that.deviceIdList.length; i++) {
-					if (devices.deviceId == that.deviceIdList[i].deviceId) {
-						isnotexist = false
-					}
-				}
-				console.log('new device list has founded', devices.length, devices)
-				// console.log(this.ab2hex(devices[0].advertisData))
-				// this.stopBlueTooth()
-				// if (devices.length > 0 && first_device.connectable) {
-				// 	console.log("connectable :", first_device, first_device.connectable)
-				// 	that.deviceId = first_device.deviceId
-				// 	if (this.deviceId.indexOf('F61EAC') > -1) {
-				// 		that.connectBluetooth(that.deviceId)
-				// 	}
-				// } else {
-				// 	console.log("disconnectable :", first_device.deviceId)
-				// }
-			})
+			this.initNavLayout();
+			// 设备发现仅由「连接设备」页统一注册，避免与 work 页互相覆盖导致扫描无法停止
 		},
 		onShareAppMessage() {
 
@@ -392,43 +452,335 @@
 		},
 
 		methods: {
-			// 已移除引导气泡
-			onFloatStart(e){
-				this._floatStart = e.touches[0];
-				this._floatOrigin = { x: this.floatX, y: this.floatY };
+			resolveSoapMac() {
+				const keys = ['wifi_device_mac', 'soap_device_mac', 'device_mac', 'wifiMac', 'mac'];
+				for (let i = 0; i < keys.length; i++) {
+					const v = uni.getStorageSync(keys[i]);
+					if (typeof v === 'string' && v.trim()) {
+						return v.trim();
+					}
+				}
+				const name = String(this.connectedDeviceName || '').trim();
+				const macLike = /^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
+				return macLike.test(name) ? name : '';
 			},
-			onFloatMove(e){
-				if(!this._floatStart) return;
-				const t = e.touches[0];
-				const dx = t.clientX - this._floatStart.clientX;
-				const dy = t.clientY - this._floatStart.clientY;
-				const ratio = uni.getSystemInfoSync().windowWidth / 750;
-				this.floatX = Math.max(20, Math.min(750-100, this._floatOrigin.x + dx/ratio));
-				this.floatY = Math.max(600, Math.min(1000, this._floatOrigin.y + dy/ratio));
+			parseRealtimeFromDataFrame(frame) {
+				const left = (frame && frame.left) || {};
+				const right = (frame && frame.right) || {};
+				const isSideValid = (side) => {
+					const hr = Number(side.heart_rate);
+					const rr = Number(side.respiration_rate);
+					return Number.isFinite(hr) && hr > 0 && Number.isFinite(rr) && rr > 0;
+				};
+				const side = isSideValid(left) ? left : (isSideValid(right) ? right : null);
+				if (!side) {
+					return { heartRate: null, breathRate: null };
+				}
+				return {
+					heartRate: Number(side.heart_rate),
+					breathRate: Number(side.respiration_rate)
+				};
 			},
-			onFloatEnd(){
-				this._floatStart = null;
-				try{uni.setStorageSync('status_float_pos', {x:this.floatX,y:this.floatY});}catch(err){}
+			async fetchRealtimeVitals() {
+				if (!this.loginStatus) return;
+				const mac = this.resolveSoapMac();
+				if (!mac) {
+					console.log('设备mac信息:', mac);
+					return;
+				}
+				try {
+					console.log('设备mac信息:', mac);
+					const res = await soapDeviceApi.getDeviceData({ mac, timestamp: 0, waveform: false });
+					const rows = (res && res.data) || [];
+					if (!Array.isArray(rows) || !rows.length) {
+						console.log('[deviceManager] 实时数据为空，跳过页面更新');
+						return;
+					}
+					const last = rows[rows.length - 1];
+					const parsed = this.parseRealtimeFromDataFrame(last);
+					this.realtimeHeartRate = parsed.heartRate;
+					this.realtimeBreathRate = parsed.breathRate;
+					console.log('[deviceManager] 准备设置实时数据:', {
+						heartRate: parsed.heartRate,
+						breathRate: parsed.breathRate,
+						rows: rows.length
+					});
+				} catch (err) {
+					console.warn('[status] fetchRealtimeVitals failed:', err);
+				}
 			},
-			onFloatClick(){
-				// 首页悬浮球点击：优先使用 lastMode，没有则尝试 myMode[0]，都没有跳转到 setMode
-				try{
+			startRealtimeVitalPoll() {
+				this.stopRealtimeVitalPoll();
+				if (!this.loginStatus) return;
+				this.fetchRealtimeVitals();
+				this.realtimeVitalTimer = setInterval(() => {
+					this.fetchRealtimeVitals();
+				}, 1000);
+			},
+			stopRealtimeVitalPoll() {
+				if (this.realtimeVitalTimer) {
+					clearInterval(this.realtimeVitalTimer);
+					this.realtimeVitalTimer = null;
+				}
+			},
+			sendWifiStatusQuery0f() {
+				if (!this.loginStatus || this.wifiStatusPollingDone) return;
+				const mgr = PillowBleManager.getInstance();
+				if (!mgr.isConnected()) return;
+				const frame9 = buildHeartModuleWifiFrame9({
+					configWifi: false,
+					queryStatus: true,
+					byte3: 0,
+					spare567: [0, 0, 0]
+				});
+				mgr.heartRateModule({ read: false, data: frame9 });
+				// 与 bleTest 一致：先 0x0F 写透传，再延时发 0x8F 读取模块返回。
+				if (this.wifiStatusReadTimer) {
+					clearTimeout(this.wifiStatusReadTimer);
+					this.wifiStatusReadTimer = null;
+				}
+				this.wifiStatusReadTimer = setTimeout(() => {
+					this.wifiStatusReadTimer = null;
+					if (!this.loginStatus || this.wifiStatusPollingDone) return;
+					const m = PillowBleManager.getInstance();
+					if (!m.isConnected()) return;
+					m.heartRateModule({ read: true });
+				}, HOME_WIFI_STATUS_READ_DELAY_MS);
+			},
+			startWifiStatusQueryPoll() {
+				this.stopWifiStatusQueryPoll();
+				if (!this.loginStatus || this.wifiStatusPollingDone) return;
+				this.sendWifiStatusQuery0f();
+				this.wifiStatusQueryTimer = setInterval(() => {
+					this.sendWifiStatusQuery0f();
+				}, HOME_WIFI_STATUS_QUERY_POLL_MS);
+			},
+			stopWifiStatusQueryPoll() {
+				if (this.wifiStatusQueryTimer) {
+					clearInterval(this.wifiStatusQueryTimer);
+					this.wifiStatusQueryTimer = null;
+				}
+				if (this.wifiStatusReadTimer) {
+					clearTimeout(this.wifiStatusReadTimer);
+					this.wifiStatusReadTimer = null;
+				}
+			},
+			/**
+			 * 0x0F 心率/WiFi 模块回传里，按固定成功标志判定“联网成功”。
+			 * 兼容二进制 5B5B 与 ASCII 文本（如 "5b 5b 0 0 a 0 0 0 a"）两种格式。
+			 */
+			isWifiConnectedByHeartPayloadHex(hex) {
+				const parsed = parseHeartWifiStatusFromPayloadHex(hex);
+				return !!(parsed && parsed.ok && parsed.connected);
+			},
+			/** 顶栏与微信胶囊对齐：左侧 Logo，右侧信息，右侧预留胶囊宽度避免重叠 */
+			initNavLayout() {
+				try {
+					const sys = uni.getSystemInfoSync();
+					const menu = uni.getMenuButtonBoundingClientRect();
+					if (!menu || typeof menu.left !== 'number') {
+						return;
+					}
+					const statusBarHeight = sys.statusBarHeight || 20;
+					const bandHeight = (menu.top - statusBarHeight) * 2 + menu.height;
+					const gapRight = Math.max(8, sys.windowWidth - menu.left + 8);
+					this.navHeaderStyle = {
+						paddingTop: statusBarHeight + 'px',
+					};
+					this.navRowStyle = {
+						height: bandHeight + 'px',
+						paddingRight: gapRight + 'px',
+						paddingLeft: '12px',
+						boxSizing: 'border-box',
+					};
+				} catch (e) {
+					const sh = uni.getSystemInfoSync().statusBarHeight || 44;
+					this.navHeaderStyle = { paddingTop: sh + 'px' };
+					this.navRowStyle = { height: '44px', paddingRight: '96px', paddingLeft: '12px', boxSizing: 'border-box' };
+				}
+			},
+			/** 原悬浮球「手动微调」逻辑，现由底部按钮触发 */
+			/** Wi-Fi 配网（分包）：需先连接枕头，配网页内会校验 */
+			openDeviceProvision() {
+				uni.navigateTo({
+					url: '/pages/wifiProvision/wifiProvision'
+				});
+			},
+			manualFineTune() {
+				try {
 					const lastMode = uni.getStorageSync('lastMode');
-					if(lastMode && lastMode.name){
+					if (lastMode && lastMode.name) {
 						uni.navigateTo({ url: '/page_subject/adjust/adjust' + object2Query(lastMode) });
 						return;
 					}
 					const myModeStr = uni.getStorageSync('myMode');
-					if(myModeStr){
+					if (myModeStr) {
 						const list = JSON.parse(myModeStr) || [];
-						if(list.length > 0){
+						if (list.length > 0) {
 							uni.navigateTo({ url: '/page_subject/adjust/adjust' + object2Query(list[0]) });
 							return;
 						}
 					}
-				}catch(err){}
-				// 无可用模式，引导去选择自定义模式
+				} catch (err) {}
 				uni.navigateTo({ url: '/page_subject/mode/setMode' });
+			},
+			/** 低/中/高对应目标温度（0x08），需在 0~40℃；未选档位时返回 null */
+			heatTargetTempForLevel() {
+				const map = [30, 35, 40];
+				const i = this.heatLevelIndex;
+				if (i < 0 || i > 2) {
+					return null;
+				}
+				return map[i];
+			},
+			onNeckHeatSwitchBlocked() {
+				uni.showToast({ title: '请先连接设备', icon: 'none' });
+			},
+			onHeatSwitchChange(e) {
+				const on = !!(e.detail && e.detail.value);
+				const ble = PillowBleManager.getInstance();
+				if (!ble.isConnected()) {
+					this.onNeckHeatSwitchBlocked();
+					this.heatSwitchOn = false;
+					this.heatSwitchKey += 1;
+					return;
+				}
+				this.heatSwitchOn = on;
+				if (!on) {
+					ble.heating({
+						on: false,
+						targetTemperature: 0,
+						durationSeconds: 0
+					});
+					this.heatLevelIndex = -1;
+					return;
+				}
+				const temp = this.heatTargetTempForLevel();
+				if (temp === null) {
+					// 未选档位：仅展开 UI，不下发加热，等用户点击低/中/高
+					return;
+				}
+				ble.heating({
+					on: true,
+					targetTemperature: temp,
+					durationSeconds: this.heatDurationSeconds
+				});
+			},
+			onHeatLevelTap(idx) {
+				this.heatLevelIndex = idx;
+				if (!this.heatSwitchOn) {
+					return;
+				}
+				const ble = PillowBleManager.getInstance();
+				if (!ble.isConnected()) {
+					return;
+				}
+				const temp = this.heatTargetTempForLevel();
+				if (temp === null) {
+					return;
+				}
+				ble.heating({
+					on: true,
+					targetTemperature: temp,
+					durationSeconds: this.heatDurationSeconds
+				});
+			},
+			/** notify 里对「先下发 readPillowStatus」的 0x04 读应答，更新加热片温度 */
+			onStatusBleNotify(res) {
+				try {
+					const buf = res && res.value;
+					if (!buf) {
+						return;
+					}
+					const mgr = PillowBleManager.getInstance();
+					const parsed = mgr.handleNotifyBuffer(buf);
+					if (parsed && parsed.type === 'heart_rate_module') {
+						const dataHex = (parsed.parsed && parsed.parsed.dataHex) || '';
+						if (this.isWifiConnectedByHeartPayloadHex(dataHex)) {
+							this.wifiStatusSuccessStreak += 1;
+							if (this.wifiStatusSuccessStreak >= HOME_WIFI_STATUS_SUCCESS_STREAK_TARGET) {
+								this.wifiStatusPollingDone = true;
+								this.stopWifiStatusQueryPoll();
+								console.log(
+									`[status] 0x0F 联网状态连续成功 ${this.wifiStatusSuccessStreak} 次，停止轮询`
+								);
+							}
+						} else {
+							// 未命中成功标志时重置连胜计数，确保“连续 3 次”语义。
+							this.wifiStatusSuccessStreak = 0;
+						}
+					}
+					if (!parsed || parsed.type !== 'pillow_status') {
+						return;
+					}
+					const p = parsed.parsed;
+					if (p && p.ok && typeof p.heatTemp === 'number') {
+						this.$set(this, 'heatPlateTemp', p.heatTemp);
+					}
+				} catch (err) {
+					console.warn('[status] onStatusBleNotify', err);
+				}
+			},
+			/** 已连接且在本页展示时：每 5s 读一次 0x04（与是否加热无关） */
+			startHomePillow04Poll() {
+				this.stopHomePillow04Poll();
+				if (!this.loginStatus || !PillowBleManager.getInstance().isConnected()) {
+					return;
+				}
+				const tick = () => {
+					const mgr = PillowBleManager.getInstance();
+					if (!this.loginStatus || !mgr.isConnected()) {
+						return;
+					}
+					mgr.readPillowStatus({ silent: true });
+				};
+				tick();
+				this.pillow04PollTimer = setInterval(tick, HOME_PILLOW_STATUS_POLL_MS);
+			},
+			stopHomePillow04Poll() {
+				if (this.pillow04PollTimer) {
+					clearInterval(this.pillow04PollTimer);
+					this.pillow04PollTimer = null;
+				}
+			},
+			initFirmwareVersionState() {
+				const c = readFirmwareVersionCache();
+				const raw = c && c.versionRaw;
+				this.firmwareVersionRawCache = Number.isFinite(Number(raw)) ? Number(raw) : null;
+			},
+			isValidFirmwareVersionRaw(raw) {
+				const n = Number(raw);
+				return Number.isFinite(n) && n > 0 && n <= 255;
+			},
+			requestHomeFirmware01Once() {
+				const mgr = PillowBleManager.getInstance();
+				if (!this.loginStatus || !mgr.isConnected()) return;
+				mgr.requestFirmwareReadIfNeededToday();
+			},
+			startHomeFirmware01Poll() {
+				this.stopHomeFirmware01Poll();
+				const mgr = PillowBleManager.getInstance();
+				if (!this.loginStatus || !mgr.isConnected()) return;
+				this.requestHomeFirmware01Once();
+				this.firmware01PollTimer = setInterval(() => {
+					this.requestHomeFirmware01Once();
+				}, HOME_FIRMWARE_01_POLL_MS);
+			},
+			stopHomeFirmware01Poll() {
+				if (this.firmware01PollTimer) {
+					clearInterval(this.firmware01PollTimer);
+					this.firmware01PollTimer = null;
+				}
+			},
+			/** 收到 0x01 解析结果后：拿到有效版本即停止轮询；仅在版本变化时更新本地缓存标记 */
+			onFirmwareVersionEvent(payload) {
+				const raw = payload && payload.versionRaw;
+				if (!this.isValidFirmwareVersionRaw(raw)) return;
+				const next = Number(raw);
+				if (this.firmwareVersionRawCache !== next) {
+					this.firmwareVersionRawCache = next;
+				}
+				this.stopHomeFirmware01Poll();
 			},
 			// 检查学习是否完成，显示弹窗
 			checkStudyCompleted() {
@@ -473,30 +825,18 @@
 					}, 300)
 				}
 			},
-			// 检查模式发送完成，提示可点击悬浮球
 			checkModeSentCompleted(){
 				const sent = uni.getStorageSync('mode_sent_success');
 				if(sent){
 					uni.removeStorageSync('mode_sent_success');
-					// 显示悬浮球并保存状态
-					this.showFloatingBall = true;
-					uni.setStorageSync('show_floating_ball', true);
 					setTimeout(()=>{
 						uni.showModal({
 							title:'默认数据设置成功提示',
-							content:'模式已设置成功，若您觉得高度不够可点击首页悬浮球进行手动微调。',
+							content:'模式已设置成功，若您觉得高度不够可点击首页下方「手动微调」按钮进行调整。',
 							showCancel:false,
 							confirmText:'我知道了'
 						})
 					},300)
-				}
-			},
-			// 检查悬浮球显示状态
-			checkFloatingBallStatus(){
-				// 检查是否有悬浮球显示标记
-				const showFloat = uni.getStorageSync('show_floating_ball');
-				if(showFloat){
-					this.showFloatingBall = true;
 				}
 			},
 			// 检查颈枕是否还在调整
@@ -528,38 +868,63 @@
 				}
 			},
 			updateConnectionStatus(){
-				console.log('收到 bluetooth_status_change 事件，当前 loginSuccess:', blue_class.getInstance().loginSuccess)
-				this.$set(this, 'loginStatus', blue_class.getInstance().loginSuccess);
+				const mgr = PillowBleManager.getInstance()
+				console.log('收到 bluetooth_status_change 事件，当前 loginSuccess:', mgr.loginSuccess)
+				this.$set(this, 'loginStatus', mgr.loginSuccess);
+				this.$set(this, 'connectedDeviceName', mgr.deviceName || '')
 				console.log('蓝牙连接状态更新:',this.loginStatus)
 				console.log('页面 login 计算属性值:', this.login)
+				if (!this.loginStatus) {
+					this.stopHomePillow04Poll();
+					this.stopHomeFirmware01Poll();
+					this.stopRealtimeVitalPoll();
+					this.stopWifiStatusQueryPoll();
+					this.wifiStatusSuccessStreak = 0;
+					this.wifiStatusPollingDone = false;
+					this.$set(this, 'connectedDeviceName', '')
+					this.$set(this, 'heatSwitchOn', false);
+					this.$set(this, 'heatPlateTemp', null);
+					this.$set(this, 'realtimeHeartRate', null);
+					this.$set(this, 'realtimeBreathRate', null);
+					this.heatLevelIndex = -1;
+					this.heatSwitchKey += 1;
+				} else {
+					this.initFirmwareVersionState();
+					this.startHomePillow04Poll();
+					this.startHomeFirmware01Poll();
+					this.startRealtimeVitalPoll();
+					this.startWifiStatusQueryPoll();
+				}
 			},
 		updateInfo(){
-			this.$set(this, 'pillowHeight', blue_class.getInstance().pillowHeight);
-			this.$set(this, 'pillowSideHeight', blue_class.getInstance().pillowSideHeight);
-			this.$set(this, 'pillowPower', blue_class.getInstance().pillowPower);
-			this.$set(this, 'pillowPowerCharging', blue_class.getInstance().chargingStatus);
-			this.$set(this, 'pillowStatus', blue_class.getInstance().pillowStatus);
+			const mgr = PillowBleManager.getInstance()
+			this.$set(this, 'pillowHeight', mgr.pillowHeight);
+			this.$set(this, 'pillowSideHeight', mgr.pillowSideHeight);
+			this.$set(this, 'pillowPower', mgr.pillowPower);
+			this.$set(this, 'pillowPowerCharging', mgr.chargingStatus);
+			this.$set(this, 'pillowStatus', mgr.pillowStatus);
+			if (mgr.loginSuccess) {
+				this.$set(this, 'connectedDeviceName', mgr.deviceName || '')
+			}
 			
 			// 更新脊柱调整状态
-			this.$set(this, 'isSpineAdjusting', blue_class.getInstance().isSpineAdjusting);
-
-			this.$set(this.menuInfo, '--bateryWidth', (blue_class.getInstance().pillowPower * 50 / 1000) + 'rpx');
+			this.$set(this, 'isSpineAdjusting', mgr.isSpineAdjusting);
 
 			// 设置初始化标志
 			if (!this.isInitialized) {
 				this.isInitialized = true;
 				// 初始化时记录当前高度
-				this.lastNeckHeight = blue_class.getInstance().pillowSideHeight;
-				this.lastHeadHeight = blue_class.getInstance().pillowHeight;
+				this.lastNeckHeight = mgr.pillowSideHeight;
+				this.lastHeadHeight = mgr.pillowHeight;
 				// 初始化时设置prev值，避免初始触发watch
-				this.prevPillowSideHeight = blue_class.getInstance().pillowSideHeight;
-				this.prevPillowHeight = blue_class.getInstance().pillowHeight;
+				this.prevPillowSideHeight = mgr.pillowSideHeight;
+				this.prevPillowHeight = mgr.pillowHeight;
 			}
 
 			console.log('menui11111:', this.pillowHeight)
 			console.log('menui1111122:', this.pillowSideHeight)
 			console.log('menui1111122333:', this.pillowPower)
-			console.log('--bateryWidth:', (blue_class.getInstance().pillowPower * 50 / 1000) + 'rpx')
+			console.log('--bateryWidth:', (mgr.pillowPower * 50 / 1000) + 'rpx')
 		},
 			aiHandler() {
 				uni.navigateTo({
@@ -707,8 +1072,8 @@
 						this.stopBlueTooth()
 
 						// 设置连接状态
-						blue_class.getInstance().deviceId = deviceId;
-						blue_class.getInstance().deviceName = item.name;
+						PillowBleManager.getInstance().deviceId = deviceId;
+						PillowBleManager.getInstance().deviceName = item.name;
 						// 不要在这里设置 loginSuccess = true，让握手流程正常进行
 						
 						console.log('connectBluetooth success!:', deviceId, res)
@@ -744,41 +1109,32 @@
 				uni.getBLEDeviceCharacteristics({
 					deviceId: deviceId,
 					serviceId: serviceId,
-					success: (res) => {
-						console.log("%c getBLEDeviceCharacteristics success", "color:red;", res
+					success: (cres) => {
+						console.log("%c getBLEDeviceCharacteristics success", "color:red;", cres
 							.characteristics);
-						// for (var i = 0; i < res.characteristics.length; i++) {
-						// 	// console.log('特征值：' + res.characteristics[i].uuid)
-						// 	if (res.characteristics[i].properties.notify) {
-						// 		console.log("notifyServicweId：", serviceId);
-						// 		console.log("notifyCharacteristicsId：", res.characteristics[i].uuid);
-						// 		this.notifyServicweId = serviceId
-						// 	}
-						// 	if (res.characteristics[i].properties.write) {
-						// 		console.log("writeServicweId：", serviceId);
-						// 		console.log("writeCharacteristicsId：", res.characteristics[i].uuid);
-						// 		this.writeBLECharacteristicValue = serviceId;
-						// 	}
-						// }
-
-						uni.notifyBLECharacteristicValueChange({
-							state: true,
-							deviceId: deviceId,
-							serviceId: serviceId,
-							characteristicId: res.characteristics[0].uuid,
-							success: (res) => {
-
-								that.deviceId = deviceId
-								that.serviceId = serviceId
-								// this.characteristicId = res.characteristics[0].uuid
-								console.log('启用notify成功')
-							}
+						const chars = cres.characteristics || []
+						let notifyUUID = ''
+						let writeUUID = ''
+						chars.forEach((ch) => {
+							const p = ch.properties || {}
+							if (!notifyUUID && p.notify) notifyUUID = ch.uuid
+							if (!writeUUID && (p.write || p.writeNoResponse)) writeUUID = ch.uuid
 						})
-						// console.log('device getBLEDeviceCharacteristics:', res.characteristics);
-						// this.msg = JSON.stringify(res.characteristics)
-						// var notifyServicweId = this.notifyServicweId; //具有写、通知属性的服务uuid
-						// var notifyCharacteristicsId = this.characteristicId;
-						// this.notifyBluetooth(this.deviceId, notifyServicweId, notifyCharacteristicsId)
+						if (!notifyUUID && chars[0]) notifyUUID = chars[0].uuid
+						if (!writeUUID && chars[0]) writeUUID = chars[0].uuid
+						const inst = PillowBleManager.getInstance()
+						if (!notifyUUID) {
+							console.warn('未找到 notify 特征')
+							return
+						}
+						inst.startNotice({
+							deviceUUID: deviceId,
+							serviceUUID: serviceId,
+							notifyUUID,
+							writeUUID: writeUUID || inst.characteristicId
+						})
+						that.deviceId = deviceId
+						that.serviceId = serviceId
 					},
 					fail: (res) => {
 						console.log("%c getBLEDeviceCharacteristics fail", "color:red;", res);
@@ -1098,35 +1454,125 @@
 <style lang="scss">
 	.main {
 		width: 100%;
-		height: 100%;
-		background-color: #0b2853;
-
-		.logoleft {
-			position: absolute;
-			left: 88rpx;
-			top: 130rpx;
-			width: 161rpx;
-			height: 131rpx;
-
-			image {
-				width: 100%;
-			}
-		}
+		height: 100vh;
+		box-sizing: border-box;
+		background-color: #e8eef2;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
 	}
 
-	.bg {
-		position: relative;
-		background-color: #0b2853;
-		left: 0;
-		top: var(--menuButtonTop1);
-		right: 0;
-		bottom: 0;
+	.status-nav {
+		flex-shrink: 0;
+		width: 100%;
+		background: #ffffff;
+		border-bottom: 1rpx solid #e2e8f0;
+		box-sizing: border-box;
+		z-index: 200;
+	}
 
-		.backimg {
+	.status-nav-row {
+		position: relative;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-end;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	/* 标题占满行宽仅做水平居中，不占 flex 槽位；避免部分端上绝对子项仍参与 flex 导致右侧块被挤到左边 */
+	.nav-title-wrap {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		max-width: 100%;
+		z-index: 1;
+		pointer-events: none;
+		text-align: center;
+	}
+
+	.nav-title-wrap .nav-title {
+		max-width: 45%;
+		margin: 0 auto;
+		display: block;
+	}
+
+	.nav-title {
+		font-size: 34rpx;
+		color: #1e293b;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.nav-pillow-status {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		justify-content: flex-end;
+		max-width: 340rpx;
+		padding-right: 8rpx;
+		box-sizing: border-box;
+		flex-shrink: 0;
+		margin-left: auto;
+	}
+
+	.nav-pillow-status--on .pillow-status-sub {
+		color: #15803d;
+		font-weight: 600;
+	}
+
+	.pillow-status-sub {
+		font-size: 24rpx;
+		color: #64748b;
+		line-height: 1.2;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.btn-ble-connected {
+		background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%) !important;
+		color: #fff !important;
+		border: none !important;
+		box-shadow: 0 8rpx 24rpx rgba(22, 163, 74, 0.28);
+	}
+
+	.status-scroll {
+		flex: 1;
+		height: 0;
+		min-height: 0;
+		box-sizing: border-box;
+	}
+
+	.banner-card {
+		position: relative;
+		margin: 24rpx 28rpx 0;
+		border-radius: 24rpx;
+		overflow: hidden;
+		border: 4rpx solid #93c5fd;
+		min-height: 280rpx;
+		background: #e5e7eb;
+
+		.banner-img {
 			width: 100%;
-			height: 100%;
-			object-fit: cover;
-			// display: block;
+			height: 320rpx;
+			display: block;
+		}
+
+		.banner-mask {
+			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			height: 120rpx;
+			background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.35));
 		}
 	}
 
@@ -1156,101 +1602,305 @@
 		height: 100%;
 	}
 
-	.headInfo {
-		position: absolute;
-		top: 680rpx;
-		left: 45rpx;
-		color: white;
+	.card {
+		margin: 24rpx 28rpx 0;
+		border-radius: 24rpx;
+		padding: 28rpx 32rpx;
+		box-sizing: border-box;
+	}
+
+	.card-vitals {
 		display: flex;
-		justify-content: center;
+		flex-direction: row;
+		align-items: stretch;
+		background: linear-gradient(180deg, #c8e8f5 0%, #e8f6fc 45%, #f0fafc 100%);
+		box-shadow: 0 4rpx 20rpx rgba(15, 118, 168, 0.08);
+		padding: 32rpx 24rpx;
+	}
+
+	.vital-col {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
 		align-items: center;
-		background-color: #a79f8a;
-		border-radius: 20rpx;
-		width: 300rpx;
-		height: 68rpx;
-	}
-	
-	.neck-arrow-icon {
-		position: absolute;
-		top: 600rpx;
-		left: 150rpx;
-		width: 24rpx;
-		height: 24rpx;
-		z-index: 10;
+		justify-content: flex-start;
+		min-width: 0;
 	}
 
-	.neckInfo {
-		position: absolute;
-		top: 745rpx;
-		right: 45rpx;
-		color: white;
+	.vital-col-head {
 		display: flex;
-		justify-content: center;
+		flex-direction: row;
 		align-items: center;
-		background-color: #a79f8a;
-		border-radius: 20rpx;
-		width: 300rpx;
-		height: 68rpx;
-	}
-	
-	.head-arrow-icon {
-		position: absolute;
-		top: 620rpx;
-		right: 80rpx;
-		width: 24rpx;
-		height: 24rpx;
-		z-index: 10;
-	}
-
-	.rightInfo {
-		position: absolute;
-		top: 270rpx;
-		left: 508rpx;
-		color: white;
-		display: flex;
 		justify-content: center;
-
-		.icon {
-			width: 61rpx;
-			margin-right: 20rpx;
-		}
+		margin-bottom: 16rpx;
 	}
 
-	.rightBatteryInfo {
-		position: absolute;
-		top: 166rpx;
-		left: 508rpx;
-		color: white;
+	.vital-row-metric {
 		display: flex;
+		flex-direction: row;
+		align-items: baseline;
 		justify-content: center;
+		flex-wrap: wrap;
+	}
+
+	.vital-icon {
+		width: 48rpx;
+		height: 48rpx;
+		margin-right: 12rpx;
+		flex-shrink: 0;
+	}
+
+	.vital-label {
+		font-size: 28rpx;
+		color: #1e293b;
+		font-weight: 500;
+	}
+
+	.vital-value {
+		font-size: 48rpx;
+		font-weight: 600;
+		color: #0f172a;
+		line-height: 1.3;
+	}
+
+	.vital-unit {
+		font-size: 24rpx;
+		color: #64748b;
+		margin-left: 8rpx;
+	}
+
+	.vital-v-divider {
+		width: 2rpx;
+		background: #cbd5e1;
+		align-self: stretch;
+		margin: 8rpx 0;
+		flex-shrink: 0;
+	}
+
+	.card-heat {
+		background: #f8fafc;
+		box-shadow: 0 4rpx 16rpx rgba(15, 23, 42, 0.06);
+	}
+
+	.heat-row {
+		margin-bottom: 20rpx;
+	}
+
+	.heat-row-between {
+		display: flex;
 		align-items: center;
+		justify-content: space-between;
+	}
 
-		.icon {
-			position: absolute;
-			width: 61rpx;
-			left: 10rpx;
-			margin-left: 2rpx;
-			top: 5rpx;
-			// margin-right: 20rpx;
-		}
+	.heat-row-last {
+		margin-bottom: 0;
+	}
 
+	.heat-expand {
+		margin-top: 8rpx;
+	}
 
-		.batedesc {
-			position: absolute;
-			left: 90rpx;
-			top: 0rpx;
-		}
+	.heat-title-wrap {
+		display: flex;
+		align-items: center;
+	}
 
+	.heat-title-icon {
+		width: 44rpx;
+		height: 44rpx;
+		margin-right: 12rpx;
+	}
 
-		.fillprogress {
-			position: absolute;
-			width: 50rpx;
-			height: 30rpx;
-			top: 5rpx;
-			left: 13rpx;
-			width: var(--bateryWidth);
-			background-color: green;
-		}
+	.heat-title {
+		font-size: 30rpx;
+		color: #1e293b;
+		font-weight: 500;
+	}
+
+	.heat-switch-wrap {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+	}
+
+	.heat-switch-mask {
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 2;
+	}
+
+	.heat-switch {
+		transform: scale(0.92);
+	}
+
+	.heat-sub-label {
+		font-size: 26rpx;
+		color: #64748b;
+		display: block;
+		margin-bottom: 16rpx;
+	}
+
+	.heat-levels {
+		display: flex;
+		gap: 20rpx;
+	}
+
+	.heat-level-btn {
+		flex: 1;
+		text-align: center;
+		padding: 18rpx 0;
+		border-radius: 12rpx;
+		border: 2rpx solid #3b82f6;
+		color: #2563eb;
+		font-size: 28rpx;
+		background: #fff;
+	}
+
+	.heat-level-btn.active {
+		background: #eff6ff;
+		font-weight: 600;
+	}
+
+	.heat-temp {
+		font-size: 30rpx;
+		color: #0f172a;
+		font-weight: 500;
+	}
+
+	.card-grid {
+		background: linear-gradient(180deg, #dff6fc 0%, #e8f8fc 100%);
+		box-shadow: 0 4rpx 20rpx rgba(15, 118, 168, 0.08);
+		padding-bottom: 36rpx;
+	}
+
+	.grid-row {
+		display: flex;
+		justify-content: space-around;
+	}
+
+	.grid-row-3 {
+		margin-bottom: 32rpx;
+	}
+
+	.grid-row-bottom {
+		margin-bottom: 0;
+	}
+
+	.grid-row-2 {
+		justify-content: space-between;
+		padding: 0 8rpx;
+	}
+
+	.grid-row-2 .grid-item {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.grid-item {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.grid-icon-wrap {
+		width: 120rpx;
+		height: 120rpx;
+		border-radius: 60rpx;
+		background: rgba(255, 255, 255, 0.85);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 16rpx;
+		box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.12);
+	}
+
+	.grid-icon {
+		width: 64rpx;
+		height: 64rpx;
+	}
+
+	.grid-text {
+		font-size: 26rpx;
+		color: #334155;
+		text-align: center;
+	}
+
+	.bottom-btns {
+		margin: 32rpx 28rpx 0;
+		display: flex;
+		flex-direction: column;
+		gap: 20rpx;
+	}
+
+	.btn-full {
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.btn-primary {
+		min-height: 96rpx;
+		padding: 20rpx 24rpx;
+		border-radius: 16rpx;
+		font-size: 32rpx;
+		font-weight: 600;
+		background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+		color: #fff;
+		border: none;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+	}
+
+	.btn-ble-inner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		min-width: 0;
+	}
+
+	.btn-ble-line1 {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.btn-ble-device-name {
+		margin-top: 8rpx;
+		font-size: 24rpx;
+		font-weight: 500;
+		line-height: 1.3;
+		opacity: 0.95;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		text-align: center;
+	}
+
+	.btn-outline {
+		background: #fff;
+		color: #2563eb;
+		border: 2rpx solid #2563eb;
+	}
+
+	.btn-icon {
+		width: 40rpx;
+		height: 40rpx;
+		margin-right: 12rpx;
+		flex-shrink: 0;
+	}
+
+	.scroll-bottom-spacer {
+		height: 200rpx;
+		padding-bottom: env(safe-area-inset-bottom);
 	}
 
 	.connectBtn {
@@ -1274,123 +1924,6 @@
 	.rotateimg {
 		width: 100%;
 		height: 100%;
-	}
-
-
-/* 悬浮气泡样式 */
-.floating-ball{
-  position: fixed;
-  width: 140rpx;
-  height: 140rpx;
-  border-radius: 70rpx;
-  /* 由內聯樣式控制 left/top，移除 right 以避免衝突 */
-  background: rgba(0,0,0,0.35);
-  backdrop-filter: blur(6rpx);
-  box-shadow: 0 6rpx 20rpx rgba(0,0,0,0.25);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2rpx solid rgba(255,255,255,0.5);
-}
-.floating-ball .float-label{
-  color: #ffffff;
-  font-size: 36rpx;
-  line-height: 1.2;
-  text-align: center;
-  font-weight: 600;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.floating-ball .float-label text{
-  letter-spacing: 10rpx;
-  display: block;
-  transform: translateX(7rpx);
-}
-
-	.status-part {
-		margin-bottom: env(safe-area-inset-bottom);
-		// padding-top: 200rpx;
-		justify-content: space-around;
-		position: absolute;
-		bottom: 200rpx;
-		left: 0rpx;
-		right: 0rpx;
-
-		.item {
-			position: relative;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-
-			.item-back {
-				width: 127rpx;
-				height: 161rpx;
-			}
-			
-			.title {
-				position: absolute;
-				left: 0;
-				top: 0;
-				width: 100%;
-				color: white;
-				font-size: 26rpx;
-				text-align: center;
-				line-height: 60rpx;
-			}
-
-			.desc {
-				position: absolute;
-				left: 0;
-				bottom: 0rpx;
-				width: 100%;
-				color: white;
-				text-align: center;
-				line-height: 40rpx;
-				font-size: 29rpx;
-				color: #5B7897;
-			}
-
-			.icon1 {
-				position: absolute;
-				left: 50%;
-				top: 45%;
-				margin-left: -25rpx;
-				// margin-top: -50%;
-				width: 41rpx;
-				height: 42rpx;
-				z-index: 100;
-			}
-
-			.icon2 {
-				position: absolute;
-				left: 50%;
-				top: 47%;
-				margin-left: -22rpx;
-				width: 44rpx;
-				height: 35rpx;
-			}
-
-			.icon3 {
-				position: absolute;
-				left: 50%;
-				top: 47%;
-				margin-left: -21rpx;
-				width: 48rpx;
-				height: 42rpx;
-			}
-
-			.icon4 {
-				position: absolute;
-				left: 50%;
-				top: 47%;
-				margin-left: -25rpx;
-				width: 49rpx;
-				height: 51rpx;
-			}
-		}
 	}
 
 

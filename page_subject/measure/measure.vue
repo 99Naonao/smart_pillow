@@ -17,7 +17,7 @@
 		</view>
 	</view>
 	<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" border-radius="40rpx 40rpx 0rpx 0rpx"
-		background-color='white' safe-area="false" class="popup" :mask-click="false" @change="change">
+		background-color='white' :safe-area="false" class="popup" :mask-click="false" @change="change">
 		<view class="container">
 			<image class="close-btn" @click="closePopUpHandle" src="@/page_subject/static/adjust/SY_05_buttonCOLa.png"
 				mode="widthFix">

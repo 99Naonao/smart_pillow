@@ -202,7 +202,7 @@ export function autoLogin(callback) {
  * @param {String} params.iv           微信返回的偏移量
  * @param {String} [params.phone_code] 手机号验证码（可选，当前留空）
  * @param {Number} params.terminal     终端标识（例如 7 = 智能枕小程序）
- * @param {String} params.wx_code      微信 login 获得的 code
+ * @param {String} params.wx_code      微信 login 获得的 code（须在用户点「授权手机号」之前取得，勿在 getPhoneNumber 回调里再 uni.login，否则 session_key 与 encryptedData 不一致会解密失败）
  * @param {String} [params.version]    版本号（放入 Header，例如 '3.1.1'）
  * @returns {Promise<Object>} 返回后端的 data 对象（包含 token、mobile、nickname 等）
  */

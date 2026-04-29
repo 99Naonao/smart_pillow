@@ -27,7 +27,7 @@
 			</div>
 		</view>
 		<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" border-radius="40rpx 40rpx 0rpx 0rpx"
-			background-color='white' safe-area="false" class="popup" :mask-click="false" @change="change">
+			background-color='white' :safe-area="false" class="popup" :mask-click="false" @change="change">
 			<view class="container">
 				<image class="close-btn" @click="closePopUpHandle"
 					src="@/page_subject/static/adjust/SY_05_buttonCOLa.png" mode="widthFix">
@@ -65,7 +65,7 @@
 		handPillowSideState,
 		parsePillowState
 	} from '@/common/util.js'
-	import blue_class from '../../utils/BlueManager';
+	import { PillowBleManager } from '@/utils/BlueUtils';
 	import {
 		appAnswer,
 		parseTime
@@ -79,10 +79,10 @@
 	export default {
 		computed: {
 			loginDeviceId() {
-				return blue_class.getInstance().deviceId;
+				return PillowBleManager.getInstance().deviceId;
 			},
 			blueDeviceIdList() {
-				return blue_class.getInstance().deviceIdList;
+				return PillowBleManager.getInstance().deviceIdList;
 			}
 		},
 		components: {
@@ -94,7 +94,7 @@
 
 			this.onShowing = true;
 			// 初始化连接状态
-			this.isConnected = blue_class.getInstance().loginSuccess;
+			this.isConnected = PillowBleManager.getInstance().loginSuccess;
 			let app = getApp();
 			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 80) + 'px');
 
@@ -108,15 +108,15 @@
 				// })
 			} else {
 				// 如果正在连接
-				if (blue_class.getInstance().deviceId != '') {
-					// console.log(blue_class.getInstance().deviceName, blue_class.getInstance().deviceId)
-					// blue_class.getInstance().deviceIdList.push({
-					// 	name: blue_class.getInstance().deviceName,
-					// 	deviceId: blue_class.getInstance().deviceId
+				if (PillowBleManager.getInstance().deviceId != '') {
+					// console.log(PillowBleManager.getInstance().deviceName, PillowBleManager.getInstance().deviceId)
+					// PillowBleManager.getInstance().deviceIdList.push({
+					// 	name: PillowBleManager.getInstance().deviceName,
+					// 	deviceId: PillowBleManager.getInstance().deviceId
 					// });
 				} else {
 					if (app.globalData.versionCode == 0) {
-						blue_class.getInstance().deviceIdList.push({
+						PillowBleManager.getInstance().deviceIdList.push({
 							name: this.testName,
 							deviceId: 'deviceId'
 						})
@@ -127,8 +127,8 @@
 			uni.$on('bluetooth_status_change', ()=>{
 				this.handleDisconnect();
 				// 根據全局狀態同步當前設備ID，便於按鈕顯示
-				if (blue_class.getInstance().loginSuccess) {
-					this.currentDeviceId = blue_class.getInstance().deviceId;
+				if (PillowBleManager.getInstance().loginSuccess) {
+					this.currentDeviceId = PillowBleManager.getInstance().deviceId;
 				} else {
 					this.currentDeviceId = '';
 				}
@@ -151,7 +151,7 @@
 		},
 		data() {
 			return {
-				currentDeviceId: blue_class.getInstance().deviceId,
+				currentDeviceId: PillowBleManager.getInstance().deviceId,
 				menuStyle: {
 					'--menuButtonTop': "0",
 				},
@@ -174,9 +174,9 @@
 		methods: {
 			// 处理蓝牙断开连接
 			handleDisconnect() {
-				console.log('handleDisconnect 被调用，当前 loginSuccess:', blue_class.getInstance().loginSuccess);
+				console.log('handleDisconnect 被调用，当前 loginSuccess:', PillowBleManager.getInstance().loginSuccess);
 				// 检查是否真的断开了
-				if (!blue_class.getInstance().loginSuccess) {
+				if (!PillowBleManager.getInstance().loginSuccess) {
 					console.log('工作页面检测到蓝牙断开');
 					
 					// 更新连接状态
@@ -197,7 +197,7 @@
 			disconnectBlueToothHandler(item) {
 				let that = this;
 				// 标记为手动断开，避免弹出“意外断开”提示
-				blue_class.getInstance().setManualDisconnecting(true);
+				PillowBleManager.getInstance().setManualDisconnecting(true);
 				uni.closeBLEConnection({
 					deviceId: item.deviceId,
 					success: function(res) {
@@ -208,9 +208,9 @@
 							that.tempDeviceIdList.splice(index, 1);
 						}
 						that.currentDeviceId = '';
-						blue_class.getInstance().deviceId = '';
-						blue_class.getInstance().deviceName = '';
-						blue_class.getInstance().loginSuccess = false;
+						PillowBleManager.getInstance().deviceId = '';
+						PillowBleManager.getInstance().deviceName = '';
+						PillowBleManager.getInstance().loginSuccess = false;
 						console.log('手动断开：设置 loginSuccess = false，准备触发事件');
 						// 触发连接状态变化事件，通知页面更新
 						uni.$emit('bluetooth_status_change');
@@ -231,15 +231,15 @@
 			},
 			refreshDeviceList() {
 				this.tempDeviceIdList.length = 0;
-				for (var item in blue_class.getInstance().deviceIdList) {
-					this.tempDeviceIdList.push(blue_class.getInstance().deviceIdList[item]);
+				for (var item in PillowBleManager.getInstance().deviceIdList) {
+					this.tempDeviceIdList.push(PillowBleManager.getInstance().deviceIdList[item]);
 				}
-				// this.tempDeviceIdList = blue_class.getInstance().deviceIdList;
+				// this.tempDeviceIdList = PillowBleManager.getInstance().deviceIdList;
 				console.log("refreshDeviceList:", this.tempDeviceIdList)
 			},
 			addCallBack() {
 				let that = this;
-				let deviceIdList = blue_class.getInstance().deviceIdList;
+				let deviceIdList = PillowBleManager.getInstance().deviceIdList;
 				uni.onBluetoothDeviceFound((result) => {
 					// 剔除重复设备，兼容不同设备API的不同返回值
 					let isnotexist = !deviceIdList.some(device => device.deviceId === result.devices[0].deviceId);
@@ -423,14 +423,14 @@
 					let shake1 = hand1Shake(Number(
 						total), arrayBuffer)
 					console.log("total:", total, shake1)
-					if (blue_class.getInstance().loginSuccess) {
+					if (PillowBleManager.getInstance().loginSuccess) {
 						console.log('已经握手成功了!')
 
 
 						// this.showAdjustHandler()
 						return;
 					}
-					blue_class.getInstance().write2tooth(shake1)
+					PillowBleManager.getInstance().write2tooth(shake1)
 					console.log('第一次握手', ab2hex(shake1))
 				} else if (arrayBuffer.length == 2) {
 					console.log('接收到回复数据2:', ab2hex(res.value))
@@ -438,8 +438,8 @@
 						console.log('接收到回复数据', ab2hex(res.value))
 						// console.log('校验长度', parseInt('0x' + len))
 						console.log('握手成功可以发送ssid了')
-						blue_class.getInstance().loginSuccess = true
-						console.log('设置 loginSuccess = true，当前状态:', blue_class.getInstance().loginSuccess)
+						PillowBleManager.getInstance().loginSuccess = true
+						console.log('设置 loginSuccess = true，当前状态:', PillowBleManager.getInstance().loginSuccess)
 
 						// 触发连接状态变化事件，通知页面更新
 						console.log('触发 bluetooth_status_change 事件')
@@ -450,12 +450,12 @@
 							console.log('准备跳转到首页')
 							this.showAdjustHandler()
 						})
-						// blue_class.getInstance().write2tooth(this.characteristicStringId,
+						// PillowBleManager.getInstance().write2tooth(this.characteristicStringId,
 						// 	hexStringToArrayBuffer('jimlee'))
 					} else if (mark == '66') {
 						console.log('握手成功可以发送ssid密码了')
 						// 发送wifi密码
-						// blue_class.getInstance().write2tooth(this.characteristicStringId,
+						// PillowBleManager.getInstance().write2tooth(this.characteristicStringId,
 						// 	hexStringToArrayBuffer('lijiming'))
 					} else if (mark == 'aa') {
 						console.log('发送成功了ssid了')
@@ -547,7 +547,7 @@
 					let press = receive16.slice(12, 14);
 					let press10 = parseInt('0x' + press);
 					//保存版本号
-					blue_class.getInstance().version = vesrion10;
+					PillowBleManager.getInstance().version = vesrion10;
 					// let status1 = '0x' + status;
 
 					console.log('枕头状态=>', status, headHeight, neckHeight, vesrion, isright, press)
@@ -555,7 +555,7 @@
 				}
 			},
 			parsePillowStatus(arraybuffer) {
-				blue_class.getInstance().parsePillowStatus(arraybuffer)
+				PillowBleManager.getInstance().parsePillowStatus(arraybuffer)
 				return;
 				// //默认是枕头状态 5s收到一次
 				let receive16 = ab2hex(arraybuffer);
@@ -619,11 +619,11 @@
 				// 		2020) <<
 				// 	26))
 
-				blue_class.getInstance().setPillowCharging(n1)
-				blue_class.getInstance().setPillowHeight(headHeight10)
-				blue_class.getInstance().setPillowStatus(status10)
-				blue_class.getInstance().setPillowSideHeight(neckHeight10)
-				blue_class.getInstance().setPillowPower(press10)
+				PillowBleManager.getInstance().setPillowCharging(n1)
+				PillowBleManager.getInstance().setPillowHeight(headHeight10)
+				PillowBleManager.getInstance().setPillowStatus(status10)
+				PillowBleManager.getInstance().setPillowSideHeight(neckHeight10)
+				PillowBleManager.getInstance().setPillowPower(press10)
 				// work 枕头状态 mm=> 1 height:151mm neckheight:13mm version:3 校准:1 电池:1
 				// console.log('work 枕头状态 =>', 'height:' + headHeight, 'neckheight:' + neckHeight, vesrion, isright, press)
 				console.log('page work 枕头状态 mm=>', status10, 'height:' + headHeight10 + 'mm', 'neckheight:' + neckHeight10 +
@@ -634,7 +634,7 @@
 			},
 			parsePillowSleepData(receive_dataView) {
 
-				blue_class.getInstance().write2tooth(appAnswer(5))
+				PillowBleManager.getInstance().write2tooth(appAnswer(5))
 				//解析枕头睡眠阶段状态	
 				// 数据1-姿态（U8）(1--平躺，2--侧卧) + 数据2开始时间（T4）+数据3结束时间（T4）+ 数据4-姿态（U8）(1--平躺，2--侧卧) + 数据5开始时间（T4）+数据6结束时间（T4）+ ... ,关于该指令的说明，是多个姿态+开始时间和结束时间的条目的组合，根据数据长度计算一条指令中包含多少组数据
 				// let receive8 = new ArrayBuffer(array_buffer);
@@ -778,9 +778,9 @@
 					app.globalData.deviceId = 'deviceId';
 					app.globalData.deviceName = this.testName;
 
-					blue_class.getInstance().deviceId = 'deviceId';
-					blue_class.getInstance().deviceName = this.testName;
-					blue_class.getInstance().loginSuccess = true;
+					PillowBleManager.getInstance().deviceId = 'deviceId';
+					PillowBleManager.getInstance().deviceName = this.testName;
+					PillowBleManager.getInstance().loginSuccess = true;
 					
 					// 同步當前已連接設備ID，便於按鈕狀態即時切換
 					this.currentDeviceId = 'deviceId';
@@ -808,8 +808,8 @@
 						this.stopBlueTooth();
 						app.globalData.deviceId = deviceId;
 
-					blue_class.getInstance().deviceId = deviceId;
-					blue_class.getInstance().deviceName = item.name;
+					PillowBleManager.getInstance().deviceId = deviceId;
+					PillowBleManager.getInstance().deviceName = item.name;
 					// 不要在这里设置 loginSuccess = true，让握手流程正常进行
 
 					console.log('connectBluetooth success!:', deviceId, res)
@@ -869,7 +869,7 @@
 						if (res.characteristics[1]) {
 							// 启用notify
 							notify_character = res.characteristics[1].uuid
-							blue_class.getInstance().startNotice({
+							PillowBleManager.getInstance().startNotice({
 								deviceUUID: deviceId,
 								serviceUUID: serviceId,
 								notifyUUID: notify_character

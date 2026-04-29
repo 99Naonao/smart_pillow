@@ -9,25 +9,25 @@ Component({
 	},
 	data: {
 		selected: 0,
-		color: "#7A7E83",
-		selectedColor: "#3cc51f",
+		color: "#64748b",
+		selectedColor: "#2563eb",
 		list: [{
 				"pagePath": "/pages/status/status",
-				"iconPath": "/static/index/SY_00_buttonSYa.png",
-				"selectedIconPath": "/static/index/SY_00_buttonSYb.png",
-				"text": ""
+				"iconPath": "/static/icon/home.png",
+				"selectedIconPath": "/static/icon/home_selected.png",
+				"text": "首页"
 			},
-			// {
-			// 	"pagePath": "/pages/product/product",
-			// 	"iconPath": "/static/index/SY_00_buttonCPa.png",
-			// 	"selectedIconPath": "/static/index/SY_00_buttonCPb.png",
-			// 	"text": ""
-			// },
+			{
+				"pagePath": "/pages/report/report",
+				"iconPath": "/static/icon/report.png",
+				"selectedIconPath": "/static/icon/report_selected.png",
+				"text": "报告"
+			},
 			{
 				"pagePath": "/pages/newMine/newMine",
-				"iconPath": "/static/index/SY_00_buttonWDa.png",
-				"selectedIconPath": "/static/index/SY_00_buttonWDb.png",
-				"text": ""
+				"iconPath": "/static/icon/mine.png",
+				"selectedIconPath": "/static/icon/mine_selected.png",
+				"text": "个人中心"
 			}
 		]
 	},

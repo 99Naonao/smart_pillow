@@ -5,9 +5,9 @@
 			<view class="user_info">
 				<view class="top_info">
 					<view class="avatar_bg">
-						<image v-if="hasLogin" class="avatar" :src="userInfo.avatar || '/static/default-avatar.png'"
+						<image v-if="hasLogin" class="avatar" :src="userInfo.avatar || '/static/icon/default_avatar.png'"
 							@click="navTo('/pages/my/set/userInfo')"></image>
-						<image v-else class="avatar" :src="userInfo.avatar || '/static/default-avatar.png'"
+						<image v-else class="avatar" :src="userInfo.avatar || '/static/icon/default_avatar.png'"
 							@click="clickWxLogin"></image>
 					</view>
 					<view class="usernameInfo">
@@ -66,20 +66,6 @@
 					4.凡以违反积分规则的方式或采用不正当手段（包括但不限于作弊、恶意刷分、扰乱/破坏系统、恶意利用系统或者规则漏洞）获取、使用积分，我们有权根据其行为恶劣程度决定扣除您帐号内所有或部分积分，对于已使用积分，有权要求您返还已抵扣的订单金额或所兑换的礼品或权益；<br>
 					5. 以上积分规则自2024年8月13日生效。<br>
 				</view>
-				<view class="info-part">
-					<view class="opt-part">
-						<view class="opt-btn" @click="uploadDataHandle" v-if="false">
-							<label>上报数据</label>
-						</view>
-
-						<view class="opt-btn" @click="resetHandle">
-							<label>设备校准</label>
-						</view>
-						<view class="opt-btn" @click="restartHandle">
-							<label>设备重启</label>
-						</view>
-					</view>
-				</view>
 			</view>
 		</view>
 
@@ -92,32 +78,9 @@
 </template>
 
 <script>
-	import blue_class from '../../utils/BlueManager'
 	import {
 		autoLogin
 	} from '@/utils/miniapp.js'
-	import {
-		object2Query,
-		parsePillowRealState,
-		handPillowStatus,
-		handPillowSideState,
-		handPillowFrontState,
-		handlePillowDelayState,
-		hexStringToArrayBuffer,
-		ab2hex,
-		resetPillow,
-		uploadDataRequest,
-		initPillow,
-		changeAdjustMode,
-		changeSaveAdjustMode,
-		hand1Shake,
-		write2tooth,
-		parsePillowState,
-		sendModeByName,
-		saveRandomMode,
-		restartPillow,
-		getAIModeByName
-	} from '@/common/util.js'
 	export default {
 		computed: {
 			shoulderWidth() {
@@ -165,65 +128,6 @@
 			this.refreshUserInfo();
 		},
 		methods: {
-			restartHandle() {
-				// 检查枕头是否连接
-				if (!blue_class.getInstance().loginSuccess) {
-					uni.showModal({
-						title: '提示',
-						content: '请先连接枕头设备',
-						showCancel: false,
-						confirmText: '我知道了'
-					});
-					return;
-				}
-				
-				uni.showModal({
-					title: '警告',
-					content: '设备重启为专业操作，非专业人士請勿进行此操作。確定要重启设备吗？',
-					confirmText: '确定重启',
-					cancelText: '取消',
-					success: (res) => {
-						if (res.confirm) {
-							let arraybuffer = restartPillow(77);
-							blue_class.getInstance().write2tooth(arraybuffer);
-							uni.showToast({
-								title: '设备重启指令已发送',
-								icon: 'success'
-							});
-						}
-					}
-				});
-			},
-			resetHandle() {
-				// 检查枕头是否连接
-				if (!blue_class.getInstance().loginSuccess) {
-					uni.showModal({
-						title: '提示',
-						content: '请先连接枕头设备',
-						showCancel: false,
-						confirmText: '我知道了'
-					});
-					return;
-				}
-				
-				uni.showModal({
-					title: '警告',
-					content: '设备校准为专业操作，非专业人士请勿进行此操作。確定要校准设备吗？',
-					confirmText: '确定校准',
-					cancelText: '取消',
-					success: (res) => {
-						if (res.confirm) {
-							let reset_data = resetPillow(88);
-							blue_class.getInstance().write2tooth(reset_data);
-							uni.showToast({
-								title: '设备校准指令已发送',
-								icon: 'success'
-							});
-						}
-					}
-				});
-			},
-
 			refreshUserInfo() {
 				let userInfo = uni.getStorageSync('userInfo')
 				if (userInfo && userInfo.token) {
@@ -238,12 +142,15 @@
 
 				// const url3 =
 				// 	'https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz=MzkyMDQ5NTk0OQ&scene=124#wechat_redirect';
-				const url5 = 'https://sleep.zsyl.cc/sleeph5/miniIndex.html'
-				const navtitle = '健康检测'
-				console.log('go2use:', url5)
-				wx.navigateTo({
-					// 跳转到webview页面
-					url: `/pages/mine/webview?url=${url5}&nav=${navtitle}`,
+				const url5 = 'https://sleep.zsyl.cc/sleeph5/miniIndex.html';
+				const navtitle = '健康检测';
+				const q = `url=${encodeURIComponent(url5)}&nav=${encodeURIComponent(navtitle)}`;
+				uni.navigateTo({
+					url: `/pages/mine/webview?${q}`,
+					fail: (err) => {
+						console.error('navigateTo webview 失败', err);
+						uni.showToast({ title: '页面打开失败，请稍后重试', icon: 'none' });
+					}
 				});
 			},
 			clickWxLogin() {

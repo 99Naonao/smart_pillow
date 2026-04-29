@@ -1,4 +1,65 @@
 <script>
+	import { onAppLaunchSpineCleanup, stopSpineAdjustSession } from '@/common/spineSession.js';
+	import { PillowBleManager } from '@/utils/BlueUtils/PillowBleManager.js';
+
+	let spinePostureWatchTimer = null;
+	let spinePostureLastStatus = 1;
+	let spinePostureBadSince = null;
+	let spineGlobalEventsBound = false;
+
+	function clearSpinePostureWatch() {
+		if (spinePostureWatchTimer) {
+			clearInterval(spinePostureWatchTimer);
+			spinePostureWatchTimer = null;
+		}
+		spinePostureBadSince = null;
+	}
+
+	function scheduleSpinePostureWatch() {
+		clearSpinePostureWatch();
+		const mgr = PillowBleManager.getInstance();
+		if (!mgr.getSpineAdjusting()) {
+			return;
+		}
+		spinePostureLastStatus = mgr.getPillowStatus();
+		spinePostureBadSince = null;
+		spinePostureWatchTimer = setInterval(() => {
+			const m = PillowBleManager.getInstance();
+			if (!m.getSpineAdjusting()) {
+				clearSpinePostureWatch();
+				return;
+			}
+			if (m.isConnected() && m.loginSuccess) {
+				m.readPillowStatus({ silent: true });
+			}
+			const st = m.getPillowStatus();
+			if (spinePostureLastStatus === 1 && (st === 0 || st === 2)) {
+				spinePostureBadSince = Date.now();
+			} else if (st === 1) {
+				spinePostureBadSince = null;
+			}
+			spinePostureLastStatus = st;
+			if (spinePostureBadSince && (st === 0 || st === 2)) {
+				if (Date.now() - spinePostureBadSince >= 60000) {
+					clearSpinePostureWatch();
+					stopSpineAdjustSession({
+						reason: 'posture',
+						showToast: '空闲/侧卧超过1分钟，已停止微调'
+					});
+				}
+			}
+		}, 4000);
+	}
+
+	function bindSpineGlobalEventsOnce() {
+		if (spineGlobalEventsBound) {
+			return;
+		}
+		spineGlobalEventsBound = true;
+		uni.$on('spine_adjust_started', () => scheduleSpinePostureWatch());
+		uni.$on('spine_session_stopped', () => clearSpinePostureWatch());
+	}
+
 	export default {
 		data() {
 			return {
@@ -59,13 +120,18 @@
 		onLaunch: function() {
 			console.log('App Launch')
 			this.calcNavBarInfo();
+			// 小程序冷启动 / 从后台划掉进程后再次进入：终止未收尾的脊柱微调（未连上则标记待 BLE 就绪补发）
+			onAppLaunchSpineCleanup();
 		},
 
 		onShow: function() {
 			console.log('App Show')
+			bindSpineGlobalEventsOnce();
+			scheduleSpinePostureWatch();
 		},
 		onHide: function() {
 			console.log('App Hide')
+			clearSpinePostureWatch();
 			// 兜底：进入后台时停止搜寻，避免适配器长期处于 discovery 状态影响再次扫描
 			if (typeof uni !== 'undefined' && uni.stopBluetoothDevicesDiscovery) {
 				uni.stopBluetoothDevicesDiscovery({

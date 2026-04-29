@@ -36,7 +36,7 @@
 
 
 		<uni-popup ref="ppp" style="z-index: 10000; position: absolute;" border-radius="40rpx 40rpx 0rpx 0rpx"
-			background-color='white' safe-area="false" class="popup" :mask-click="false" @change="change">
+			background-color='white' :safe-area="false" class="popup" :mask-click="false" @change="change">
 			<view class="container">
 				<image class="close-btn" @click="closePopUpHandle"
 					src="@/page_subject/static/adjust/SY_05_buttonCOLa.png" mode="widthFix">
@@ -79,7 +79,7 @@
 		handPillowSideState,
 		parsePillowState
 	} from '@/common/util.js'
-	import blue_class from '../../utils/BlueManager';
+	import { PillowBleManager } from '@/utils/BlueUtils';
 	import {
 		appAnswer,
 		parseTime
@@ -103,9 +103,9 @@
 					}
 				})
 			} else {
-				if (blue_class.getInstance().deviceName != '') {
+				if (PillowBleManager.getInstance().deviceName != '') {
 					this.deviceIdList = [{
-						name: blue_class.getInstance().deviceName
+						name: PillowBleManager.getInstance().deviceName
 					}];
 				}
 			}
@@ -254,7 +254,7 @@
 			// 处理蓝牙断开连接
 			handleDisconnect() {
 				// 检查是否真的断开了
-				if (!blue_class.getInstance().loginSuccess) {
+				if (!PillowBleManager.getInstance().loginSuccess) {
 					console.log('设备连接页面检测到蓝牙断开');
 					
 					// 清空设备列表
@@ -356,7 +356,7 @@
 			},
 			parsePillowSleepData(array_buffer) {
 
-				blue_class.getInstance().write2tooth(appAnswer(5))
+				PillowBleManager.getInstance().write2tooth(appAnswer(5))
 				//02123c2356123c2363
 				// let temp = new ArrayBuffer(9)
 				// let dataView2 = new DataView(temp);
@@ -403,7 +403,7 @@
 				// console.log('停止调高侧卧:', ab2hex(arraybuffer))
 
 				// // console.log('调高:', ab2hex(arraybuffer))
-				// blue_class.getInstance().write2tooth(arraybuffer)
+				// PillowBleManager.getInstance().write2tooth(arraybuffer)
 				// return;
 				this.closePopUpHandle()
 				var url_ = '/page_subject/measure/measure' + object2Query({
@@ -424,7 +424,7 @@
 				// console.log('调高侧卧:', ab2hex(arraybuffer))
 
 				// // console.log('调高:', ab2hex(arraybuffer))
-				// blue_class.getInstance().write2tooth(arraybuffer)
+				// PillowBleManager.getInstance().write2tooth(arraybuffer)
 				// return;
 				this.closePopUpHandle()
 				var url_ = '/page_subject/mode/mode' + object2Query({
@@ -440,7 +440,7 @@
 			// 跳转手动调整
 			showAdjustHandler() {
 				// let arraybuffer = changeAdjustMode()
-				// blue_class.getInstance().write2tooth(arraybuffer)
+				// PillowBleManager.getInstance().write2tooth(arraybuffer)
 				// return;
 				this.closePopUpHandle()
 				var url_ = '/page_subject/adjust/adjust' + object2Query({
@@ -560,7 +560,7 @@
 						this.stopBlueTooth();
 						app.globalData.deviceId = deviceId;
 
-						blue_class.getInstance().deviceId = deviceId;
+						PillowBleManager.getInstance().deviceId = deviceId;
 
 
 						console.log('connectBluetooth success!:', deviceId, res)
@@ -641,7 +641,7 @@
 							notify_character = res.characteristics[1].uuid
 							//这里只取第一个哈！！！！！！！！
 							that.sendPlay(deviceId, res.characteristics[1].uuid)
-							// blue_class.getInstance().startNotice({
+							// PillowBleManager.getInstance().startNotice({
 							// 	deviceUUID: deviceId,
 							// 	serviceUUID: serviceId,
 							// 	notifyUUID: notify_character
