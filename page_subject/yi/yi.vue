@@ -713,13 +713,13 @@
 
 	.tips {
 		text-align: center;
-		color: #5B7897;
+		color: rgba(5, 28, 44, 0.7);
 		font-size: 32rpx;
 		padding: 20rpx;
 	}
 
 	.device-item {
-		border: 1px solid #5B7897;
+		border: 1px solid rgba(5, 28, 44, 0.7);
 		border-radius: 20rpx;
 		margin-left: 41rpx;
 		margin-right: 41rpx;
@@ -736,7 +736,7 @@
 
 		.item-name {
 			line-height: 38rpx;
-			color: #5B7897;
+			color: rgba(5, 28, 44, 0.7);
 			font-size: 32rpx;
 			padding-left: 30rpx;
 			padding-right: 30rpx;
@@ -751,7 +751,7 @@
 			height: 80rpx;
 			background-color: white;
 			border-radius: 30rpx;
-			box-shadow: 0rpx 0rpx 20rpx #5B7897;
+			box-shadow: 0rpx 0rpx 20rpx rgba(5, 28, 44, 0.7);
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -767,7 +767,7 @@
 		.wifi {
 			background-color: white;
 			border-radius: 30rpx;
-			box-shadow: 0rpx 0rpx 20rpx #5B7897;
+			box-shadow: 0rpx 0rpx 20rpx rgba(5, 28, 44, 0.7);
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -833,7 +833,7 @@
 			.item {
 				text-align: center;
 				color: white;
-				background-color: #5B7897;
+				background-color: rgba(5, 28, 44, 0.7);
 				border-radius: 30rpx;
 				margin-top: 10rpx;
 				margin-bottom: 10rpx;

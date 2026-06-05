@@ -605,7 +605,7 @@
 			background-color: #fff;
 			margin: 20rpx;
 			margin-top: 50rpx;
-			color: #354D5B;
+			color: #051C2C;
 			line-height: 80rpx;
 			padding-left: 50rpx;
 			padding-right: 50rpx;
@@ -614,7 +614,7 @@
 		}
 
 		.sure-btn {
-			background-color: #4d7fc9;
+			background-color: #4C8CB6;
 			margin: 30rpx;
 			color: white;
 			font-size: 28rpx;
@@ -641,7 +641,7 @@
 		.input-area {
 			margin-left: 20rpx;
 			letter-spacing: 2rpx;
-			background-color: #DEDEDE;
+			background-color: #F0F6F7;
 			padding: 20rpx;
 			color: rgba(91, 120, 151, 1)
 		}

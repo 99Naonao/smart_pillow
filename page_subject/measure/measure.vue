@@ -66,8 +66,8 @@
 						<view class="uni-form-item uni-column">
 							<view class="title" style="text-align: left;">请选择你喜欢的枕头高度</view>
 							<view class="slide-part">
-								<slider value="50" @change="sliderChange" activeColor="#ed6546"
-									backgroundColor="#f9cec6" block-color="#ed6546" block-size="20" />
+								<slider value="50" @change="sliderChange" activeColor="#4C8CB6"
+									backgroundColor="rgba(175, 160, 201, 0.35)" block-color="#4C8CB6" block-size="20" />
 								<view class="flex"
 									style="justify-content:space-between;padding-left: 30rpx;padding-right: 30rpx;">
 									<view>低</view>
@@ -289,7 +289,7 @@
 			padding-top: 100rpx;
 
 			.title {
-				color: #5B7897;
+				color: rgba(5, 28, 44, 0.7);
 				line-height: 60rpx;
 			}
 
@@ -328,7 +328,7 @@
 				}
 
 				.select-btn {
-					background-color: #9986bf;
+					background-color: #AFA0C9;
 					width: 275rpx;
 					height: 71rpx;
 					border-radius: 20rpx;
@@ -339,11 +339,11 @@
 				}
 
 				.selected {
-					background-color: #5B7897;
+					background-color: rgba(5, 28, 44, 0.7);
 				}
 
 				.unselect-btn {
-					background-color: #5B7897 !important;
+					background-color: rgba(5, 28, 44, 0.7) !important;
 				}
 			}
 

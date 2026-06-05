@@ -18,8 +18,37 @@
 				<view class="banner-mask"></view>
 			</view>
 
-			<!-- 生命特征：每栏两行 — [图标+标签]、[数值+单位] -->
-			<view class="card card-vitals">
+			<!-- 头枕/颈枕高度：仅 develop / trial 展示（0x04 同步） -->
+			<view v-if="showHomePillowHeightDevOnly" class="card card-height">
+				<view class="height-col">
+					<view class="height-col-head">
+						<text class="height-label">头枕高度</text>
+					</view>
+					<view class="height-row-metric">
+						<text class="height-value">{{ pillowHeadHeightDisplay }}</text>
+						<text v-if="loginStatus" class="height-unit">%</text>
+					</view>
+				</view>
+				<view class="height-v-divider"></view>
+				<view class="height-col">
+					<view class="height-col-head">
+						<text class="height-label">颈枕高度</text>
+					</view>
+					<view class="height-row-metric">
+						<text class="height-value">{{ pillowNeckHeightDisplay }}</text>
+						<text v-if="loginStatus" class="height-unit">%</text>
+					</view>
+				</view>
+			</view>
+
+			<!-- 睡姿 0x0B 最高值：仅 develop / trial 展示与轮询 -->
+			<view v-if="showHomePillowHeightDevOnly" class="card card-posture-0b">
+				<text class="posture-0b-label">有效压力点位最高值</text>
+				<text class="posture-0b-value">{{ posture0bMaxDisplay }}</text>
+			</view>
+
+			<!-- 生命特征：有 WiFi MAC 时展示；离床时心率/呼吸显示为 -- -->
+			<view v-if="showHomeVitals" class="card card-vitals">
 				<view class="vital-col">
 					<view class="vital-col-head">
 						<image class="vital-icon" src="../../static/icon/heart.png" mode="aspectFit"></image>
@@ -43,7 +72,7 @@
 				</view>
 			</view>
 
-			<!-- 枕头加热：开关打开后展开档位与温度（仅 UI，功能暂未接入） -->
+			<!-- 枕头加热：开关 + 档位 + 加热时间 -->
 			<view class="card card-heat">
 				<view class="heat-row heat-row-between">
 					<view class="heat-title-wrap">
@@ -54,26 +83,44 @@
 						<switch
 							:key="'heat-sw-' + heatSwitchKey"
 							:checked="heatSwitchOn"
-							:disabled="!loginStatus"
-							color="#22c55e"
+							:disabled="!heatBleUiReady"
+							color="#1C6A51"
 							class="heat-switch"
 							@change="onHeatSwitchChange"
 						/>
 						<!-- 未连接时拦截触摸：避免微信小程序 switch 先翻状态再进 @change，导致 UI 与数据不一致 -->
 						<view
-							v-if="!loginStatus"
+							v-if="!heatBleUiReady"
 							class="heat-switch-mask"
 							@tap.stop="onNeckHeatSwitchBlocked"
 						/>
 					</view>
 				</view>
-				<!-- 已连接即显示当前温度；首页每 5s 主动读 0x04（硬件不主动推）；首次 0x04 后 5s 再尝试读 0x01 固件信息 -->
-				<view v-if="loginStatus" class="heat-row heat-row-between heat-row-temp">
-					<text class="heat-sub-label">当前温度</text>
-					<text class="heat-temp">{{ heatPlateTempDisplay }}</text>
-				</view>
 				<view v-if="heatSwitchOn" class="heat-expand">
-					<view class="heat-row">
+					<view class="heat-row heat-row-duration">
+						<text class="heat-sub-label">加热时间</text>
+						<view class="heat-duration-grid">
+							<view
+								v-for="item in heatDurationOptions"
+								:key="item.id"
+								class="heat-level-btn heat-duration-btn"
+								:class="{ active: heatDurationPresetId === item.id }"
+								@click="onHeatDurationTap(item.id)"
+							>{{ item.label }}</view>
+						</view>
+						<view v-if="heatDurationPresetId === 'custom'" class="heat-custom-duration">
+							<input
+								class="heat-custom-input"
+								type="number"
+								:disabled="!heatBleUiReady"
+								v-model="heatCustomDurationMinutesStr"
+								placeholder="1~180"
+								@blur="syncHeatCustomDurationFromStr"
+							/>
+							<text class="heat-custom-unit">分钟（最长3小时）</text>
+						</view>
+					</view>
+					<view class="heat-row heat-row-last">
 						<text class="heat-sub-label">加热档位</text>
 						<view class="heat-levels">
 							<view
@@ -182,15 +229,18 @@
 		nextTick
 	} from 'vue';
   import { PillowBleManager, readFirmwareVersionCache } from '@/utils/BlueUtils';
-  import { object2Query, buildHeartModuleWifiFrame9, parseHeartWifiStatusFromPayloadHex } from '@/common/util.js'
+  import { object2Query, buildHeartModuleWifiFrame9, parseHeartWifiStatusFromPayloadHex, resolveManualAdjustMode, canBypassBleConnectInCurrentEnv } from '@/common/util.js'
+  import { canBypassNonReleaseEnv } from '@/common/envBypass.js'
 	import {
 		getappVersion
 	} from '../../utils/miniapp';
 	import base from '@/utils/baseUrl';
-	import soapDeviceApi from '@/utils/soapDeviceApi.js';
+	import deviceRealtimeManager from '@/utils/deviceRealtimeManager.js';
 
 	/** 首页 0x04 readPillowStatus 周期性轮询间隔（毫秒） */
 	const HOME_PILLOW_STATUS_POLL_MS = 5000
+	/** 首页 0x0B 睡姿采样轮询间隔（毫秒，仅 develop/trial） */
+	const HOME_POSTURE_0B_POLL_MS = 1000
 	/** 首页 0x01 固件版本读取轮询间隔（毫秒） */
 	const HOME_FIRMWARE_01_POLL_MS = 2000
 	/** 首页 0x0F 联网状态查询轮询间隔（毫秒） */
@@ -241,18 +291,49 @@
 			headArrowSrc() {
 				return this.headArrowDirection === 'up' ? '../../static/SY_11_UP.png' : '../../static/SY_11_DOW.png';
 			},
-			/** 0x04 读应答里的加热片温度（须先 readPillowStatus）；无数据时显示 -- */
-			heatPlateTempDisplay() {
-				if (this.heatPlateTemp === null || this.heatPlateTemp === undefined) {
+			realtimeHeartRateDisplay() {
+				if (this.deviceIsLeaveBed) {
 					return '--';
 				}
-				return this.heatPlateTemp + '℃';
-			},
-			realtimeHeartRateDisplay() {
 				return this.realtimeHeartRate == null ? '--' : String(this.realtimeHeartRate);
 			},
 			realtimeBreathRateDisplay() {
+				if (this.deviceIsLeaveBed) {
+					return '--';
+				}
 				return this.realtimeBreathRate == null ? '--' : String(this.realtimeBreathRate);
+			},
+			/** 正式版须连蓝牙；develop/trial 可跳过连接拦截（加热区） */
+			heatBleUiReady() {
+				return this.loginStatus || canBypassBleConnectInCurrentEnv()
+			},
+			/** 首页头/颈枕高度：仅非正式环境显示 */
+			showHomePillowHeightDevOnly() {
+				return canBypassNonReleaseEnv()
+			},
+			/** 0x04 数据区头枕高度 uint16（0~100%），经 PillowBleManager 写入 pillowHeight */
+			pillowHeadHeightDisplay() {
+				if (!this.loginStatus) {
+					return '--';
+				}
+				return String(this.pillowHeight);
+			},
+			/** 0x04 数据区颈枕高度 uint16（0~100%），经 PillowBleManager 写入 pillowSideHeight */
+			pillowNeckHeightDisplay() {
+				if (!this.loginStatus) {
+					return '--';
+				}
+				return String(this.pillowSideHeight);
+			},
+			posture0bMaxDisplay() {
+				if (!this.loginStatus || this.posture0bMaxValue == null) {
+					return '--';
+				}
+				return String(this.posture0bMaxValue);
+			},
+			/** 已配网并有设备 MAC 时展示心率/呼吸卡片 */
+			showHomeVitals() {
+				return !!this.deviceSoapMac;
 			}
 		},
 		watch: {
@@ -330,15 +411,21 @@
 				lastHeadHeight: 0, // 记录最后一次头枕高度
 				isInitialized: false, // 标记是否已初始化
 				isSpineAdjusting: false, // 是否正在进行脊柱调整
-				// 枕头加热区 UI 占位（未接协议）
+				// 枕头加热
 				heatSwitchOn: false,
 				/** -1 表示未选档位，不默认「低」 */
 				heatLevelIndex: -1,
 				heatLevels: ['低', '中', '高'],
-				/** 0x04 应答里的加热片温度（uint8），与协议「读取枕头高度」表一致 */
-				heatPlateTemp: null,
-				/** 0x08 加热持续时间（秒），与协议 uint16 一致 */
-				heatDurationSeconds: 1800,
+				/** 加热时间预设：15/30/60 分钟或自定义（最长 8 小时） */
+				heatDurationOptions: [
+					{ id: '15', label: '15分钟', seconds: 15 * 60 },
+					{ id: '30', label: '30分钟', seconds: 30 * 60 },
+					{ id: '60', label: '1小时', seconds: 60 * 60 },
+					{ id: 'custom', label: '自定义', seconds: null }
+				],
+				heatDurationPresetId: '30',
+				heatCustomDurationMinutes: 45,
+				heatCustomDurationMinutesStr: '45',
 				/** 首页 0x04 readPillowStatus 轮询定时器 */
 				pillow04PollTimer: null,
 				/** 首页 0x01 版本读取轮询定时器：拿到有效版本后自动停止 */
@@ -352,15 +439,21 @@
 				navTitle: '首页',
 				/** 蓝牙连接后展示设备名（来自 PillowBleManager） */
 				connectedDeviceName: '',
-				/** SOAP 实时生命体征 */
+				/** 实时生命体征（WebSocket + GetDeviceInfo 心跳） */
 				realtimeHeartRate: null,
 				realtimeBreathRate: null,
-				realtimeVitalTimer: null,
+				deviceSoapMac: '',
+				deviceIsLeaveBed: false,
+				_realtimeVitalUnsub: null,
 				/** 首页 0x0F 联网状态查询轮询 */
 				wifiStatusQueryTimer: null,
 				wifiStatusReadTimer: null,
 				wifiStatusSuccessStreak: 0,
 				wifiStatusPollingDone: false,
+				/** 首页 0x0B 睡姿采样轮询（仅 develop/trial） */
+				posture0bPollTimer: null,
+				posture0bPollInFlight: false,
+				posture0bMaxValue: null,
 			}
 		},
 
@@ -402,10 +495,11 @@
 			uni.$on('xx', this.onStatusBleNotify);
 			uni.$on('pillow_firmware_version', this.onFirmwareVersionEvent);
 			this.initFirmwareVersionState();
+			this.tryStartDeviceRealtime();
 			if (this.loginStatus) {
 				this.startHomePillow04Poll();
+				this.startHomePosture0bPoll();
 				this.startHomeFirmware01Poll();
-				this.startRealtimeVitalPoll();
 				this.startWifiStatusQueryPoll();
 			}
 		},
@@ -438,8 +532,9 @@
 			uni.$off('xx', this.onStatusBleNotify);
 			uni.$off('pillow_firmware_version', this.onFirmwareVersionEvent);
 			this.stopHomePillow04Poll();
+			this.stopHomePosture0bPoll();
 			this.stopHomeFirmware01Poll();
-			this.stopRealtimeVitalPoll();
+			this.stopDeviceRealtime();
 			this.stopWifiStatusQueryPoll();
 		},
 		onLoad() {
@@ -464,64 +559,41 @@
 				const macLike = /^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
 				return macLike.test(name) ? name : '';
 			},
-			parseRealtimeFromDataFrame(frame) {
-				const left = (frame && frame.left) || {};
-				const right = (frame && frame.right) || {};
-				const isSideValid = (side) => {
-					const hr = Number(side.heart_rate);
-					const rr = Number(side.respiration_rate);
-					return Number.isFinite(hr) && hr > 0 && Number.isFinite(rr) && rr > 0;
-				};
-				const side = isSideValid(left) ? left : (isSideValid(right) ? right : null);
-				if (!side) {
-					return { heartRate: null, breathRate: null };
-				}
-				return {
-					heartRate: Number(side.heart_rate),
-					breathRate: Number(side.respiration_rate)
-				};
-			},
-			async fetchRealtimeVitals() {
-				if (!this.loginStatus) return;
-				const mac = this.resolveSoapMac();
-				if (!mac) {
-					console.log('设备mac信息:', mac);
+			onDeviceRealtimeUpdate(payload) {
+				const p = payload || {};
+				this.deviceIsLeaveBed = !!p.isLeaveBed;
+				if (p.isLeaveBed) {
+					this.$set(this, 'realtimeHeartRate', null);
+					this.$set(this, 'realtimeBreathRate', null);
 					return;
 				}
-				try {
-					console.log('设备mac信息:', mac);
-					const res = await soapDeviceApi.getDeviceData({ mac, timestamp: 0, waveform: false });
-					const rows = (res && res.data) || [];
-					if (!Array.isArray(rows) || !rows.length) {
-						console.log('[deviceManager] 实时数据为空，跳过页面更新');
-						return;
-					}
-					const last = rows[rows.length - 1];
-					const parsed = this.parseRealtimeFromDataFrame(last);
-					this.realtimeHeartRate = parsed.heartRate;
-					this.realtimeBreathRate = parsed.breathRate;
-					console.log('[deviceManager] 准备设置实时数据:', {
-						heartRate: parsed.heartRate,
-						breathRate: parsed.breathRate,
-						rows: rows.length
-					});
-				} catch (err) {
-					console.warn('[status] fetchRealtimeVitals failed:', err);
-				}
+				this.$set(this, 'realtimeHeartRate', p.heartRate != null ? p.heartRate : null);
+				this.$set(this, 'realtimeBreathRate', p.breathRate != null ? p.breathRate : null);
 			},
-			startRealtimeVitalPoll() {
-				this.stopRealtimeVitalPoll();
-				if (!this.loginStatus) return;
-				this.fetchRealtimeVitals();
-				this.realtimeVitalTimer = setInterval(() => {
-					this.fetchRealtimeVitals();
-				}, 1000);
-			},
-			stopRealtimeVitalPoll() {
-				if (this.realtimeVitalTimer) {
-					clearInterval(this.realtimeVitalTimer);
-					this.realtimeVitalTimer = null;
+			tryStartDeviceRealtime() {
+				const mac = this.resolveSoapMac();
+				this.deviceSoapMac = mac;
+				if (!mac) {
+					console.log('[status] 无 wifi_device_mac，不启动 WebSocket/SOAP 实时');
+					this.stopDeviceRealtime();
+					return;
 				}
+				console.log('[status] 启动实时数据（仅 WebSocket + 心跳）', { mac });
+				if (!this._realtimeVitalUnsub) {
+					this._realtimeVitalUnsub = deviceRealtimeManager.onUpdate(this.onDeviceRealtimeUpdate);
+				}
+				deviceRealtimeManager.connect(mac);
+			},
+			stopDeviceRealtime() {
+				if (this._realtimeVitalUnsub) {
+					deviceRealtimeManager.offUpdate(this._realtimeVitalUnsub);
+					this._realtimeVitalUnsub = null;
+				}
+				deviceRealtimeManager.disconnect();
+				this.deviceSoapMac = '';
+				this.deviceIsLeaveBed = false;
+				this.$set(this, 'realtimeHeartRate', null);
+				this.$set(this, 'realtimeBreathRate', null);
 			},
 			sendWifiStatusQuery0f() {
 				if (!this.loginStatus || this.wifiStatusPollingDone) return;
@@ -607,22 +679,12 @@
 				});
 			},
 			manualFineTune() {
-				try {
-					const lastMode = uni.getStorageSync('lastMode');
-					if (lastMode && lastMode.name) {
-						uni.navigateTo({ url: '/page_subject/adjust/adjust' + object2Query(lastMode) });
-						return;
-					}
-					const myModeStr = uni.getStorageSync('myMode');
-					if (myModeStr) {
-						const list = JSON.parse(myModeStr) || [];
-						if (list.length > 0) {
-							uni.navigateTo({ url: '/page_subject/adjust/adjust' + object2Query(list[0]) });
-							return;
-						}
-					}
-				} catch (err) {}
-				uni.navigateTo({ url: '/page_subject/mode/setMode' });
+				const mode = resolveManualAdjustMode()
+				if (mode && mode.name) {
+					uni.navigateTo({ url: '/page_subject/adjust/adjust' + object2Query(mode) })
+					return
+				}
+				uni.navigateTo({ url: '/page_subject/mode/setMode' })
 			},
 			/** 低/中/高对应目标温度（0x08），需在 0~40℃；未选档位时返回 null */
 			heatTargetTempForLevel() {
@@ -633,13 +695,69 @@
 				}
 				return map[i];
 			},
+			clampHeatCustomMinutes(m) {
+				const n = Math.floor(Number(m))
+				if (Number.isNaN(n)) return 1
+				return Math.max(1, Math.min(180, n))
+			},
+			syncHeatCustomDurationFromStr() {
+				const m = this.clampHeatCustomMinutes(this.heatCustomDurationMinutesStr)
+				this.heatCustomDurationMinutes = m
+				this.heatCustomDurationMinutesStr = String(m)
+				if (this.heatDurationPresetId === 'custom') {
+					this.sendNeckHeatCommandIfReady()
+				}
+			},
+			getHeatDurationSeconds() {
+				if (this.heatDurationPresetId === 'custom') {
+					return this.clampHeatCustomMinutes(this.heatCustomDurationMinutes) * 60
+				}
+				const preset = this.heatDurationOptions.find((o) => o.id === this.heatDurationPresetId)
+				return preset && preset.seconds ? preset.seconds : 30 * 60
+			},
+			sendNeckHeatCommandIfReady() {
+				if (!this.heatSwitchOn) {
+					return false
+				}
+				const ble = PillowBleManager.getInstance()
+				if (!ble.isConnected()) {
+					return false
+				}
+				const temp = this.heatTargetTempForLevel()
+				if (temp === null) {
+					return false
+				}
+				if (this.heatDurationPresetId === 'custom') {
+					this.syncHeatCustomDurationFromStr()
+				}
+				ble.heating({
+					on: true,
+					targetTemperature: temp,
+					durationSeconds: this.getHeatDurationSeconds()
+				})
+				return true
+			},
 			onNeckHeatSwitchBlocked() {
+				if (canBypassBleConnectInCurrentEnv()) {
+					return
+				}
 				uni.showToast({ title: '请先连接设备', icon: 'none' });
+			},
+			onHeatDurationTap(presetId) {
+				if (!this.heatBleUiReady) {
+					this.onNeckHeatSwitchBlocked()
+					return
+				}
+				this.heatDurationPresetId = presetId
+				if (presetId === 'custom') {
+					this.syncHeatCustomDurationFromStr()
+				}
+				this.sendNeckHeatCommandIfReady()
 			},
 			onHeatSwitchChange(e) {
 				const on = !!(e.detail && e.detail.value);
 				const ble = PillowBleManager.getInstance();
-				if (!ble.isConnected()) {
+				if (!ble.isConnected() && !canBypassBleConnectInCurrentEnv()) {
 					this.onNeckHeatSwitchBlocked();
 					this.heatSwitchOn = false;
 					this.heatSwitchKey += 1;
@@ -647,13 +765,18 @@
 				}
 				this.heatSwitchOn = on;
 				if (!on) {
-					ble.heating({
-						on: false,
-						targetTemperature: 0,
-						durationSeconds: 0
-					});
+					if (ble.isConnected()) {
+						ble.heating({
+							on: false,
+							targetTemperature: 0,
+							durationSeconds: 0
+						});
+					}
 					this.heatLevelIndex = -1;
 					return;
+				}
+				if (this.heatDurationPresetId === 'custom') {
+					this.syncHeatCustomDurationFromStr()
 				}
 				const temp = this.heatTargetTempForLevel();
 				if (temp === null) {
@@ -663,7 +786,7 @@
 				ble.heating({
 					on: true,
 					targetTemperature: temp,
-					durationSeconds: this.heatDurationSeconds
+					durationSeconds: this.getHeatDurationSeconds()
 				});
 			},
 			onHeatLevelTap(idx) {
@@ -671,19 +794,30 @@
 				if (!this.heatSwitchOn) {
 					return;
 				}
-				const ble = PillowBleManager.getInstance();
-				if (!ble.isConnected()) {
+				this.sendNeckHeatCommandIfReady()
+			},
+			/** 0x04 设备状态 bit3：与遥控器同步——设备在加热则打开开关并选高档；设备未加热则关开关 */
+			syncNeckHeatUiFromPillow04(p) {
+				if (!p || !p.ok) {
 					return;
 				}
-				const temp = this.heatTargetTempForLevel();
-				if (temp === null) {
-					return;
+				const heatingOn =
+					p.heatingOn === true ||
+					((((p.deviceStatus != null ? p.deviceStatus : p.valveBits) ?? 0) >> 3) & 1) === 1;
+				const HIGH_LEVEL_INDEX = 2;
+				if (heatingOn) {
+					if (!this.heatSwitchOn) {
+						this.$set(this, 'heatSwitchOn', true);
+						this.$set(this, 'heatLevelIndex', HIGH_LEVEL_INDEX);
+						this.heatSwitchKey += 1;
+					} else if (this.heatLevelIndex < 0) {
+						this.$set(this, 'heatLevelIndex', HIGH_LEVEL_INDEX);
+					}
+				} else if (this.heatSwitchOn) {
+					this.$set(this, 'heatSwitchOn', false);
+					this.$set(this, 'heatLevelIndex', -1);
+					this.heatSwitchKey += 1;
 				}
-				ble.heating({
-					on: true,
-					targetTemperature: temp,
-					durationSeconds: this.heatDurationSeconds
-				});
 			},
 			/** notify 里对「先下发 readPillowStatus」的 0x04 读应答，更新加热片温度 */
 			onStatusBleNotify(res) {
@@ -714,8 +848,8 @@
 						return;
 					}
 					const p = parsed.parsed;
-					if (p && p.ok && typeof p.heatTemp === 'number') {
-						this.$set(this, 'heatPlateTemp', p.heatTemp);
+					if (p && p.ok) {
+						this.syncNeckHeatUiFromPillow04(p);
 					}
 				} catch (err) {
 					console.warn('[status] onStatusBleNotify', err);
@@ -742,6 +876,63 @@
 					clearInterval(this.pillow04PollTimer);
 					this.pillow04PollTimer = null;
 				}
+			},
+			/** 与 study.vue 一致：有效点位取 max，否则取全部采样 max */
+			maxPostureSampleFromSnap(snap) {
+				const flags = Array.isArray(snap.validFlags) ? snap.validFlags : [];
+				const samples = Array.isArray(snap.postureSamples) ? snap.postureSamples : [];
+				const len = Math.min(flags.length, samples.length);
+				let maxV = -1;
+				for (let i = 0; i < len; i++) {
+					if (Number(flags[i])) {
+						const v = Number(samples[i]) || 0;
+						maxV = maxV < 0 ? v : Math.max(maxV, v);
+					}
+				}
+				if (maxV >= 0) {
+					return maxV;
+				}
+				for (let i = 0; i < samples.length; i++) {
+					const v = Number(samples[i]) || 0;
+					maxV = maxV < 0 ? v : Math.max(maxV, v);
+				}
+				return maxV < 0 ? 0 : maxV;
+			},
+			async fetchHomePosture0bOnce() {
+				if (!canBypassNonReleaseEnv()) return;
+				if (!this.loginStatus) return;
+				const mgr = PillowBleManager.getInstance();
+				if (!mgr.isConnected()) return;
+				if (this.posture0bPollInFlight) return;
+				this.posture0bPollInFlight = true;
+				try {
+					const snap = await mgr.readPostureSnapshot0x0B({ silent: true, timeoutMs: 8000 });
+					const maxVal = this.maxPostureSampleFromSnap(snap);
+					this.$set(this, 'posture0bMaxValue', maxVal);
+				} catch (err) {
+					console.warn('[status] fetchHomePosture0bOnce failed:', err);
+				} finally {
+					this.posture0bPollInFlight = false;
+				}
+			},
+			/** 已连接且非正式环境：每 1s 读一次 0x0B */
+			startHomePosture0bPoll() {
+				this.stopHomePosture0bPoll();
+				if (!canBypassNonReleaseEnv()) return;
+				if (!this.loginStatus || !PillowBleManager.getInstance().isConnected()) {
+					return;
+				}
+				this.fetchHomePosture0bOnce();
+				this.posture0bPollTimer = setInterval(() => {
+					this.fetchHomePosture0bOnce();
+				}, HOME_POSTURE_0B_POLL_MS);
+			},
+			stopHomePosture0bPoll() {
+				if (this.posture0bPollTimer) {
+					clearInterval(this.posture0bPollTimer);
+					this.posture0bPollTimer = null;
+				}
+				this.posture0bPollInFlight = false;
 			},
 			initFirmwareVersionState() {
 				const c = readFirmwareVersionCache();
@@ -876,14 +1067,15 @@
 				console.log('页面 login 计算属性值:', this.login)
 				if (!this.loginStatus) {
 					this.stopHomePillow04Poll();
+					this.stopHomePosture0bPoll();
 					this.stopHomeFirmware01Poll();
-					this.stopRealtimeVitalPoll();
+					this.stopDeviceRealtime();
 					this.stopWifiStatusQueryPoll();
 					this.wifiStatusSuccessStreak = 0;
 					this.wifiStatusPollingDone = false;
 					this.$set(this, 'connectedDeviceName', '')
+					this.$set(this, 'posture0bMaxValue', null);
 					this.$set(this, 'heatSwitchOn', false);
-					this.$set(this, 'heatPlateTemp', null);
 					this.$set(this, 'realtimeHeartRate', null);
 					this.$set(this, 'realtimeBreathRate', null);
 					this.heatLevelIndex = -1;
@@ -891,8 +1083,9 @@
 				} else {
 					this.initFirmwareVersionState();
 					this.startHomePillow04Poll();
+					this.startHomePosture0bPoll();
 					this.startHomeFirmware01Poll();
-					this.startRealtimeVitalPoll();
+					this.tryStartDeviceRealtime();
 					this.startWifiStatusQueryPoll();
 				}
 			},
@@ -1456,7 +1649,7 @@
 		width: 100%;
 		height: 100vh;
 		box-sizing: border-box;
-		background-color: #e8eef2;
+		background-color: #F0F6F7;
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
@@ -1465,8 +1658,8 @@
 	.status-nav {
 		flex-shrink: 0;
 		width: 100%;
-		background: #ffffff;
-		border-bottom: 1rpx solid #e2e8f0;
+		background: #F0F6F7;
+		border-bottom: 1rpx solid rgba(175, 160, 201, 0.45);
 		box-sizing: border-box;
 		z-index: 200;
 	}
@@ -1502,7 +1695,7 @@
 
 	.nav-title {
 		font-size: 34rpx;
-		color: #1e293b;
+		color: #051C2C;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -1523,13 +1716,13 @@
 	}
 
 	.nav-pillow-status--on .pillow-status-sub {
-		color: #15803d;
+		color: #1C6A51;
 		font-weight: 600;
 	}
 
 	.pillow-status-sub {
 		font-size: 24rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		line-height: 1.2;
 		max-width: 100%;
 		overflow: hidden;
@@ -1538,10 +1731,10 @@
 	}
 
 	.btn-ble-connected {
-		background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%) !important;
+		background: linear-gradient(180deg, #1C6A51 0%, #005578 100%) !important;
 		color: #fff !important;
 		border: none !important;
-		box-shadow: 0 8rpx 24rpx rgba(22, 163, 74, 0.28);
+		box-shadow: 0 8rpx 24rpx rgba(5, 28, 44, 0.22);
 	}
 
 	.status-scroll {
@@ -1556,9 +1749,9 @@
 		margin: 24rpx 28rpx 0;
 		border-radius: 24rpx;
 		overflow: hidden;
-		border: 4rpx solid #93c5fd;
+		border: 4rpx solid #4C8CB6;
 		min-height: 280rpx;
-		background: #e5e7eb;
+		background: #F0F6F7;
 
 		.banner-img {
 			width: 100%;
@@ -1609,12 +1802,103 @@
 		box-sizing: border-box;
 	}
 
+	.card-height {
+		display: flex;
+		flex-direction: row;
+		align-items: stretch;
+		background: linear-gradient(180deg, rgba(28, 106, 81, 0.12) 0%, rgba(76, 140, 182, 0.18) 55%, #F0F6F7 100%);
+		box-shadow: 0 4rpx 20rpx rgba(5, 28, 44, 0.08);
+		padding: 28rpx 24rpx;
+	}
+
+	.card-posture-0b {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		background: linear-gradient(180deg, rgba(28, 106, 81, 0.08) 0%, rgba(76, 140, 182, 0.12) 100%);
+		box-shadow: 0 4rpx 20rpx rgba(5, 28, 44, 0.06);
+		padding: 24rpx 32rpx;
+	}
+
+	.posture-0b-label {
+		font-size: 26rpx;
+		color: #051C2C;
+		font-weight: 500;
+	}
+
+	.posture-0b-value {
+		font-size: 40rpx;
+		font-weight: 600;
+		color: #1C6A51;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.height-col {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+		min-width: 0;
+	}
+
+	.height-col-head {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 12rpx;
+	}
+
+	.height-row-metric {
+		display: flex;
+		flex-direction: row;
+		align-items: baseline;
+		justify-content: center;
+		flex-wrap: wrap;
+	}
+
+	.height-icon {
+		width: 44rpx;
+		height: 44rpx;
+		margin-right: 10rpx;
+		flex-shrink: 0;
+	}
+
+	.height-label {
+		font-size: 26rpx;
+		color: #051C2C;
+		font-weight: 500;
+	}
+
+	.height-value {
+		font-size: 44rpx;
+		font-weight: 600;
+		color: #1C6A51;
+		line-height: 1.3;
+	}
+
+	.height-unit {
+		font-size: 24rpx;
+		color: rgba(5, 28, 44, 0.65);
+		margin-left: 6rpx;
+	}
+
+	.height-v-divider {
+		width: 2rpx;
+		background: rgba(76, 140, 182, 0.45);
+		align-self: stretch;
+		margin: 8rpx 0;
+		flex-shrink: 0;
+	}
+
 	.card-vitals {
 		display: flex;
 		flex-direction: row;
 		align-items: stretch;
-		background: linear-gradient(180deg, #c8e8f5 0%, #e8f6fc 45%, #f0fafc 100%);
-		box-shadow: 0 4rpx 20rpx rgba(15, 118, 168, 0.08);
+		background: linear-gradient(180deg, rgba(76, 140, 182, 0.24) 0%, rgba(175, 160, 201, 0.2) 45%, #F0F6F7 100%);
+		box-shadow: 0 4rpx 20rpx rgba(5, 28, 44, 0.08);
 		padding: 32rpx 24rpx;
 	}
 
@@ -1652,34 +1936,34 @@
 
 	.vital-label {
 		font-size: 28rpx;
-		color: #1e293b;
+		color: #051C2C;
 		font-weight: 500;
 	}
 
 	.vital-value {
 		font-size: 48rpx;
 		font-weight: 600;
-		color: #0f172a;
+		color: #051C2C;
 		line-height: 1.3;
 	}
 
 	.vital-unit {
 		font-size: 24rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		margin-left: 8rpx;
 	}
 
 	.vital-v-divider {
 		width: 2rpx;
-		background: #cbd5e1;
+		background: rgba(175, 160, 201, 0.5);
 		align-self: stretch;
 		margin: 8rpx 0;
 		flex-shrink: 0;
 	}
 
 	.card-heat {
-		background: #f8fafc;
-		box-shadow: 0 4rpx 16rpx rgba(15, 23, 42, 0.06);
+		background: #ffffff;
+		box-shadow: 0 4rpx 16rpx rgba(5, 28, 44, 0.08);
 	}
 
 	.heat-row {
@@ -1700,6 +1984,10 @@
 		margin-top: 8rpx;
 	}
 
+	.heat-expand .heat-row-duration {
+		margin-bottom: 20rpx;
+	}
+
 	.heat-title-wrap {
 		display: flex;
 		align-items: center;
@@ -1713,7 +2001,7 @@
 
 	.heat-title {
 		font-size: 30rpx;
-		color: #1e293b;
+		color: #051C2C;
 		font-weight: 500;
 	}
 
@@ -1738,7 +2026,7 @@
 
 	.heat-sub-label {
 		font-size: 26rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		display: block;
 		margin-bottom: 16rpx;
 	}
@@ -1753,26 +2041,60 @@
 		text-align: center;
 		padding: 18rpx 0;
 		border-radius: 12rpx;
-		border: 2rpx solid #3b82f6;
-		color: #2563eb;
+		border: 2rpx solid #4C8CB6;
+		color: #083969;
 		font-size: 28rpx;
 		background: #fff;
 	}
 
 	.heat-level-btn.active {
-		background: #eff6ff;
+		background: rgba(76, 140, 182, 0.16);
 		font-weight: 600;
 	}
 
-	.heat-temp {
-		font-size: 30rpx;
-		color: #0f172a;
-		font-weight: 500;
+	.heat-row-duration {
+		margin-bottom: 0;
+	}
+
+	.heat-duration-grid {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 16rpx;
+	}
+
+	.heat-duration-btn {
+		flex: 1 1 calc(50% - 16rpx);
+		min-width: calc(50% - 16rpx);
+		padding: 16rpx 0;
+	}
+
+	.heat-custom-duration {
+		display: flex;
+		align-items: center;
+		margin-top: 16rpx;
+		gap: 12rpx;
+	}
+
+	.heat-custom-input {
+		flex: 1;
+		height: 72rpx;
+		padding: 0 20rpx;
+		border: 2rpx solid #4C8CB6;
+		border-radius: 12rpx;
+		font-size: 28rpx;
+		color: #051C2C;
+		background: #fff;
+	}
+
+	.heat-custom-unit {
+		font-size: 24rpx;
+		color: rgba(5, 28, 44, 0.65);
+		white-space: nowrap;
 	}
 
 	.card-grid {
-		background: linear-gradient(180deg, #dff6fc 0%, #e8f8fc 100%);
-		box-shadow: 0 4rpx 20rpx rgba(15, 118, 168, 0.08);
+		background: linear-gradient(180deg, rgba(76, 140, 182, 0.22) 0%, rgba(175, 160, 201, 0.2) 100%);
+		box-shadow: 0 4rpx 20rpx rgba(5, 28, 44, 0.08);
 		padding-bottom: 36rpx;
 	}
 
@@ -1815,7 +2137,7 @@
 		align-items: center;
 		justify-content: center;
 		margin-bottom: 16rpx;
-		box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.12);
+		box-shadow: 0 4rpx 12rpx rgba(5, 28, 44, 0.14);
 	}
 
 	.grid-icon {
@@ -1825,7 +2147,7 @@
 
 	.grid-text {
 		font-size: 26rpx;
-		color: #334155;
+		color: #051C2C;
 		text-align: center;
 	}
 
@@ -1847,7 +2169,7 @@
 		border-radius: 16rpx;
 		font-size: 32rpx;
 		font-weight: 600;
-		background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+		background: linear-gradient(180deg, #083969 0%, #005578 100%);
 		color: #fff;
 		border: none;
 		display: flex;
@@ -1887,8 +2209,8 @@
 
 	.btn-outline {
 		background: #fff;
-		color: #2563eb;
-		border: 2rpx solid #2563eb;
+		color: #083969;
+		border: 2rpx solid #083969;
 	}
 
 	.btn-icon {
@@ -1928,7 +2250,7 @@
 
 
 	.popupcontainer {
-		background-color: #eff2f6;
+		background-color: #F0F6F7;
 		border-radius: 50rpx 50rpx 0rpx 0rpx;
 		position: relative;
 		padding-bottom: env(safe-area-inset-bottom);
@@ -1968,7 +2290,7 @@
 			.item {
 				text-align: center;
 				color: white;
-				background-color: #5B7897;
+				background-color: #083969;
 				border-radius: 30rpx;
 				margin-top: 10rpx;
 				margin-bottom: 10rpx;

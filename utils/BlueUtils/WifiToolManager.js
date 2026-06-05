@@ -1,5 +1,8 @@
 import PermissionToolManager from './PermissionToolManager.js'
+import { getRuntimePlatform, needsBleMacFromAdvertisData } from '@/utils/platformBle.js'
+import { isSystemLocationPermissionError, showWechatAppLocationPermissionModal } from '@/utils/permissionUtil.js'
 
+const SOAP_MAC_STORAGE_KEYS = ['wifi_device_mac', 'soap_device_mac', 'device_mac', 'wifiMac', 'mac']
 const WIFI_5G_KEYWORDS = ['-5g', '_5g', '5ghz', '-5ghz', '_5ghz', '5g_wifi', '5g-wifi']
 
 class WifiToolManager {
@@ -216,7 +219,11 @@ class WifiToolManager {
       },
       fail: (err) => {
         this.log(`读取当前 Wi-Fi 失败：${(err && err.errMsg) || JSON.stringify(err || {})}`)
-        this.handleFillCurrentWifiFail(silentFlag)
+        if (isSystemLocationPermissionError(err)) {
+          showWechatAppLocationPermissionModal()
+        } else {
+          this.handleFillCurrentWifiFail(silentFlag)
+        }
       },
       complete: () => {
         this.page.readingCurrentWifi = false
@@ -232,7 +239,7 @@ class WifiToolManager {
       title: '未读取到当前 Wi-Fi',
       content: this.page.platform === 'ios'
         ? 'iOS 设备可能无法直接返回当前网络名称，请在系统 Wi-Fi 中确认后手动输入。'
-        : 'Android 设备请确认已开启定位权限，并连接到 2.4G Wi-Fi 后重试；也可直接手动输入。',
+        : '请确认已开启手机定位服务、微信位置权限，并连接到 2.4G Wi-Fi 后重试；也可直接手动输入。',
       showCancel: false
     })
   }
@@ -268,6 +275,10 @@ class WifiToolManager {
       fail: (err) => {
         this.page.scanningWifiList = false
         this.log(`读取 Wi-Fi 列表失败：${(err && err.errMsg) || JSON.stringify(err || {})}`)
+        if (isSystemLocationPermissionError(err)) {
+          showWechatAppLocationPermissionModal()
+          return
+        }
         uni.showToast({ title: (err && err.errMsg) || '读取 Wi-Fi 列表失败', icon: 'none' })
       }
     })
@@ -342,18 +353,17 @@ class WifiToolManager {
 
   deriveWifiMacFromBlufiDevice(device) {
     const dev = device || {}
-    const sys = uni.getSystemInfoSync ? uni.getSystemInfoSync() : {}
-    const platform = String(sys.platform || '').toLowerCase()
+    const platform = getRuntimePlatform()
 
     let btMac = this.normalizeMacAddress(dev.deviceId)
-    // iOS 上 deviceId 常为 UUID，仅从 advertisData 还原蓝牙 MAC。
-    if (!btMac && platform === 'ios') {
+    // iOS / 鸿蒙：deviceId 常为 UUID，仅从 advertisData 还原蓝牙 MAC。
+    if (!btMac && needsBleMacFromAdvertisData(platform)) {
       btMac = this.convertAdvertisDataToMac(dev.advertisData)
       if (!btMac) return ''
-      // iOS：直接使用提取到的 MAC，不再做末字节 -1。
+      // 与 iOS 一致：直接使用广播解析 MAC，不再做末字节 -1。
       return btMac
     }
-    // 兜底：Android 以 deviceId 为准；若 iOS 也恰好是 MAC 格式也可走通。
+    // 兜底：Android 以 deviceId 为准；若恰好是 MAC 格式也可走通。
     if (!btMac) {
       btMac = this.normalizeMacAddress(dev.deviceId || dev.uuid || '')
     }
@@ -361,10 +371,59 @@ class WifiToolManager {
     return this.calcWifiMacMinusOne(btMac)
   }
 
+  resolveCachedSoapMac() {
+    for (let i = 0; i < SOAP_MAC_STORAGE_KEYS.length; i++) {
+      const v = uni.getStorageSync(SOAP_MAC_STORAGE_KEYS[i])
+      if (typeof v === 'string' && v.trim()) {
+        return v.trim()
+      }
+    }
+    return ''
+  }
+
+  /**
+   * 扫描阶段从 advertisData 落库 WiFi MAC（iOS / 鸿蒙）
+   * @param {object} device 蓝牙扫描设备
+   * @param {{ isTargetName?: (name: string) => boolean }} options
+   */
+  tryPersistMacFromScanDevice(device, options = {}) {
+    if (!needsBleMacFromAdvertisData(getRuntimePlatform())) {
+      return ''
+    }
+    const d = device || {}
+    const name = String(d.name || d.localName || '')
+    const { isTargetName } = options
+    if (typeof isTargetName === 'function' && !isTargetName(name)) {
+      return ''
+    }
+    let advertisData = d.advertisData
+    if (!advertisData) {
+      return ''
+    }
+    if (typeof advertisData !== 'string') {
+      try {
+        const u8 = new Uint8Array(advertisData)
+        advertisData = Array.from(u8)
+          .map((b) => ('0' + (b & 0xff).toString(16)).slice(-2))
+          .join('')
+      } catch (e) {
+        return ''
+      }
+    }
+    if (this.resolveCachedSoapMac()) {
+      return this.resolveCachedSoapMac()
+    }
+    return this.persistWifiMacForSoap({
+      advertisData,
+      deviceId: d.deviceId || '',
+      uuid: d.uuid || ''
+    })
+  }
+
   persistWifiMacForSoap(device) {
     const wifiMac = this.deriveWifiMacFromBlufiDevice(device)
     if (!wifiMac) {
-      this.log('未能从设备信息推导 WiFi MAC（iOS 仅支持从 advertisData 提取）')
+      this.log('未能从设备信息推导 WiFi MAC（iOS/鸿蒙需从 advertisData 提取）')
       return ''
     }
     try {

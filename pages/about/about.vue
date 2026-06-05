@@ -1,9 +1,9 @@
 <template>
 	<view class="about-page">
 		<z-nav-bar
-			bg-color="#ffffff"
+			bg-color="#F0F6F7"
 			title="关于我们"
-			font-color="#1e293b"
+			font-color="#051C2C"
 			:shadow="true"
 			backState="1000"
 			bgColorAngle="90"
@@ -100,7 +100,7 @@
 <style lang="scss" scoped>
 	.about-page {
 		min-height: 100vh;
-		background-color: #e8eef2;
+		background-color: #F0F6F7;
 		box-sizing: border-box;
 	}
 
@@ -135,8 +135,8 @@
 	.info-card {
 		background-color: #fff;
 		border-radius: 20rpx;
-		border: 1rpx solid #e2e8f0;
-		box-shadow: 0 4rpx 20rpx rgba(15, 23, 42, 0.05);
+		border: 1rpx solid rgba(175, 160, 201, 0.45);
+		box-shadow: 0 4rpx 20rpx rgba(5, 28, 44, 0.08);
 		overflow: hidden;
 	}
 
@@ -151,7 +151,7 @@
 
 	.info-label {
 		font-size: 30rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.65);
 		flex-shrink: 0;
 		width: 200rpx;
 	}
@@ -160,24 +160,24 @@
 		flex: 1;
 		text-align: right;
 		font-size: 30rpx;
-		color: #0f172a;
+		color: #051C2C;
 		font-weight: 500;
 	}
 
 	.info-value.link {
-		color: #2563eb;
+		color: #083969;
 	}
 
 	.info-arrow {
 		margin-left: 12rpx;
 		font-size: 32rpx;
-		color: #94a3b8;
+		color: rgba(5, 28, 44, 0.45);
 		flex-shrink: 0;
 	}
 
 	.info-divider {
 		height: 1rpx;
-		background: #e2e8f0;
+		background: rgba(175, 160, 201, 0.5);
 		margin-left: 28rpx;
 	}
 </style>

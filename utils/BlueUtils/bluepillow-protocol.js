@@ -93,6 +93,15 @@ class BluePillowProtocol {
     return offset + 2
   }
 
+  /** 小端 int16（short） */
+  static _putInt16LE(bytes, offset, value) {
+    let v = Math.floor(Number(value))
+    if (Number.isNaN(v)) v = 0
+    v = Math.max(-32768, Math.min(32767, v))
+    if (v < 0) v = 0x10000 + v
+    return BluePillowProtocol._putUint16LE(bytes, offset, v)
+  }
+
   // ===== 具体功能封装，便于直接调用 =====
 
   /**
@@ -207,7 +216,7 @@ class BluePillowProtocol {
 
   /**
    * 0x04 读取枕头数据（见协议「读取枕头高度 0x04」表）
-   * 应答数据区：工作状态、故障码×2、泵×2、加热温度、气阀；其后为 RTC×6、气压1/2（uint16，×0.01kPa）
+   * 应答数据区：工作状态、故障码×2、气压泵1/2（0 空闲，1 充气中）、加热片温度、设备状态（bit0~2 气阀，bit3 加热）；其后为 RTC×6、气压1/2（uint16，×0.01kPa）
    * 睡姿 16 点已不在 0x04 表中（改由 0x0B 等协议）。
    * 下发线路上为 0x84；须由 App 主动读，再在 notify 里收解析结果。
    */
@@ -263,7 +272,7 @@ class BluePillowProtocol {
    * 0x07 学习睡姿
    * @param {Object} payload
    * @param {boolean} [payload.read=false] true：读（线路上 0x87）
-   * @param {number} payload.mode 0x01 仰卧学习，0x02 侧卧学习
+   * @param {number} payload.mode 0x01 仰卧学习，0x02 侧卧学习，0x03 空闲学习
    * @param {number} payload.state 0x00 空闲 0x01 初始化 0x02 开始学习 0x03 结束学习 0x04 确认学习
    * @param {number} [payload.postureValidLimit=0] 睡姿有效点位值（uint8），协议亦称「可读可写，统计有效位／点数」；未传按 0
    * @param {number} [payload.supinePeak1] 仰卧峰值1（uint16）
@@ -442,17 +451,31 @@ class BluePillowProtocol {
   }
 
   /**
-   * 0x0C 读取和配置枕头参数（睡姿稳定时间）
-   * @param {number} [stabilitySeconds] 确认睡姿稳定时间，单位：秒（uint16）。不传则为读命令
+   * 0x0C 读取和配置枕头参数（协议：睡姿稳定时间 uint16 秒 + 头枕压力维持 uint16 ms + 颈枕压力维持 uint16 ms，小端）
+   * @param {number|object|null|undefined} payload
+   *   - 不传 / null / undefined：读命令
+   *   - number：仅写睡姿稳定时间（秒），头/颈压力维持写 0（兼容旧调用）
+   *   - object：{ stabilitySeconds, headPressureHoldMs?, neckPressureHoldMs? }，缺省按 0
    */
-  static pillowParams(stabilitySeconds) {
-    if (stabilitySeconds === null || typeof stabilitySeconds === 'undefined') {
+  static pillowParams(payload) {
+    if (payload === null || typeof payload === 'undefined') {
       return BluePillowProtocol.buildRead(0x0c)
     }
-    const v = stabilitySeconds & 0xffff
-    const bytes = new Uint8Array(2)
-    bytes[0] = v & 0xff
-    bytes[1] = (v >> 8) & 0xff
+    let stabilitySeconds = 0
+    let headMs = 0
+    let neckMs = 0
+    if (typeof payload === 'number') {
+      stabilitySeconds = payload & 0xffff
+    } else if (typeof payload === 'object') {
+      stabilitySeconds = Number(payload.stabilitySeconds) & 0xffff
+      headMs = Number(payload.headPressureHoldMs) & 0xffff
+      neckMs = Number(payload.neckPressureHoldMs) & 0xffff
+    }
+    const bytes = new Uint8Array(6)
+    let o = 0
+    o = BluePillowProtocol._putUint16LE(bytes, o, stabilitySeconds)
+    o = BluePillowProtocol._putUint16LE(bytes, o, headMs)
+    BluePillowProtocol._putUint16LE(bytes, o, neckMs)
     return BluePillowProtocol.buildWrite(0x0c, bytes)
   }
 
@@ -576,6 +599,50 @@ class BluePillowProtocol {
     bytes[0] = debugMode & 0xff
     bytes[1] = sleepState & 0xff
     return BluePillowProtocol.buildWrite(0x10, bytes)
+  }
+
+  /**
+   * 0x11 配置和读取修正值（量程 0~100，最多 20 档，节点 0~19）
+   * 节点与档位数据一一对应；节点 0 阈值最低，节点序号越大档位数据应越大。
+   * 写：档位节点(u8) + 档位数据(u16) + 充气修正(i16) + 放气修正(i16)，共 7 字节
+   * 读：仅档位节点 1 字节（线路上 0x91）
+   * @param {Object} payload
+   * @param {boolean} payload.read true=读 false=写
+   * @param {number} payload.nodeIndex 档位节点 0~19
+   * @param {number} [payload.levelData] 写：档位数据 0~100
+   * @param {number} [payload.inflateCorrect] 写：充气修正 short
+   * @param {number} [payload.deflateCorrect] 写：放气修正 short
+   */
+  static calibrationCorrect0x11(payload) {
+    const p = payload && typeof payload === 'object' ? payload : {}
+    let node = Number(p.nodeIndex)
+    if (Number.isNaN(node)) node = 0
+    node = Math.max(0, Math.min(19, Math.floor(node)))
+
+    if (p.read) {
+      const readCode = (0x11 | 0x80) & 0xff
+      return BluePillowProtocol.buildWrite(readCode, [node])
+    }
+
+    let levelData = Number(p.levelData)
+    if (Number.isNaN(levelData)) levelData = 0
+    levelData = Math.max(0, Math.min(100, Math.floor(levelData)))
+
+    let inflate = Number(p.inflateCorrect)
+    if (Number.isNaN(inflate)) inflate = 0
+    inflate = Math.max(-50, Math.min(50, Math.floor(inflate)))
+
+    let deflate = Number(p.deflateCorrect)
+    if (Number.isNaN(deflate)) deflate = 0
+    deflate = Math.max(-50, Math.min(50, Math.floor(deflate)))
+
+    const bytes = new Uint8Array(7)
+    let o = 0
+    bytes[o++] = node
+    o = BluePillowProtocol._putUint16LE(bytes, o, levelData)
+    o = BluePillowProtocol._putInt16LE(bytes, o, inflate)
+    BluePillowProtocol._putInt16LE(bytes, o, deflate)
+    return BluePillowProtocol.buildWrite(0x11, bytes)
   }
 
 }

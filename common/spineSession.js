@@ -5,6 +5,8 @@ import BluePillowProtocol from '@/utils/BlueUtils/bluepillow-protocol.js';
 import { PillowBleManager } from '@/utils/BlueUtils/PillowBleManager.js';
 
 export const SPINE_SESSION_KEY = 'spine_micro_session';
+/** 脊柱微调页表单（高度/时间/次数），与是否在微调会话无关，便于离页后再进入继续编辑 */
+export const SPINE_FORM_KEY = 'spine_micro_form';
 export const SPINE_PENDING_END_KEY = 'spine_pending_end';
 
 export function buildSpineEndBuffer() {

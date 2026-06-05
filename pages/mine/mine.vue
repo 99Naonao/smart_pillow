@@ -81,6 +81,7 @@
 	import {
 		autoLogin
 	} from '@/utils/miniapp.js'
+	import { canBypassLoginInCurrentEnv } from '@/common/util.js'
 	export default {
 		computed: {
 			shoulderWidth() {
@@ -90,11 +91,11 @@
 		data() {
 			return {
 				bgColorList: [{
-						color: "#5794d2",
+						color: "#4C8CB6",
 						scale: "0%"
 					},
 					{
-						color: "#607796",
+						color: "#083969",
 						scale: "100%"
 					}
 				],
@@ -133,6 +134,14 @@
 				if (userInfo && userInfo.token) {
 					this.score = userInfo.score;
 					this.userInfo = userInfo;
+					this.hasLogin = true;
+				} else if (canBypassLoginInCurrentEnv()) {
+					// 非正式环境：放开登录限制，便于联调蓝牙/设备流程
+					this.hasLogin = true;
+					this.score = 0;
+					this.userInfo = { avatar: '' };
+				} else {
+					this.hasLogin = false;
 				}
 			},
 			go2Use() {
@@ -172,14 +181,14 @@
 
 <style lang="scss">
 	.container {
-		// background-color: line-gradient(90deg, #5794d2, #607796);
-		background: linear-gradient(90deg, rgb(87, 148, 210), rgb(96, 119, 150));
+		// background-color: line-gradient(90deg, #4C8CB6, #083969);
+		background: linear-gradient(90deg, #4C8CB6, #083969);
 
 		.input-area {
 			margin: 20rpx;
 			letter-spacing: 2rpx;
 			text-align: center;
-			background-color: #406dafb2;
+			background-color: rgba(8, 57, 105, 0.7);
 			border-radius: 10rpx;
 			padding: 20rpx;
 			color: white;
@@ -220,7 +229,7 @@
 				border-radius: 100%;
 				margin: 0 auto;
 				border: 5px solid #fff;
-				background-color: #FFF4EA;
+				background-color: #F0F6F7;
 
 				.avatar {
 					flex-shrink: 0;
@@ -228,12 +237,12 @@
 					height: 114upx;
 					transform: scale(1);
 					border-radius: 100%;
-					background-color: #FFF4EA;
+					background-color: #F0F6F7;
 				}
 			}
 
 			.username {
-				color: #32455B;
+				color: #051C2C;
 				font-size: 35rpx;
 			}
 
@@ -245,10 +254,10 @@
 				display: flex;
 				line-height: 130rpx;
 				font-size: 38rpx;
-				color: #5B7897;
+				color: rgba(5, 28, 44, 0.7);
 				justify-content: center;
 				align-items: center;
-				box-shadow: 0px 0px 22px #BBB;
+				box-shadow: 0px 0px 22px rgba(5, 28, 44, 0.2);
 
 				.sub_score_info {
 					display: flex;
@@ -265,7 +274,7 @@
 					margin-left: 10rpx;
 					margin-right: 10rpx;
 					font-size: 36rpx;
-					background-color: #dadada;
+					background-color: #F0F6F7;
 				}
 
 				.icon {
@@ -287,7 +296,7 @@
 					line-height: 68rpx;
 					text-align: center;
 					font-size: 36rpx;
-					background-color: rgb(238, 126, 39);
+					background-color: #4C8CB6;
 					border-radius: 10rpx;
 					color: white;
 					margin-right: 20rpx;
@@ -296,7 +305,7 @@
 
 			.desc {
 				font-size: 32rpx;
-				color: #5B7897;
+				color: rgba(5, 28, 44, 0.7);
 				line-height: 40rpx;
 				padding-left: 66rpx;
 				padding-right: 66rpx;
@@ -353,14 +362,14 @@
 				display: flex;
 				justify-content: space-around;
 				align-items: center;
-				background-color: rgb(28, 68, 133);
+				background-color: #083969;
 				border-radius: 30rpx;
 				line-height: 56rpx;
 				color: white;
 			}
 
 			.opt-btn-top {
-				background-color: rgb(79, 128, 191);
+				background-color: #4C8CB6;
 			}
 
 

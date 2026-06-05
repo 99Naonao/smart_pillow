@@ -1,4 +1,8 @@
 import { PillowBleManager } from '@/utils/BlueUtils'
+import {
+	canBypassLoginInCurrentEnv,
+	canBypassBleConnectInCurrentEnv
+} from './envBypass.js'
 
 function formatTime(time) {
 	if (typeof time !== 'number' || time < 0) {
@@ -647,6 +651,35 @@ var initPillow = function(head, neck, width, sideHead, sideNexck, sideWidth) {
 	return return_buffer
 }
 
+/** 手动微调 / 0x05·0x06 等：协议档位 0~100 线性对应目标压力 0 Pa ~ 4000 Pa（4 kPa） */
+const MANUAL_PRESSURE_PA_MIN = 0
+const MANUAL_PRESSURE_PA_MAX = 4000
+
+function clampManualPressurePercent(pct) {
+	const n = Math.floor(Number(pct))
+	if (Number.isNaN(n)) return 0
+	return Math.max(0, Math.min(100, n))
+}
+
+/** 协议 0~100 → 压力（Pa，整数） */
+function manualPercentToPressurePa(pct) {
+	const p = clampManualPressurePercent(pct)
+	return Math.round(
+		MANUAL_PRESSURE_PA_MIN + (p / 100) * (MANUAL_PRESSURE_PA_MAX - MANUAL_PRESSURE_PA_MIN)
+	)
+}
+
+/** 界面展示，如「3.64 kPa」；可选附带档位 `(76)` */
+function formatManualPressureLabel(pct, opts = {}) {
+	const pa = manualPercentToPressurePa(pct)
+	const kpa = (pa / 1000).toFixed(2)
+	const base = `${kpa} kPa`
+	if (opts.showPercentIndex) {
+		return `${base} (${clampManualPressurePercent(pct)})`
+	}
+	return base
+}
+
 /**
  * uni跳转参数转化
  * @param {Object} obj
@@ -719,10 +752,64 @@ var saveRandomMode = function(obj) {
 		storageObj.push(params)
 	}
 	uni.setStorageSync('myMode', JSON.stringify(storageObj));
+	// 与 myMode 同步：避免首页 lastMode / selectedMyMode 仍为旧高度
+	try {
+		const selected = uni.getStorageSync('selectedMyMode')
+		if (selected && selected.name === params.name) {
+			uni.setStorageSync('selectedMyMode', { ...params })
+		}
+		const lastMode = uni.getStorageSync('lastMode')
+		if (lastMode && lastMode.name === params.name) {
+			uni.setStorageSync('lastMode', { ...params })
+		}
+	} catch (e) {}
 	if (item) {
 		return false;
 	}
 	return true;
+}
+
+/** @returns {Array<object>} */
+function parseMyModeList() {
+	const raw = uni.getStorageSync('myMode')
+	if (!raw) return []
+	try {
+		const list = JSON.parse(raw)
+		return Array.isArray(list) ? list : []
+	} catch (e) {
+		return []
+	}
+}
+
+/** @param {Array<object>} list @param {string} name */
+function findMyModeByName(list, name) {
+	if (!name || !list.length) return null
+	return list.find((m) => m && m.name === name) || null
+}
+
+/**
+ * 进入手动微调时应使用的模式：优先「我的数据」里当前选中项，再按 lastMode 名称取 myMode 最新数据。
+ * @returns {object|null}
+ */
+function resolveManualAdjustMode() {
+	const list = parseMyModeList()
+	try {
+		const selected = uni.getStorageSync('selectedMyMode')
+		if (selected && selected.name) {
+			const fresh = findMyModeByName(list, selected.name)
+			if (fresh) return fresh
+		}
+	} catch (e) {}
+	try {
+		const lastMode = uni.getStorageSync('lastMode')
+		if (lastMode && lastMode.name) {
+			const fresh = findMyModeByName(list, lastMode.name)
+			if (fresh) return fresh
+			return lastMode
+		}
+	} catch (e) {}
+	if (list.length > 0) return list[0]
+	return null
 }
 
 var getAIModeByName = function(name) {
@@ -819,6 +906,11 @@ function getMiniProgramEnv(){
 function isLogin(){
 	const userInfo = uni.getStorageSync('userInfo');
 	return !!(userInfo && userInfo.token);
+}
+
+/** 登录校验：正式环境必须登录；非正式环境可跳过 */
+function isLoginOrBypass(){
+	return isLogin() || canBypassLoginInCurrentEnv();
 }
 
 /**
@@ -972,13 +1064,13 @@ function parseHeartWifiStatusFromPayloadHex(payloadHex) {
 }
 
 function ensureLoginBeforeConnectBle(onSuccess){
-	if(isLogin()){
+	if(isLoginOrBypass()){
 		onSuccess && onSuccess();
 		return true;
 	}
 	uni.showModal({
 		title:'温馨提示',
-		content:'',
+		content:'连接蓝牙前请先登录',
 		confirmText:'去登录',
 		cancelText:'取消',
 		success: (res) => {
@@ -992,8 +1084,14 @@ function ensureLoginBeforeConnectBle(onSuccess){
 	return false;
 }
 export {
+	MANUAL_PRESSURE_PA_MIN,
+	MANUAL_PRESSURE_PA_MAX,
+	clampManualPressurePercent,
+	manualPercentToPressurePa,
+	formatManualPressureLabel,
 	object2Query,
 	saveRandomMode,
+	resolveManualAdjustMode,
 	sideParseByShooting,
 	parsePillowRealState,
 	handPillowStatus,
@@ -1029,6 +1127,9 @@ export {
 	formatTimeByString,
 	dateUtils,
 	getMiniProgramEnv,
+	canBypassLoginInCurrentEnv,
+	canBypassBleConnectInCurrentEnv,
+	isLoginOrBypass,
 	ensureLoginBeforeConnectBle,
 	xorBytes,
 	xorChk8,

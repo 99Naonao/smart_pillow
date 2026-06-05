@@ -42,10 +42,10 @@
 				</view>
 				<view class="info-right">
 					<view>
-						头枕高度{{selectItem.headHeight}}mm
+						头枕高度{{selectItem.headHeight}}%
 					</view>
 					<view>
-						颈枕高度{{selectItem.neckHeight}}mm
+						颈枕高度{{selectItem.neckHeight}}%
 					</view>
 				</view>
 			</view>
@@ -56,10 +56,10 @@
 				</view>
 				<view class="info-right">
 					<view>
-						头枕高度{{selectItem.sideHeadHeight}}mm
+						头枕高度{{selectItem.sideHeadHeight}}%
 					</view>
 					<view>
-						颈枕高度{{selectItem.sideNeckHeight}}mm
+						颈枕高度{{selectItem.sideNeckHeight}}%
 					</view>
 				</view>
 			</view>
@@ -76,10 +76,10 @@
 						<view class="info-r2">
 
 							<view>
-								头枕高度{{standard.headHeight}}mm
+								头枕高度{{recommendStandard.headHeight}}%
 							</view>
 							<view>
-								颈枕高度{{standard.neckHeight}}mm
+								颈枕高度{{recommendStandard.neckHeight}}%
 							</view>
 						</view>
 					</view>
@@ -89,10 +89,10 @@
 						</view>
 						<view class="info-r2">
 							<view>
-								头枕高度{{standard.sideHeadHeight}}mm
+								头枕高度{{recommendStandard.sideHeadHeight}}%
 							</view>
 							<view>
-								颈枕高度{{standard.sideNeckHeight}}mm
+								颈枕高度{{recommendStandard.sideNeckHeight}}%
 							</view>
 						</view>
 					</view>
@@ -179,6 +179,28 @@
 					if (v === '' || v === undefined || v === null) return false
 					return Number.isFinite(Number(v))
 				})
+			},
+			/** 推荐高度：随当前选中人群（modeList 预设）；未选中时用本地 AI standard 缓存 */
+			recommendStandard() {
+				const sel = this.selectItem || {}
+				if (sel.name) {
+					const row = this.modeList.find((m) => m.name === sel.name)
+					if (row) {
+						return {
+							headHeight: row.headHeight,
+							neckHeight: row.neckHeight,
+							sideHeadHeight: row.sideHeadHeight,
+							sideNeckHeight: row.sideNeckHeight
+						}
+					}
+				}
+				const s = this.standard || {}
+				return {
+					headHeight: s.headHeight ?? 60,
+					neckHeight: s.neckHeight ?? 60,
+					sideHeadHeight: s.sideHeadHeight ?? 60,
+					sideNeckHeight: s.sideNeckHeight ?? 60
+				}
 			}
 		},
 		methods: {
@@ -271,7 +293,7 @@
 
 <style lang="scss">
 	.container {
-		background-color: rgb(197, 208, 230);
+		background-color: rgba(175, 160, 201, 0.35);
 		height: 100%;
 
 		.title {
@@ -285,7 +307,7 @@
 		}
 
 		.send-btn {
-			background-color: #4d7fc9;
+			background-color: #4C8CB6;
 			margin: 40rpx;
 			color: white;
 			text-align: center;
@@ -345,7 +367,7 @@
 				width: 212rpx;
 				height: 270rpx;
 				background-color: white;
-				// border: 1px solid #5B7897;
+				// border: 1px solid rgba(5, 28, 44, 0.7);
 				border-radius: 10rpx;
 			}
 
@@ -374,7 +396,7 @@
 			margin-left: 40rpx;
 			margin-right: 40rpx;
 			font-size: 24rpx;
-			color: #354D5B;
+			color: #051C2C;
 
 			.info-item-recommond {
 				display: flex;
@@ -399,10 +421,10 @@
 
 
 				.info-left {
-					background-color: rgb(213, 224, 247);
+					background-color: rgba(175, 160, 201, 0.35);
 					border-top-left-radius: 15rpx;
 					border-bottom-left-radius: 15rpx;
-					border-right: rgb(197, 208, 230) 5rpx solid;
+					border-right: rgba(175, 160, 201, 0.35) 5rpx solid;
 					width: 133rpx;
 					height: 142rpx;
 					text-align: center;
@@ -443,7 +465,7 @@
 					background-color: white;
 					border-top-right-radius: 15rpx;
 					border-bottom-right-radius: 15rpx;
-					background-color: rgb(213, 224, 247);
+					background-color: rgba(175, 160, 201, 0.35);
 				}
 
 				.icon1 {
@@ -477,7 +499,7 @@
 					background-color: white;
 					border-top-left-radius: 15rpx;
 					border-bottom-left-radius: 15rpx;
-					border-right: rgb(197, 208, 230) 5rpx solid;
+					border-right: rgba(175, 160, 201, 0.35) 5rpx solid;
 					width: 133rpx;
 					height: 101rpx;
 					text-align: center;

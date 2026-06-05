@@ -9,8 +9,8 @@ Component({
 	},
 	data: {
 		selected: 0,
-		color: "#64748b",
-		selectedColor: "#2563eb",
+		color: "#F0F6F7",
+		selectedColor: "#FFFFFF",
 		list: [{
 				"pagePath": "/pages/status/status",
 				"iconPath": "/static/icon/home.png",

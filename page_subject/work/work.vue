@@ -4,8 +4,8 @@
 	<public-module></public-module>
 	<view class="">
 		<image class="topKV" :style="menuStyle" mode="widthFix" src="@/static/SY_01_000.png"></image>
-		<view class="tips">监测到以下设备</view>
-		<view class="tips" v-if="tempDeviceIdList.length == 0">暂无设备</view>
+		<view class="tips">检测到以下设备</view>
+		<view class="tips" v-if="tempDeviceIdList.length == 0">暂无设备</view>
 		<view v-for="(item,index) in tempDeviceIdList" :key="index">
 			<view class="device-item">
 				<view class="item-name">
@@ -60,6 +60,15 @@
 	} from '@/common/util.js'
 	import { PillowBleManager, BlueWifiToolManager } from '@/utils/BlueUtils';
 	import {
+		checkBluetoothAndLocationByDeviceType,
+		ensureLocationForBleScan,
+		handleBleScanFail,
+		isAwaitingLocationPermissionReturn,
+		clearLocationPermissionAwaitingReturn,
+		probeWifiLocationPermission
+	} from '@/utils/permissionUtil.js';
+	import { isIOSPlatform } from '@/utils/platformBle.js';
+	import {
 		nextTick
 	} from 'vue';
 	export default {
@@ -74,7 +83,17 @@
 		onShow() {
 			// 每次页面显示时重置蓝牙错误弹窗标记，避免上一轮的状态影响本次
 			this.bluetoothErrorShown = false;
-			this.checkBlueToothSetting();
+			if (isAwaitingLocationPermissionReturn()) {
+				probeWifiLocationPermission().then((granted) => {
+					clearLocationPermissionAwaitingReturn();
+					if (granted) {
+						console.log('[work] 从系统设置返回，位置权限已可用，重新初始化蓝牙');
+						this.checkBlueToothSetting();
+					}
+				});
+			} else {
+				this.checkBlueToothSetting();
+			}
 			this.refreshDeviceList();
 
 			this.onShowing = true;
@@ -109,7 +128,7 @@
 			uni.onBluetoothAdapterStateChange(this.adapterStateHandler);
 
 			// this.deviceIdList = [];
-			// 如果正在搜索中
+			// // 如果正在搜索中
 			if (this.searching) {
 				// uni.closeBluetoothAdapter({
 				// 	complete: () => {
@@ -206,26 +225,24 @@
 				return '';
 			},
 			tryPersistIosMacFromScanDevice(device) {
-				if (!this.isIOS) return;
 				const d = device || {};
-				const name = d.name || d.localName || '';
-				if (!this.isGoodSleepName(name)) return;
-				if (!d.advertisData || typeof d.advertisData !== 'string') return;
-				// 首次扫描阶段拿到并落库即可，避免后续反复覆盖。
-				if (this.resolveCachedSoapMac()) return;
+				if (!d.advertisData) return;
 				if (!this.wifiMacToolManager) {
 					this.wifiMacToolManager = new BlueWifiToolManager(this);
 				}
-				const saved = this.wifiMacToolManager.persistWifiMacForSoap({
-					advertisData: d.advertisData,
-					deviceId: d.deviceId || '',
-					uuid: d.uuid || ''
+				const saved = this.wifiMacToolManager.tryPersistMacFromScanDevice(d, {
+					isTargetName: (name) => this.isGoodSleepName(name)
 				});
 				if (saved) {
 					try {
-						uni.setStorageSync('ios_goodsleep_advertisData', d.advertisData);
+						const adv = typeof d.advertisData === 'string'
+							? d.advertisData
+							: '';
+						if (adv) {
+							uni.setStorageSync('ios_goodsleep_advertisData', adv);
+						}
 					} catch (e) {}
-					console.log('[work] iOS 首次扫描已保存 MAC:', saved);
+					console.log('[work] iOS/鸿蒙 首次扫描已保存 MAC:', saved);
 				}
 			},
 			/** 离开连接页时必须停止扫描并卸监听，避免回到首页仍持续搜蓝牙 */
@@ -274,9 +291,7 @@
 					this.isConnected = false;
 					console.log('设置 isConnected = false');
 					
-				// 清空设备列表
-				// this.deviceIdList = []; // 已注释，使用 tempDeviceIdList 代替
-				this.tempDeviceIdList = [];
+					this.tempDeviceIdList = [];
 					
 					// 停止搜索
 					this.stopBlueTooth();
@@ -371,115 +386,22 @@
 				uni.onBluetoothDeviceFound(this.deviceFoundHandler);
 			},
 			checkBlueToothSetting() {
-				console.log("checkBlueToothSetting");
-				let that = this;
-				const systemInfo = uni.getSystemInfoSync();
-				const isIOS = systemInfo.platform === 'ios';
-				this.isIOS = isIOS;
-				// 每次进来先重置蓝牙错误弹窗标记，避免上一轮的状态影响本次
+				console.log('checkBlueToothSetting');
+				this.isIOS = isIOSPlatform();
 				this.bluetoothErrorShown = false;
-
-				// 获取用户权限设置
-				uni.getSetting({
-					success(res) {
-						console.log("getSetting", res);
-						// 检查蓝牙权限（小程序層級）
-						if (!res.authSetting["scope.bluetooth"]) {
-							that.requestPermission(
-								"scope.bluetooth",
-								() => {
-									console.log("蓝牙权限已授予");
-									// iOS 不需要再申請地理位置權限，直接開啟藍牙
-									if (isIOS) {
-										that.openBlueTooth();
-									} else {
-										// Android 再檢查地理位置權限
-										that.checkLocationPermission();
-									}
-								},
-								() => {
-									console.log("蓝牙权限被拒绝");
-									that.showPermissionDeniedMessage("蓝牙");
-								}
-							);
-						} else {
-							console.log("蓝牙权限已存在");
-							if (isIOS) {
-								// iOS 已有藍牙權限，直接開啟藍牙
-								that.openBlueTooth();
-							} else {
-								// Android 再檢查地理位置權限
-								that.checkLocationPermission();
-							}
-						}
-					},
-					fail(err) {
-						console.error("获取权限设置失败", err);
-						that.showPermissionDeniedMessage("蓝牙");
-					}
-				});
+				checkBluetoothAndLocationByDeviceType()
+					.then(() => {
+						if (!this.onShowing) return;
+						this.openBlueTooth();
+					})
+					.catch((err) => {
+						console.log('checkBlueToothSetting权限未就绪:', err);
+					});
 			},
-
-			// 检查地理位置权限
-			checkLocationPermission() {
-				let that = this;
-				// 只在 Android 等需要定位權限的平台調用；iOS 直接在 checkBlueToothSetting 裡 openBlueTooth
-				uni.getSetting({
-					success(res) {
-						if (!res.authSetting["scope.userLocation"]) {
-							that.requestPermission(
-								"scope.userLocation",
-								() => {
-									console.log("地理位置权限已授予");
-									that.openBlueTooth(); // 初始化蓝牙功能
-								},
-								() => {
-									console.log("地理位置权限被拒绝");
-									that.showPermissionDeniedMessage("地理位置");
-								}
-							);
-						} else {
-							console.log("地理位置权限已存在");
-							that.openBlueTooth(); // 初始化蓝牙功能
-						}
-					},
-					fail(err) {
-						console.error("获取权限设置失败", err);
-						that.showPermissionDeniedMessage("地理位置");
-					}
-				});
-			},
-
-			// 请求权限的通用方法
-			requestPermission(scope, successCallback, errorCallback) {
-				uni.authorize({
-					scope: scope,
-					success: successCallback,
-					fail: errorCallback
-				});
-			},
-
-			// 显示权限被拒绝的提示信息
-			showPermissionDeniedMessage(permissionName) {
-				uni.showModal({
-					title: "权限不足",
-					content: `请前往设置页面开启 ${permissionName} 权限`,
-					success: (modalRes) => {
-						if (modalRes.confirm) {
-							uni.openSetting({
-								success: (settingRes) => {
-									console.log("用户打开了设置页面", settingRes);
-								}
-							});
-						}
-					}
-				});
-			},
-			// 統一處理藍牙初始化失敗的提示（錯誤碼對照官方表）
+			//  統一處理藍牙初始化失敗的提示（錯誤碼對照官方表）
 			handleOpenBluetoothFail(err) {
 				// 避免同一次流程中連續彈多次相同提示
 				if (this.bluetoothErrorShown) {
-					console.log('handleOpenBluetoothFail 已顯示過，本次忽略:', err);
 					return;
 				}
 				this.bluetoothErrorShown = true;
@@ -501,7 +423,6 @@
 						message = '当前系统不支持蓝牙低功耗功能，请更换设备后重试或重新进入小程序';
 						break;
 					default:
-						// 其它錯誤碼（10002 / 10003 / 10004 / 10005 / 10006...）統一給出通用提示並附帶錯誤碼
 						if (code !== undefined) {
 							message = `蓝牙初始化失败（错误码：${code}），请检查系统设置或稍后重试`;
 						}
@@ -519,27 +440,23 @@
 			// 开始搜索蓝牙设备（提取为独立方法，避免重复代码）
 			startBluetoothDiscovery() {
 				if (!this.onShowing) {
-					console.log('startBluetoothDiscovery 跳过：页面已离开');
+					console.log('startBluetoothDiscovery跳过：页面已离开');
 					return;
 				}
 				this.addCallBack();
-				uni.startBluetoothDevicesDiscovery({
-					services: [],
-					success: (res) => {
-						console.log('startBluetoothDevicesDiscovery success:', res)
-						this.searching = true
-					},
-					fail: (err) => {
-						console.log('startBluetoothDevicesDiscovery fail:', err)
-						if(err.errCode == -1){
-							uni.showModal({
-								title:'微信位置权限未授予提示',
-								content:'当前系统未开启定位服务或未授权微信使用定位，无法搜索蓝牙设备\n请在手机系统设置打开定位服务兵允许微信使用位置信息后重试',
-								showCancel:false
-							})
+				ensureLocationForBleScan().then(() => {
+					uni.startBluetoothDevicesDiscovery({
+						services: [],
+						success: (res) => {
+							console.log('startBluetoothDevicesDiscovery success:', res)
+							this.searching = true
+						},
+						fail: (err) => {
+							console.log('startBluetoothDevicesDiscovery fail:', err)
+							handleBleScanFail(err)
+							this.searching = false
 						}
-						this.searching = false
-					}
+					})
 				})
 			},
 			openBlueTooth() {
@@ -604,7 +521,6 @@
 					url: url_
 				})
 			},
-			// 跳转手动调整
 			showAdjustHandler() {
 				this.closePopUpHandle()
 				uni.switchTab({
@@ -615,7 +531,7 @@
 			closePopUpHandle() {
 				this.$refs.ppp.close()
 			},
-			// 停止蓝牙扫描（连接前只停止扫描，不关闭适配器，参考 xxxx.vue）
+			// 停止蓝牙扫描
 			stopBlueTooth() {
 				uni.stopBluetoothDevicesDiscovery({
 					complete: () => {
@@ -660,8 +576,6 @@
 					// 更新连接状态
 					this.isConnected = true;
 					
-					// 测试模式下也需要触发状态更新事件
-					console.log('测试模式：触发 bluetooth_status_change 事件')
 					uni.$emit('bluetooth_status_change');
 					
 					this.showAdjustHandler();
@@ -682,14 +596,12 @@
 
 					PillowBleManager.getInstance().deviceId = deviceId;
 					PillowBleManager.getInstance().deviceName = item.name;
-					// 不要在这里设置 loginSuccess = true，让握手流程正常进行
 
 					console.log('connectBluetooth success!:', deviceId, res)
 					console.log('连接成功，设备信息已设置，等待握手...')
 					
-					// 更新连接状态（物理连接已建立）
+					// 更新连接状态
 					this.isConnected = true;
-					// 同步當前已連接設備ID，便於按鈕狀態即時切換
 					this.currentDeviceId = deviceId;
 						uni.getBLEDeviceServices({
 							deviceId,
@@ -703,9 +615,7 @@
 										this.getBLEDeviceCharacteristics(deviceId, res
 											.services[i]
 											.uuid)
-										//这里只取第一个哈！！！！！！！！
 										break;
-										// 可根据具体业务需要，选择一个主服务进行通信
 									}
 								}
 
@@ -723,7 +633,7 @@
 					}
 				})
 			},
-			// 获取蓝牙设备某个服务中所有特征值(characteristic)。
+			// 获取蓝牙设备某个服务中所有特征值
 			getBLEDeviceCharacteristics(deviceId, serviceId) {
 				const mgr = PillowBleManager.getInstance()
 				console.log('getBLEDeviceCharacteristics:', deviceId, serviceId)
@@ -743,7 +653,7 @@
 						if (!notifyUUID && chars[0]) notifyUUID = chars[0].uuid
 						if (!writeUUID && chars[0]) writeUUID = chars[0].uuid
 						if (!notifyUUID) {
-							uni.showToast({ title: '未找到通知特征', icon: 'none' })
+							uni.showToast({ title: '未找到可用通知特征，已进入首页', icon: 'none' })
 							return
 						}
 						mgr.startNotice(
@@ -758,6 +668,16 @@
 									nextTick(() => {
 										this.showAdjustHandler()
 									})
+								},
+								onFail: (err) => {
+									console.warn('[work] notify 失败，继续进入首页', err)
+									uni.showToast({
+										title: '通知开启失败，已进入首页',
+										icon: 'none'
+									})
+									nextTick(() => {
+										this.showAdjustHandler()
+									})
 								}
 							}
 						)
@@ -768,7 +688,7 @@
 				})
 			},
 
-			// 检测是否
+			// 检测是否连接
 			checkConnectList(item) {
 				if (this.connectList.indexOf(item.deviceId) > -1) {
 					return '../static/SY_01WIEI_IconLY.png'
@@ -794,7 +714,7 @@
 
 	.tips {
 		text-align: center;
-		color: #5B7897;
+		color: rgba(5, 28, 44, 0.7);
 		font-size: 32rpx;
 		padding: 20rpx;
 	}
@@ -808,7 +728,7 @@
 		left: 0;
 		right: 0;
 		background-color: #ffffff;
-		box-shadow: 0rpx 0rpx 20rpx #5B7897;
+		box-shadow: 0rpx 0rpx 20rpx rgba(5, 28, 44, 0.7);
 		border-top-left-radius: 15rpx;
 		border-top-right-radius: 15rpx;
 		bottom: 0rpx;
@@ -831,7 +751,7 @@
 	}
 
 	.device-item {
-		border: 1px solid #5B7897;
+		border: 1px solid rgba(5, 28, 44, 0.7);
 		border-radius: 20rpx;
 		margin-left: 41rpx;
 		margin-right: 41rpx;
@@ -844,7 +764,7 @@
 			width: 225rpx;
 			height: 78rpx;
 			text-align: center;
-			background-color: #5B7897;
+			background-color: rgba(5, 28, 44, 0.7);
 			line-height: 78rpx;
 			color: white;
 			margin: 20rpx;
@@ -853,7 +773,7 @@
 
 		.item-name {
 			line-height: 38rpx;
-			color: #5B7897;
+			color: rgba(5, 28, 44, 0.7);
 			font-size: 32rpx;
 			padding-left: 30rpx;
 			padding-right: 30rpx;
@@ -868,7 +788,7 @@
 			height: 80rpx;
 			background-color: white;
 			border-radius: 30rpx;
-			box-shadow: 0rpx 0rpx 20rpx #5B7897;
+			box-shadow: 0rpx 0rpx 20rpx rgba(5, 28, 44, 0.7);
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -884,7 +804,7 @@
 		.wifi {
 			background-color: white;
 			border-radius: 30rpx;
-			box-shadow: 0rpx 0rpx 20rpx #5B7897;
+			box-shadow: 0rpx 0rpx 20rpx rgba(5, 28, 44, 0.7);
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -903,15 +823,10 @@
 	.uni-popup__wrapper-box {
 
 		display: block;
-
 		position: relative;
-		/* iphonex 等安全区设置，底部安全区适配 */
-
 		padding-bottom: constant(safe-area-inset-bottom);
 		padding-bottom: env(safe-area-inset-bottom);
-
 	}
-
 
 	.container {
 		background-color: white;
@@ -951,7 +866,7 @@
 			.item {
 				text-align: center;
 				color: white;
-				background-color: #5B7897;
+				background-color: rgba(5, 28, 44, 0.7);
 				border-radius: 30rpx;
 				margin-top: 10rpx;
 				margin-bottom: 10rpx;
@@ -997,3 +912,5 @@
 		}
 	}
 </style>
+
+

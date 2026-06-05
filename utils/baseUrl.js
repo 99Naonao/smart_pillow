@@ -1,5 +1,9 @@
 let baseUrl = "";
 let socketUrl = "";
+/** 设备 bed WebSocket 令牌 API 基址（GetAccessToken 代理，24h） */
+let detectionTokenApiBase = "";
+/** 设备实时 WebSocket 基址（连接时附加 ?token=） */
+let deviceRealtimeWsUrl = "";
 let appId = 'wx43c54dcd8642d95b'; // 眠加家居枕头
 let monkUrl = ""; //模拟数据地址
 if (process.env.NODE_ENV === 'development') {
@@ -7,6 +11,8 @@ if (process.env.NODE_ENV === 'development') {
 	// baseUrl = "http://192.168.7.221:8001/api"; // 此配置无需改动
 	// baseUrl = "http://192.168.7.221:8001/api"; // 此配置无需改动
 	baseUrl = "https://sleep.zsyl.cc/api"
+	deviceRealtimeWsUrl = "wss://bed.qssmart.cn/ws/v1/device-data/";
+	detectionTokenApiBase = "https://music.zsyl.cc/api";
 	monkUrl = "http://localhost:8001";
 	// monkUrl = "/";
 	// #ifdef H5
@@ -28,6 +34,8 @@ if (process.env.NODE_ENV === 'development') {
 	// 生产环境
 	//baseUrl = "https://admin.yibianshoucang.com/api";
 	baseUrl = "https://sleep.zsyl.cc/api"
+	deviceRealtimeWsUrl = "wss://bed.qssmart.cn/ws/v1/device-data/";
+	detectionTokenApiBase = "https://music.zsyl.cc/api";
 	// socketUrl = "ws://twin-ui.com:6001/";
 }
 const courtConfig = {
@@ -39,6 +47,10 @@ const courtConfig = {
 	monkUrl: monkUrl,
 	//webSocket地址
 	socketUrl: socketUrl,
+	/** 床垫实时数据 WebSocket（连接时 ?token=GetAccessToken） */
+	deviceRealtimeWsUrl: deviceRealtimeWsUrl,
+	/** bed GetAccessToken 代理 API 基址（/detection/token） */
+	detectionTokenApiBase: detectionTokenApiBase,
 	//平台名称
 	platformName: "OneCard-万卡球星卡",
 	kefuWechat: "123456",

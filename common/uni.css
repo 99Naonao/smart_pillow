@@ -40,7 +40,7 @@ form {
 	flex-direction: column;
 }
 .uni-link{
-	color:#576B95;
+	color:#083969;
 	font-size:26rpx;
 }
 .uni-center{
@@ -115,15 +115,15 @@ form {
 .uni-common-mt{
 	margin-top:30rpx;
 }
-/* 背景色 */
+/* 背景�?*/
 .uni-bg-red{
 	background:#F76260; color:#FFF;
 }
 .uni-bg-green{
-	background:#09BB07; color:#FFF;
+	background:#1C6A51; color:#FFF;
 }
 .uni-bg-blue{
-	background:#007AFF; color:#FFF;
+	background:#083969; color:#FFF;
 }
 /* 标题 */
 .uni-h1 {font-size: 80rpx; font-weight:700;}
@@ -137,7 +137,7 @@ form {
 /* 文本溢出隐藏 */
 .uni-ellipsis {overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
 
-/* 竖向百分百按钮 */
+/* 竖向百分百按�?*/
 .uni-btn-v{
 	padding:10rpx 0;
 }
@@ -210,31 +210,31 @@ radio-group label, checkbox-group label{
 }
 .uni-badge-primary {
 	color: #fff;
-	background-color: #007aff
+	background-color: #083969
 }
 .uni-badge-blue.uni-badge-inverted,
 .uni-badge-primary.uni-badge-inverted {
-	color: #007aff;
+	color: #083969;
 	background-color: transparent
 }
 .uni-badge-green,
 .uni-badge-success {
 	color: #fff;
-	background-color: #4cd964;
+	background-color: #1C6A51;
 }
 .uni-badge-green.uni-badge-inverted,
 .uni-badge-success.uni-badge-inverted {
-	color: #4cd964;
+	color: #1C6A51;
 	background-color: transparent
 }
 .uni-badge-warning,
 .uni-badge-yellow {
 	color: #fff;
-	background-color: #f0ad4e
+	background-color: #4C8CB6
 }
 .uni-badge-warning.uni-badge-inverted,
 .uni-badge-yellow.uni-badge-inverted {
-	color: #f0ad4e;
+	color: #4C8CB6;
 	background-color: transparent
 }
 .uni-badge-danger,
@@ -590,7 +590,7 @@ radio-group label, checkbox-group label{
 	color: #8f8f94;
 }
 
-/* 九宫格 */
+/* 九宫�?*/
 .uni-grid-9 {
 	background: #f2f2f2;
 	width: 750rpx;
@@ -1047,7 +1047,7 @@ radio-group label, checkbox-group label{
 		color: #CCCCCC;
 	}
 
-	/* 自定义节点颜色 */
+	/* 自定义节点颜�?*/
 	.uni-timeline-last-item .uni-timeline-item-divider{
 		background-color: #1AAD19;
 	}
@@ -1426,7 +1426,7 @@ radio-group label, checkbox-group label{
     content: "\e612";
 }
 
-/* 分界线 */
+/* 分界�?*/
 .uni-divider{
     height: 110rpx;
     display: flex;

@@ -168,13 +168,29 @@
     </view>
 
     <view class="section">
-      <view class="section-title">枕头参数 0x0C（睡姿稳定时间）</view>
-      <view class="status-row">确认睡姿稳定时间，单位：秒（uint16）</view>
-      <view class="form-row">
-        <text class="form-label">稳定时间(秒)</text>
-        <input class="form-input" type="number" v-model.number="ext0x0C.stabilitySeconds" />
-        <button class="btn-mini" type="primary" @click="send('readPillowParams0x0C')">读取 0x0C</button>
-        <button class="btn-mini" type="default" @click="send('writePillowParams0x0C')">写入 0x0C</button>
+      <view class="section-title">枕头参数 0x0C（睡姿稳定 + 压力维持）</view>
+      <view class="status-row">睡姿稳定时间 uint16 秒；头枕/颈枕压力变化维持时间各 uint16 毫秒；写命令数据区共 6 字节小端。</view>
+      <view class="form-row-0x0c-grid">
+        <view class="col-0x0c-left">
+          <view class="form-row-0x0c-line">
+            <text class="form-label">稳定(秒)</text>
+            <input class="form-input form-input-0x0c" type="number" v-model.number="ext0x0C.stabilitySeconds" />
+          </view>
+          <view class="form-row-0x0c-line">
+            <text class="form-label">头枕(ms)</text>
+            <input class="form-input form-input-0x0c" type="number" v-model.number="ext0x0C.headPressureHoldMs" />
+          </view>
+        </view>
+        <view class="col-0x0c-right">
+          <view class="form-row-0x0c-line">
+            <text class="form-label">颈枕(ms)</text>
+            <input class="form-input form-input-0x0c" type="number" v-model.number="ext0x0C.neckPressureHoldMs" />
+          </view>
+          <view class="form-row-0x0c-btns">
+            <button class="btn-mini" type="primary" @click="send('readPillowParams0x0C')">读取 0x0C</button>
+            <button class="btn-mini" type="default" @click="send('writePillowParams0x0C')">写入 0x0C</button>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -376,7 +392,9 @@ export default {
         flagsText: ''
       },
       ext0x0C: {
-        stabilitySeconds: 30
+        stabilitySeconds: 30,
+        headPressureHoldMs: 0,
+        neckPressureHoldMs: 0
       },
       ext0x0D: {
         year: 25,
@@ -620,6 +638,16 @@ export default {
           if (st) {
             return `AA 枕头数据(0x04) 功能=${funcHex} 工作:${st.workStatusText} 故障:${st.fault1}/${st.fault2} 温:${st.temperature}℃ 头/颈高(0~100%):${st.headHeightPct}%/${st.neckHeightPct}%`
           }
+        }
+        if ((func & 0x7f) === 0x0c) {
+          try {
+            const parsed = PillowBleManager.getInstance().handleNotifyBuffer(buffer)
+            if (parsed && parsed.type === 'pillow_params_0x0c' && parsed.parsed && parsed.parsed.ok) {
+              const p = parsed.parsed
+              const d = (n) => String((Number(n) >>> 0) & 0xffff)
+              return `AA 枕头参数(0x0C) 功能=${funcHex} 十进制 稳定=${d(p.stabilitySeconds)}秒 头枕维持=${d(p.headPressureHoldMs)}ms 颈枕维持=${d(p.neckPressureHoldMs)}ms`
+            }
+          } catch (e) {}
         }
         if ((func & 0x7f) === 0x0f) {
           let hint = ''
@@ -1003,6 +1031,16 @@ export default {
       const summary = this.describeDevicePayload(buffer)
       this.appendBleLog('<<', `${summary} | ${hex}${cid ? ' | char=' + cid : ''}`)
       this.lastStatusHex = hex
+      try {
+        const parsed = PillowBleManager.getInstance().handleNotifyBuffer(buffer)
+        if (parsed && parsed.type === 'pillow_params_0x0c' && parsed.parsed && parsed.parsed.ok) {
+          const p = parsed.parsed
+          const u16 = (n) => (Number(n) >>> 0) & 0xffff
+          this.$set(this.ext0x0C, 'stabilitySeconds', u16(p.stabilitySeconds))
+          this.$set(this.ext0x0C, 'headPressureHoldMs', u16(p.headPressureHoldMs))
+          this.$set(this.ext0x0C, 'neckPressureHoldMs', u16(p.neckPressureHoldMs))
+        }
+      } catch (e) {}
       const wifiStatus = this.parseWifiStatusFrom0x0F(buffer)
       if (wifiStatus) {
         this.wifiLinkStatusText = wifiStatus.statusText
@@ -1112,9 +1150,10 @@ export default {
           2: '侧卧'
         }
 
+        /** 协议 0x04：气压泵1/2 工作状态，0 空闲、1 充气中 */
         const pumpStatusMap = {
-          0: '正常',
-          1: '异常'
+          0: '空闲',
+          1: '充气中'
         }
 
         const valveBits = []
@@ -1401,7 +1440,11 @@ export default {
             buffer = BluePillowProtocol.pillowParams()
             break
           case 'writePillowParams0x0C':
-            buffer = BluePillowProtocol.pillowParams(this.ext0x0C.stabilitySeconds)
+            buffer = BluePillowProtocol.pillowParams({
+              stabilitySeconds: this.ext0x0C.stabilitySeconds,
+              headPressureHoldMs: this.ext0x0C.headPressureHoldMs,
+              neckPressureHoldMs: this.ext0x0C.neckPressureHoldMs
+            })
             break
           case 'readRtc0x0D':
             buffer = BluePillowProtocol.rtcConfig()
@@ -1488,7 +1531,7 @@ export default {
 
 .tips {
   font-size: 26rpx;
-  color: #999;
+  color: rgba(5, 28, 44, 0.7);
   margin-bottom: 24rpx;
 }
 
@@ -1514,7 +1557,7 @@ export default {
   padding: 8rpx 12rpx;
   margin-right: 8rpx;
   border-radius: 6rpx;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(175, 160, 201, 0.45);
   font-size: 26rpx;
 }
 
@@ -1523,7 +1566,7 @@ export default {
   min-height: 120rpx;
   padding: 12rpx;
   border-radius: 6rpx;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(175, 160, 201, 0.45);
   font-size: 26rpx;
   margin-bottom: 12rpx;
   box-sizing: border-box;
@@ -1531,7 +1574,7 @@ export default {
 
 .ble-status {
   font-size: 26rpx;
-  color: #333;
+  color: #051C2C;
   margin-bottom: 6rpx;
 }
 
@@ -1552,19 +1595,19 @@ export default {
 
 .device-item {
   padding: 8rpx 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(175, 160, 201, 0.4);
   display: flex;
   flex-direction: column;
 }
 
 .device-name {
   font-size: 26rpx;
-  color: #333;
+  color: #051C2C;
 }
 
 .device-id {
   font-size: 22rpx;
-  color: #999;
+  color: rgba(5, 28, 44, 0.7);
   margin-bottom: 4rpx;
 }
 
@@ -1598,7 +1641,7 @@ export default {
   margin-top: 8rpx;
   height: 200rpx;
   padding: 12rpx;
-  background-color: #f5f5f5;
+  background-color: #F0F6F7;
   border-radius: 8rpx;
   font-size: 24rpx;
   word-break: break-all;
@@ -1620,7 +1663,7 @@ export default {
 }
 
 .log-hint {
-  color: #888;
+  color: rgba(5, 28, 44, 0.65);
   font-size: 22rpx;
   margin-bottom: 8rpx;
 }
@@ -1640,10 +1683,10 @@ export default {
 .picker-value {
   flex: 1;
   padding: 12rpx 16rpx;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(175, 160, 201, 0.45);
   border-radius: 6rpx;
   font-size: 26rpx;
-  color: #333;
+  color: #051C2C;
 }
 
 .mono-preview {
@@ -1662,6 +1705,69 @@ export default {
   flex: 0 0 100rpx;
   min-width: 80rpx;
   text-align: center;
+}
+
+/* 0x0C：一排两列；右列为颈枕 + 读/写按钮 */
+.form-row-0x0c-grid {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  margin-bottom: 12rpx;
+}
+
+.col-0x0c-left {
+  flex: 1;
+  min-width: 0;
+  padding-right: 20rpx;
+  box-sizing: border-box;
+}
+
+.col-0x0c-right {
+  flex: 0 0 280rpx;
+  width: 280rpx;
+  max-width: 46%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.form-row-0x0c-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.form-row-0x0c-line .form-label {
+  flex-shrink: 0;
+  margin-right: 8rpx;
+}
+
+.form-row-0x0c-line .form-input-0x0c {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  margin-right: 0;
+  margin-bottom: 0;
+}
+
+.form-input-0x0c {
+  box-sizing: border-box;
+}
+
+.form-row-0x0c-btns {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 0;
+}
+
+.form-row-0x0c-btns .btn-mini {
+  margin-left: 0;
+  margin-right: 12rpx;
+  margin-bottom: 8rpx;
 }
 </style>
 

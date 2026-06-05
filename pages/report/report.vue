@@ -1,9 +1,9 @@
 <template>
 	<view class="report-page">
 		<z-nav-bar
-			bg-color="#ffffff"
+			bg-color="#F0F6F7"
 			title="睡眠报告"
-			font-color="#1e293b"
+			font-color="#051C2C"
 			:shadow="true"
 			:backState="2000"
 			:homeState="2000"
@@ -1446,7 +1446,7 @@
 	.report-page {
 		min-height: 100vh;
 		height: 100vh;
-		background-color: #e8eef2;
+		background-color: #F0F6F7;
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
@@ -1473,7 +1473,7 @@
 		margin-bottom: 20rpx;
 		background-color: #fff;
 		border-radius: 16rpx;
-		box-shadow: 0 2rpx 12rpx rgba(15, 23, 42, 0.06);
+		box-shadow: 0 2rpx 12rpx rgba(5, 28, 44, 0.08);
 	}
 
 	.date-arrow {
@@ -1512,7 +1512,7 @@
 
 	.date-value {
 		font-size: 30rpx;
-		color: #1e293b;
+		color: #051C2C;
 		font-weight: 500;
 		letter-spacing: 1rpx;
 	}
@@ -1522,10 +1522,10 @@
 		border-radius: 20rpx;
 		padding: 24rpx;
 		margin-bottom: 24rpx;
-		box-shadow: 0 2rpx 12rpx rgba(15, 23, 42, 0.06);
+		box-shadow: 0 2rpx 12rpx rgba(5, 28, 44, 0.08);
 	}
 
-	/* 睡眠结构时序：与报告页 #e8eef2 / 白卡 / 灰蓝 统一 */
+	/* 睡眠结构时序：与报告页 #F0F6F7 / 白卡 / 灰蓝 统一 */
 	.hypno-card {
 		padding: 0;
 		overflow: hidden;
@@ -1537,8 +1537,8 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 16rpx 20rpx;
-		background-color: #f1f5f9;
-		border-bottom: 1rpx solid #e2e8f0;
+		background-color: #F0F6F7;
+		border-bottom: 1rpx solid rgba(175, 160, 201, 0.35);
 	}
 
 	.hypno-top-placeholder {
@@ -1559,7 +1559,7 @@
 
 	.hypno-offbed-txt {
 		font-size: 24rpx;
-		color: #475569;
+		color: rgba(5, 28, 44, 0.8);
 	}
 
 	.hypno-chart-wrap {
@@ -1587,7 +1587,7 @@
 
 	.hypno-y-label {
 		font-size: 22rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		line-height: 1.2;
 		text-align: right;
 	}
@@ -1598,7 +1598,7 @@
 		position: relative;
 		border: 1rpx solid #93c5fd;
 		border-radius: 16rpx;
-		background: linear-gradient(180deg, #fdf2f2 0%, #f5e6ff 50%, #ede3f7 100%);
+		background: linear-gradient(180deg, #F0F6F7 0%, rgba(175, 160, 201, 0.2) 50%, rgba(76, 140, 182, 0.2) 100%);
 		overflow: hidden;
 		box-sizing: border-box;
 	}
@@ -1645,7 +1645,7 @@
 		width: 2rpx;
 		margin-left: -2rpx;
 		border-radius: 2rpx;
-		background: linear-gradient(180deg, rgba(196, 120, 106, 0.85), rgba(107, 76, 154, 0.85));
+		background: linear-gradient(180deg, rgba(76, 140, 182, 0.78), rgba(8, 57, 105, 0.82));
 		box-shadow: 0 0 6rpx rgba(139, 92, 246, 0.35);
 		z-index: 1;
 	}
@@ -1661,19 +1661,19 @@
 	}
 
 	.hypno-hbar-offbed {
-		background: linear-gradient(180deg, #94a3b8 0%, #64748b 55%, #475569 100%);
+		background: linear-gradient(180deg, rgba(5, 28, 44, 0.35) 0%, rgba(5, 28, 44, 0.6) 55%, rgba(5, 28, 44, 0.8) 100%);
 	}
 
 	.hypno-hbar-wake {
-		background: linear-gradient(180deg, #c97b6e 0%, #d9a399 55%, #e8bdb5 100%);
+		background: linear-gradient(180deg, #AFA0C9 0%, #8f81b0 55%, #76689a 100%);
 	}
 
 	.hypno-hbar-light {
-		background: linear-gradient(180deg, #e879a9 0%, #c084fc 45%, #a78bfa 100%);
+		background: linear-gradient(180deg, #4C8CB6 0%, #3a769f 45%, #2f668f 100%);
 	}
 
 	.hypno-hbar-deep {
-		background: linear-gradient(180deg, #7c3aed 0%, #5b21b6 55%, #4c1d95 100%);
+		background: linear-gradient(180deg, #083969 0%, #072f57 55%, #051C2C 100%);
 	}
 
 	.hypno-time-row {
@@ -1681,13 +1681,13 @@
 		flex-direction: row;
 		justify-content: space-between;
 		padding: 14rpx 20rpx 18rpx;
-		background-color: #f1f5f9;
-		border-top: 1rpx solid #e2e8f0;
+		background-color: #F0F6F7;
+		border-top: 1rpx solid rgba(175, 160, 201, 0.35);
 	}
 
 	.hypno-time {
 		font-size: 24rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 	}
 
 	.summary-row {
@@ -1710,20 +1710,20 @@
 
 	.summary-label {
 		font-size: 26rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		margin-right: 8rpx;
 	}
 
 	.summary-num {
 		font-size: 44rpx;
 		font-weight: 600;
-		color: #0f172a;
+		color: #051C2C;
 		margin: 0 4rpx;
 	}
 
 	.summary-unit {
 		font-size: 26rpx;
-		color: #475569;
+		color: rgba(5, 28, 44, 0.8);
 		margin-right: 12rpx;
 	}
 
@@ -1745,19 +1745,19 @@
 	}
 
 	.sleep-split-deep {
-		background: linear-gradient(180deg, #7c3aed 0%, #5b21b6 55%, #4c1d95 100%);
+		background: linear-gradient(180deg, #083969 0%, #072f57 55%, #051C2C 100%);
 	}
 
 	.sleep-split-light {
-		background: linear-gradient(180deg, #e879a9 0%, #c084fc 45%, #a78bfa 100%);
+		background: linear-gradient(180deg, #4C8CB6 0%, #3a769f 45%, #2f668f 100%);
 	}
 
 	.sleep-split-awake {
-		background: linear-gradient(180deg, #c97b6e 0%, #d9a399 55%, #e8bdb5 100%);
+		background: linear-gradient(180deg, #AFA0C9 0%, #8f81b0 55%, #76689a 100%);
 	}
 
 	.sleep-split-offbed {
-		background: linear-gradient(180deg, #94a3b8 0%, #64748b 55%, #475569 100%);
+		background: linear-gradient(180deg, rgba(5, 28, 44, 0.35) 0%, rgba(5, 28, 44, 0.6) 55%, rgba(5, 28, 44, 0.8) 100%);
 	}
 
 	.sleep-split-meta-scroll {
@@ -1794,7 +1794,7 @@
 		font-size: 22rpx;
 		line-height: 1.2;
 		text-align: center;
-		color: #334155;
+		color: rgba(5, 28, 44, 0.85);
 		white-space: nowrap;
 	}
 
@@ -1802,7 +1802,7 @@
 		font-size: 20rpx;
 		line-height: 1.2;
 		text-align: center;
-		color: #475569;
+		color: rgba(5, 28, 44, 0.8);
 		white-space: nowrap;
 	}
 
@@ -1829,7 +1829,7 @@
 
 	.metric-title {
 		font-size: 22rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		margin-bottom: 8rpx;
 		text-align: center;
 	}
@@ -1837,12 +1837,12 @@
 	.metric-val {
 		font-size: 30rpx;
 		font-weight: 600;
-		color: #1e293b;
+		color: #051C2C;
 	}
 
 	.metric-unit {
 		font-size: 22rpx;
-		color: #94a3b8;
+		color: rgba(5, 28, 44, 0.45);
 		font-weight: 400;
 	}
 
@@ -1868,7 +1868,7 @@
 	.assess-title {
 		font-size: 30rpx;
 		font-weight: 600;
-		color: #1e293b;
+		color: #051C2C;
 	}
 
 	.assess-timeline {
@@ -1887,7 +1887,7 @@
 
 	.assess-time-label {
 		font-size: 28rpx;
-		color: #0f172a;
+		color: #051C2C;
 		font-weight: 600;
 	}
 
@@ -1896,13 +1896,13 @@
 		height: 0;
 		border-left: 10rpx solid transparent;
 		border-right: 10rpx solid transparent;
-		border-top: 12rpx solid #64748b;
+		border-top: 12rpx solid rgba(5, 28, 44, 0.7);
 		margin: 8rpx 0;
 	}
 
 	.assess-time-desc {
 		font-size: 24rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 	}
 
 	.chart-head {
@@ -1921,7 +1921,7 @@
 	.chart-head-title {
 		flex: 1;
 		font-size: 28rpx;
-		color: #1e293b;
+		color: #051C2C;
 		font-weight: 500;
 	}
 
@@ -1934,12 +1934,12 @@
 	.chart-head-val {
 		font-size: 36rpx;
 		font-weight: 600;
-		color: #0f172a;
+		color: #051C2C;
 	}
 
 	.chart-head-unit {
 		font-size: 22rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		margin-left: 6rpx;
 	}
 
@@ -1965,7 +1965,7 @@
 
 	.chart-y-t {
 		font-size: 20rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		text-align: right;
 	}
 
@@ -2008,14 +2008,14 @@
 	.chart-line-seg {
 		position: absolute;
 		height: 2rpx;
-		background: #60a5fa;
+		background: #4C8CB6;
 		border-radius: 999rpx;
 		transform-origin: left center;
 		opacity: 0.95;
 	}
 
 	.chart-line-seg-breath {
-		background: #38bdf8;
+		background: #005578;
 	}
 
 	.chart-line-dots {
@@ -2044,12 +2044,12 @@
 	}
 
 	.chart-extrema.is-max::before {
-		background: #facc15;
+		background: #4C8CB6;
 		box-shadow: 0 0 0 4rpx rgba(250, 204, 21, 0.28), 0 0 10rpx rgba(250, 204, 21, 0.45);
 	}
 
 	.chart-extrema.is-min::before {
-		background: #7dd3fc;
+		background: rgba(76, 140, 182, 0.75);
 		box-shadow: 0 0 0 4rpx rgba(125, 211, 252, 0.28), 0 0 10rpx rgba(56, 189, 248, 0.45);
 	}
 
@@ -2069,7 +2069,7 @@
 	}
 
 	.chart-extrema.is-min .chart-extrema-label {
-		color: #38bdf8;
+		color: #005578;
 	}
 
 	.chart-dot {
@@ -2079,20 +2079,20 @@
 		margin-left: -5rpx;
 		margin-bottom: -5rpx;
 		border-radius: 50%;
-		background: #60a5fa;
+		background: #4C8CB6;
 	}
 	.chart-dot.is-high {
-		background: #fbbf24;
+		background: #4C8CB6;
 		width: 12rpx;
 		height: 12rpx;
 		margin-left: -6rpx;
 		margin-bottom: -6rpx;
 	}
 	.chart-dot.is-low {
-		background: #7dd3fc;
+		background: rgba(76, 140, 182, 0.75);
 	}
 	.chart-dot-breath {
-		background: #38bdf8;
+		background: #005578;
 	}
 
 	.chart-tooltip {
@@ -2111,7 +2111,7 @@
 	}
 	.chart-tooltip-txt {
 		font-size: 22rpx;
-		color: #e2e8f0;
+		color: rgba(175, 160, 201, 0.35);
 		white-space: nowrap;
 	}
 
@@ -2124,7 +2124,7 @@
 	}
 	.chart-flag {
 		font-size: 20rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 	}
 
 	.chart-bars-wrap {
@@ -2147,7 +2147,7 @@
 	}
 	.chart-bar-fill {
 		width: 100%;
-		background: linear-gradient(180deg, #7dd3fc, #38bdf8);
+		background: linear-gradient(180deg, rgba(76, 140, 182, 0.75), #005578);
 		border-radius: 4rpx 4rpx 0 0;
 		min-height: 4rpx;
 	}
@@ -2201,8 +2201,8 @@
 		border-radius: 8rpx;
 	}
 	.tone-blue {
-		background: #eff6ff;
-		color: #2563eb;
+		background: rgba(76, 140, 182, 0.16);
+		color: #083969;
 	}
 	.tone-warn {
 		background: #fef9c3;
@@ -2221,21 +2221,21 @@
 	}
 	.bullet-dot {
 		font-size: 28rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		margin-right: 12rpx;
 		line-height: 1.5;
 	}
 	.bullet-txt {
 		flex: 1;
 		font-size: 26rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		line-height: 1.55;
 	}
 
 	.qa-q {
 		display: block;
 		font-size: 28rpx;
-		color: #2563eb;
+		color: #083969;
 		margin-bottom: 16rpx;
 		line-height: 1.5;
 	}
@@ -2248,20 +2248,20 @@
 	}
 	.qa-switch-btn {
 		font-size: 22rpx;
-		color: #2563eb;
+		color: #083969;
 		padding: 6rpx 10rpx;
 	}
 	.qa-switch-btn.disabled {
-		color: #94a3b8;
+		color: rgba(5, 28, 44, 0.45);
 	}
 	.qa-switch-indicator {
 		font-size: 22rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 	}
 	.qa-a {
 		display: block;
 		font-size: 26rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		line-height: 1.55;
 	}
 
@@ -2313,7 +2313,7 @@
 	.cal-month-title {
 		font-size: 34rpx;
 		font-weight: 600;
-		color: #1e293b;
+		color: #051C2C;
 	}
 	.cal-weekdays {
 		display: flex;
@@ -2324,7 +2324,7 @@
 		flex: 1;
 		text-align: center;
 		font-size: 24rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 	}
 	.cal-grid {
 		display: flex;
@@ -2349,18 +2349,18 @@
 		line-height: 64rpx;
 		text-align: center;
 		font-size: 28rpx;
-		color: #334155;
+		color: rgba(5, 28, 44, 0.85);
 		border-radius: 50%;
 	}
 	.cal-cell.is-today .cal-day-num {
-		color: #2563eb;
+		color: #083969;
 		font-weight: 600;
-		border: 2rpx solid #3b82f6;
+		border: 2rpx solid #4C8CB6;
 		box-sizing: border-box;
 		line-height: 60rpx;
 	}
 	.cal-cell.is-selected .cal-day-num {
-		background: linear-gradient(135deg, #5794d2, #607796);
+		background: linear-gradient(135deg, #4C8CB6, #083969);
 		color: #fff;
 		border: none;
 		line-height: 64rpx;

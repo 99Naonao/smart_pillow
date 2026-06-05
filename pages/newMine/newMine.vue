@@ -1,9 +1,9 @@
 <template>
 	<view class="mine-page">
 		<z-nav-bar
-			bg-color="#ffffff"
+			bg-color="#F0F6F7"
 			title="我的"
-			font-color="#1e293b"
+			font-color="#051C2C"
 			:shadow="true"
 			:backState="2000"
 			:homeState="2000"
@@ -73,13 +73,13 @@
 					</view> -->
 					<view class="menu-divider" />
 					<view class="menu-item" @click="goSleepReportList">
-						<image class="menu-ico" src="../../static/icon/report.png" mode="aspectFit" />
+						<image class="menu-ico" src="../../static/icon/histogram.png" mode="aspectFit" />
 						<text class="menu-label">睡眠报告</text>
 						<text class="menu-arrow">›</text>
 					</view>
 					<view class="menu-divider" />
 					<view class="menu-item" @click="openPolicySheet('points')">
-						<image class="menu-ico" src="../../static/icon/warm.png" mode="aspectFit" />
+						<image class="menu-ico" src="../../static/icon/score_rule.png" mode="aspectFit" />
 						<text class="menu-label">积分规则</text>
 						<text class="menu-arrow">›</text>
 					</view>
@@ -103,13 +103,13 @@
 					</view>
 					<view class="menu-divider" />
 					<view class="menu-item" @click="openPolicySheet('service')">
-						<image class="menu-ico" src="../../static/icon/report.png" mode="aspectFit" />
+						<image class="menu-ico" src="../../static/icon/service.png" mode="aspectFit" />
 						<text class="menu-label">服务协议</text>
 						<text class="menu-arrow">›</text>
 					</view>
 					<view class="menu-divider" />
 					<view class="menu-item" @click="goAbout">
-						<image class="menu-ico" src="../../static/icon/mine.png" mode="aspectFit" />
+						<image class="menu-ico" src="../../static/icon/about_us.png" mode="aspectFit" />
 						<text class="menu-label">关于我们</text>
 						<text class="menu-arrow">›</text>
 					</view>
@@ -160,7 +160,8 @@
 <script>
 	import { getPhoneByCode, onGetCode } from '@/utils/miniapp.js';
 	import {
-		getMiniProgramEnv
+		getMiniProgramEnv,
+		canBypassLoginInCurrentEnv
 	} from '@/common/util.js';
 	import {
 		RULES_POINTS,
@@ -251,6 +252,11 @@
 				if (userInfo && userInfo.token) {
 					this.score = userInfo.score || 0;
 					this.userInfo = userInfo;
+					this.hasLogin = true;
+				} else if (canBypassLoginInCurrentEnv()) {
+					// 非正式环境：放开登录限制，便于联调蓝牙/设备流程
+					this.score = 0;
+					this.userInfo = { avatar: '' };
 					this.hasLogin = true;
 				} else {
 					this.score = 0;
@@ -396,7 +402,7 @@
 	.mine-page {
 		min-height: 100vh;
 		height: 100vh;
-		background-color: #e8eef2;
+		background-color: #F0F6F7;
 		display: flex;
 		flex-direction: column;
 		box-sizing: border-box;
@@ -416,11 +422,11 @@
 	}
 
 	.profile-card {
-		background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+		background: linear-gradient(135deg, #ffffff 0%, #F0F6F7 100%);
 		border-radius: 24rpx;
 		padding: 36rpx 28rpx 32rpx;
-		box-shadow: 0 8rpx 32rpx rgba(15, 23, 42, 0.06);
-		border: 1rpx solid rgba(148, 163, 184, 0.12);
+		box-shadow: 0 8rpx 32rpx rgba(5, 28, 44, 0.1);
+		border: 1rpx solid rgba(175, 160, 201, 0.35);
 		margin-bottom: 20rpx;
 	}
 
@@ -439,9 +445,9 @@
 		width: 128rpx;
 		height: 128rpx;
 		border-radius: 50%;
-		background-color: #f1f5f9;
+		background-color: #F0F6F7;
 		border: 4rpx solid #fff;
-		box-shadow: 0 4rpx 16rpx rgba(37, 99, 235, 0.12);
+		box-shadow: 0 4rpx 16rpx rgba(5, 28, 44, 0.12);
 	}
 
 	.avatar-btn {
@@ -470,26 +476,26 @@
 	.profile-name {
 		font-size: 36rpx;
 		font-weight: 600;
-		color: #0f172a;
+		color: #051C2C;
 		line-height: 1.3;
 	}
 
 	.profile-sub {
 		font-size: 24rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		line-height: 1.4;
 	}
 
 	.profile-badge {
 		flex-shrink: 0;
 		padding: 8rpx 18rpx;
-		background: rgba(37, 99, 235, 0.08);
+		background: rgba(76, 140, 182, 0.16);
 		border-radius: 999rpx;
 	}
 
 	.profile-badge-txt {
 		font-size: 22rpx;
-		color: #2563eb;
+		color: #083969;
 	}
 
 	.stat-card {
@@ -500,8 +506,8 @@
 		background-color: #fff;
 		border-radius: 20rpx;
 		padding: 28rpx 24rpx;
-		box-shadow: 0 4rpx 20rpx rgba(15, 23, 42, 0.05);
-		border: 1rpx solid #e2e8f0;
+		box-shadow: 0 4rpx 20rpx rgba(5, 28, 44, 0.08);
+		border: 1rpx solid rgba(175, 160, 201, 0.35);
 	}
 
 	.stat-left {
@@ -524,13 +530,13 @@
 
 	.stat-label {
 		font-size: 24rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 	}
 
 	.stat-value {
 		font-size: 40rpx;
 		font-weight: 700;
-		color: #0f172a;
+		color: #051C2C;
 		letter-spacing: 1rpx;
 	}
 
@@ -542,13 +548,13 @@
 
 	.stat-action-txt {
 		font-size: 28rpx;
-		color: #2563eb;
+		color: #083969;
 		font-weight: 500;
 	}
 
 	.stat-arrow {
 		font-size: 36rpx;
-		color: #94a3b8;
+		color: rgba(5, 28, 44, 0.45);
 		margin-left: 4rpx;
 		line-height: 1;
 	}
@@ -560,7 +566,7 @@
 	.menu-section-title {
 		display: block;
 		font-size: 26rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		margin-bottom: 16rpx;
 		padding-left: 8rpx;
 	}
@@ -569,8 +575,8 @@
 		background-color: #fff;
 		border-radius: 20rpx;
 		overflow: hidden;
-		box-shadow: 0 2rpx 12rpx rgba(15, 23, 42, 0.04);
-		border: 1rpx solid #e2e8f0;
+		box-shadow: 0 2rpx 12rpx rgba(5, 28, 44, 0.08);
+		border: 1rpx solid rgba(175, 160, 201, 0.35);
 	}
 
 	.menu-item {
@@ -583,7 +589,7 @@
 	}
 
 	.menu-item:active {
-		background-color: #f8fafc;
+		background-color: #F0F6F7;
 	}
 
 	.menu-ico {
@@ -596,18 +602,18 @@
 	.menu-label {
 		flex: 1;
 		font-size: 30rpx;
-		color: #1e293b;
+		color: #051C2C;
 	}
 
 	.menu-arrow {
 		font-size: 32rpx;
-		color: #cbd5e1;
+		color: rgba(5, 28, 44, 0.35);
 		line-height: 1;
 	}
 
 	.menu-divider {
 		height: 1rpx;
-		background-color: #f1f5f9;
+		background-color: #F0F6F7;
 		margin-left: 84rpx;
 	}
 
@@ -620,11 +626,11 @@
 		height: 88rpx;
 		line-height: 88rpx;
 		background-color: #fff;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		font-size: 30rpx;
 		border-radius: 20rpx;
-		border: 1rpx solid #e2e8f0;
-		box-shadow: 0 2rpx 8rpx rgba(15, 23, 42, 0.04);
+		border: 1rpx solid rgba(175, 160, 201, 0.35);
+		box-shadow: 0 2rpx 8rpx rgba(5, 28, 44, 0.08);
 	}
 
 	.logout-btn::after {
@@ -641,7 +647,7 @@
 		right: 0;
 		top: 0;
 		bottom: 0;
-		background: rgba(15, 23, 42, 0.45);
+		background: rgba(5, 28, 44, 0.5);
 		z-index: 300;
 		display: flex;
 		align-items: flex-end;
@@ -668,18 +674,18 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 28rpx 32rpx;
-		border-bottom: 1rpx solid #f1f5f9;
+		border-bottom: 1rpx solid rgba(175, 160, 201, 0.3);
 	}
 
 	.rules-title {
 		font-size: 34rpx;
 		font-weight: 600;
-		color: #0f172a;
+		color: #051C2C;
 	}
 
 	.rules-close {
 		font-size: 28rpx;
-		color: #2563eb;
+		color: #083969;
 	}
 
 	/* 小程序 scroll-view 必须占满剩余高度，父级需固定高度 + overflow:hidden */
@@ -699,7 +705,7 @@
 	.rules-text {
 		display: block;
 		font-size: 26rpx;
-		color: #475569;
+		color: rgba(5, 28, 44, 0.8);
 		line-height: 1.65;
 		white-space: pre-wrap;
 		word-break: break-word;

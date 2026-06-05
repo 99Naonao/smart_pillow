@@ -244,7 +244,7 @@
 		}
 
 		.wifi-info {
-			color: #5B7897;
+			color: rgba(5, 28, 44, 0.7);
 			text-decoration: underline;
 		}
 
@@ -263,7 +263,7 @@
 				margin: 0 auto;
 				padding: 20rpx;
 				line-height: 50rpx;
-				background-color: #5B7897;
+				background-color: rgba(5, 28, 44, 0.7);
 				border-radius: 30rpx;
 				color: white;
 			}
@@ -289,7 +289,7 @@
 	}
 
 	.pillow-name {
-		color: #5B7897;
+		color: rgba(5, 28, 44, 0.7);
 		padding-left: 30rpx;
 	}
 </style>

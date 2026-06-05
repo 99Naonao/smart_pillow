@@ -1,9 +1,9 @@
 <template>
 	<view class="list-page">
 		<z-nav-bar
-			bg-color="#ffffff"
+			bg-color="#F0F6F7"
 			title="睡眠报告"
-			font-color="#1e293b"
+			font-color="#051C2C"
 			:shadow="true"
 			backState="1000"
 			bgColorAngle="90"
@@ -230,7 +230,7 @@
 	.list-page {
 		min-height: 100vh;
 		height: 100vh;
-		background-color: #e8eef2;
+		background-color: #F0F6F7;
 		display: flex;
 		flex-direction: column;
 		box-sizing: border-box;
@@ -252,21 +252,21 @@
 		padding: 18rpx 12rpx;
 		background: #fff;
 		border-radius: 999rpx;
-		border: 2rpx solid #e2e8f0;
+		border: 2rpx solid rgba(175, 160, 201, 0.35);
 	}
 
 	.filter-chip.active {
-		background: rgba(37, 99, 235, 0.1);
-		border-color: #2563eb;
+		background: rgba(76, 140, 182, 0.16);
+		border-color: #083969;
 	}
 
 	.filter-text {
 		font-size: 26rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 	}
 
 	.filter-chip.active .filter-text {
-		color: #2563eb;
+		color: #083969;
 		font-weight: 600;
 	}
 
@@ -285,7 +285,7 @@
 
 	.empty-text {
 		font-size: 28rpx;
-		color: #94a3b8;
+		color: rgba(5, 28, 44, 0.45);
 	}
 
 	.report-card {
@@ -293,8 +293,8 @@
 		border-radius: 20rpx;
 		padding: 28rpx 24rpx 22rpx;
 		margin-bottom: 20rpx;
-		border: 1rpx solid #e2e8f0;
-		box-shadow: 0 4rpx 20rpx rgba(15, 23, 42, 0.05);
+		border: 1rpx solid rgba(175, 160, 201, 0.35);
+		box-shadow: 0 4rpx 20rpx rgba(5, 28, 44, 0.08);
 	}
 
 	.report-row {
@@ -311,29 +311,29 @@
 
 	.report-label {
 		font-size: 30rpx;
-		color: #0f172a;
+		color: #051C2C;
 		font-weight: 600;
 	}
 
 	.report-score {
 		font-size: 40rpx;
 		font-weight: 700;
-		color: #2563eb;
+		color: #083969;
 	}
 
 	.time-label {
 		font-size: 26rpx;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 	}
 
 	.time-val {
 		font-size: 26rpx;
-		color: #334155;
+		color: rgba(5, 28, 44, 0.85);
 	}
 
 	.report-hint {
 		font-size: 22rpx;
-		color: #94a3b8;
+		color: rgba(5, 28, 44, 0.45);
 	}
 
 	.list-footer-space {

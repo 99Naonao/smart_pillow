@@ -39,7 +39,7 @@
 				accordionVal: '1',
 				content: '连接设备具体内容',
 				extraIcon: {
-					color: '#4cd964',
+					color: '#1C6A51',
 					size: '26',
 					type: 'image'
 				},
@@ -80,7 +80,7 @@
 
 	.uni-collapse-item__title-box {
 		background: none !important;
-		color: #5B7897 !important;
+		color: rgba(5, 28, 44, 0.7) !important;
 		font-size: 32rpx !important;
 	}
 
@@ -93,7 +93,7 @@
 	}
 
 	.uni-collapse-item__wrap-content {
-		color: #5B7897 !important;
+		color: rgba(5, 28, 44, 0.7) !important;
 		font-size: 32rpx !important;
 	}
 

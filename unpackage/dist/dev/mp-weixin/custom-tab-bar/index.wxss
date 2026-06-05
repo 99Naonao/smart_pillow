@@ -5,9 +5,9 @@
 	left: 0;
 	right: 0;
 	height: 160rpx;
-	background: linear-gradient(180deg, #dff6fc 0%, #e8f8fc 100%);
-	border-top: 1rpx solid rgba(147, 197, 253, 0.45);
-	box-shadow: 0 -4rpx 20rpx rgba(15, 118, 168, 0.08);
+	background: linear-gradient(180deg, #083969 0%, #005578 100%);
+	border-top: 1rpx solid rgba(175, 160, 201, 0.45);
+	box-shadow: 0 -4rpx 20rpx rgba(5, 28, 44, 0.18);
 	display: flex;
 	padding-bottom: env(safe-area-inset-bottom);
 	box-sizing: border-box;

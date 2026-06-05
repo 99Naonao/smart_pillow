@@ -1,8 +1,8 @@
 <template>
 	<!-- 	<z-nav-bar backState="1000" type='transparentFixed' fontColor='#000' transparentFixedFontColor='#000'
 		title='枕头调整'></z-nav-bar> -->
-	<view class="main">
-		<view v-if="!bleConnected" class="ble-off-tip">
+	<view class="main" :class="mainPageClass">
+		<view v-if="!bleUiReady" class="ble-off-tip">
 			未连接枕头蓝牙，无法进行手动微调。请先在首页连接设备。
 		</view>
 		<view class="select-part">
@@ -18,32 +18,53 @@
 		<view class="text-tips">请保持{{this.selectIndex == 1?'仰卧姿态':'侧卧姿态'}}进行调节</view>
 		<view class="info-part">
 			<view class="info-second-part">
-				<label class='desc1'>头枕部</label>
-				<label class='desc1size'>{{ displayHeadCm }}cm</label>
-				<label class='desc2'>颈枕部</label>
-				<label class='desc2size'>{{ displayNeckCm }}cm</label>
+				<view class="desc1-wrap">
+					<image
+						v-if="bleUiReady && pillowHeadAirIconSrc"
+						class="desc-air-icon"
+						:src="pillowHeadAirIconSrc"
+						mode="aspectFit"
+					/>
+					<label class="desc1">头枕部</label>
+				</view>
+				<label class='desc1size'>{{ displayHeadPct }}%</label>
+				<view class="desc2-wrap">
+					<image
+						v-if="bleUiReady && pillowNeckAirIconSrc"
+						class="desc-air-icon"
+						:src="pillowNeckAirIconSrc"
+						mode="aspectFit"
+					/>
+					<label class="desc2">颈枕部</label>
+				</view>
+				<label class='desc2size'>{{ displayNeckPct }}%</label>
 				<image class="human-icon" :src="'../static/adjust/SY_11_bg01YW.png'"></image>
 				<image class="main-icon" :src="'../static/adjust/SY_11_bg.png'"></image>
 				<image class="down-icon" :src="'../static/adjust/SY_11_DOW.png'"></image>
 				<image class="up-icon" :src="'../static/adjust/SY_11_UP.png'"></image>
 				<!-- 				<image class="bzb-icon" :src="'../static/adjust/SY_11_buttonBZb.png'"></image>
 				<image class="tzb-icon" :src="'../static/adjust/SY_11_buttonTZb.png'"></image> -->
-				<view :class="this.selectHead?'bo bo-left':'bo bo-left select'" @click="onSelectHeadClick(true)">
+				<view :class="selectHead === true ? 'bo bo-left' : 'bo bo-left select'" @click="onSelectHeadClick(true)">
 					头枕
 				</view>
-				<view :class="this.selectHead?'bo bo-right select':'bo bo-right'" @click="onSelectHeadClick(false)">
+				<view :class="selectHead === false ? 'bo bo-right' : 'bo bo-right select'" @click="onSelectHeadClick(false)">
 					颈枕
 				</view>
 			</view>
 			<view class="opt-part">
-				<view class="slider-row" :class="{ 'opt-disabled': !bleConnected }">
-					<view class="step-btn step-btn-minus" @click="onAdjustStepClick(-1)">
+				<view class="slider-row" :class="{ 'opt-disabled': !bleUiReady || !hasAdjustChannelSelected }">
+					<view class="step-btn step-btn-minus" hover-class="step-btn-active"
+						@touchstart.stop="onManualAdjustStepTouchStart(-1)"
+						@touchend.stop="onManualAdjustStepTouchEnd" @touchcancel.stop="onManualAdjustStepTouchEnd">
 						<text class="step-btn-txt">−</text>
 					</view>
-					<slider class="height-slider" :disabled="!bleConnected" :value="currentSliderPercent" min="0" max="100" step="1"
+					<!-- 轨道 0~100，与协议 0x05/0x06 一致 -->
+					<slider class="height-slider" :disabled="!bleUiReady || !hasAdjustChannelSelected" :value="currentSliderPercent" min="0" max="100" step="1"
 						activeColor="#5d8ff8" backgroundColor="#e6e7eb" block-color="#7bc8e9" block-size="26"
 						@changing="onSliderChanging" @change="onSliderChange" />
-					<view class="step-btn step-btn-plus" @click="onAdjustStepClick(1)">
+					<view class="step-btn step-btn-plus" hover-class="step-btn-active"
+						@touchstart.stop="onManualAdjustStepTouchStart(1)"
+						@touchend.stop="onManualAdjustStepTouchEnd" @touchcancel.stop="onManualAdjustStepTouchEnd">
 						<text class="step-btn-txt">+</text>
 					</view>
 				</view>
@@ -54,15 +75,69 @@
 					<label>设备校准（0x0A）</label>
 				</view>
 			</view>
-			<view class="bottom-part">
-				<view class="save" :class="{ 'btn-disabled': !bleConnected }" @click="saveModeHandler">保存{{selectIndex==1?'/侧卧调整':'/返回主页'}}</view>
-				<view class="text-tips text-button bottom-btn" @click="cancelSaveHandle">
-					不保存{{this.selectIndex==1?'/继续调整侧卧高度':'/返回主页'}}
-				</view>
-			</view>
 		</view>
 		<input-view ref="inputView" class="input-part" v-if="showMeasure&&false"></input-view>
 		<recommand-info :showTips="true" :standard="standard"></recommand-info>
+		<!-- 0x11 修正值：仅 develop / trial，折叠放底部避免挡主流程 -->
+		<view v-if="showDevCalib0x11Panel" class="dev-calib-wrap">
+			<view class="dev-calib-fold" @click="toggleDevCalib0x11Panel">
+				<text class="dev-calib-fold-title">开发工具 · 充放气修正</text>
+				<text class="dev-calib-fold-action">{{ devCalib0x11Expanded ? '收起 ∧' : '展开 ∨' }}</text>
+			</view>
+			<view v-show="devCalib0x11Expanded" class="dev-calib-panel" :class="{ 'opt-disabled': !bleUiReady }">
+				<view class="dev-calib-hint">节点 0~19 与阈值一一对应（节点 0 最低）；充气/放气修正 ±50，可点 −/+ 或输入负数</view>
+				<view class="dev-calib-grid">
+					<view class="dev-calib-field">
+						<text class="dev-calib-label">节点</text>
+						<input class="dev-calib-input" type="number" :disabled="!bleUiReady"
+							v-model.number="calib0x11Node" placeholder="0~19" />
+					</view>
+					<view class="dev-calib-field">
+						<text class="dev-calib-label">阈值</text>
+						<input class="dev-calib-input" type="number" :disabled="!bleUiReady"
+							v-model.number="calib0x11LevelData" placeholder="0~100" />
+					</view>
+					<view class="dev-calib-field dev-calib-field-wide">
+						<text class="dev-calib-label">充气</text>
+						<view class="dev-calib-stepper">
+							<view class="dev-calib-step" hover-class="dev-calib-step-active"
+								@touchstart.stop="onCalib0x11StepTouchStart('inflate', -1)"
+								@touchend.stop="onCalib0x11StepTouchEnd" @touchcancel.stop="onCalib0x11StepTouchEnd">−</view>
+							<input class="dev-calib-input dev-calib-input-signed" type="text" :disabled="!bleUiReady"
+								v-model="calib0x11InflateCorrectStr" placeholder="-50~50"
+								@blur="syncCalib0x11CorrectFromStr('inflate')" />
+							<view class="dev-calib-step" hover-class="dev-calib-step-active"
+								@touchstart.stop="onCalib0x11StepTouchStart('inflate', 1)"
+								@touchend.stop="onCalib0x11StepTouchEnd" @touchcancel.stop="onCalib0x11StepTouchEnd">+</view>
+						</view>
+					</view>
+					<view class="dev-calib-field dev-calib-field-wide">
+						<text class="dev-calib-label">放气</text>
+						<view class="dev-calib-stepper">
+							<view class="dev-calib-step" hover-class="dev-calib-step-active"
+								@touchstart.stop="onCalib0x11StepTouchStart('deflate', -1)"
+								@touchend.stop="onCalib0x11StepTouchEnd" @touchcancel.stop="onCalib0x11StepTouchEnd">−</view>
+							<input class="dev-calib-input dev-calib-input-signed" type="text" :disabled="!bleUiReady"
+								v-model="calib0x11DeflateCorrectStr" placeholder="-50~50"
+								@blur="syncCalib0x11CorrectFromStr('deflate')" />
+							<view class="dev-calib-step" hover-class="dev-calib-step-active"
+								@touchstart.stop="onCalib0x11StepTouchStart('deflate', 1)"
+								@touchend.stop="onCalib0x11StepTouchEnd" @touchcancel.stop="onCalib0x11StepTouchEnd">+</view>
+						</view>
+					</view>
+				</view>
+				<view class="dev-calib-actions">
+					<view class="dev-calib-btn" @click="readCalib0x11">读取</view>
+					<view class="dev-calib-btn dev-calib-btn-primary" @click="writeCalib0x11">写入</view>
+				</view>
+			</view>
+		</view>
+		<view class="bottom-part">
+			<view class="save" :class="{ 'btn-disabled': !bleUiReady }" @click="saveModeHandler">保存{{selectIndex==1?'/侧卧调整':'/返回主页'}}</view>
+			<view class="text-tips text-button bottom-btn" @click="cancelSaveHandle">
+				不保存{{this.selectIndex==1?'/继续调整侧卧高度':'/返回主页'}}
+			</view>
+		</view>
 
 
 		<uni-popup ref="popupSave" type="bottom" background-color="#fff" border-radius="10px 10px 0 0"
@@ -98,7 +173,7 @@
 	</view>
 </template>
 <script>
-	import BluePillowProtocol, { PillowBleManager } from '@/utils/BlueUtils'
+	import BluePillowProtocol, { PillowBleManager, pillowProfileHeightWindows } from '@/utils/BlueUtils'
 	import InputView from '../../pages/shootView/InputView.vue'
 	import RecommandInfo from './RecommandInfo.vue'
 	import { callPushSmartPillowData } from '../../utils/miniapp'
@@ -106,14 +181,21 @@
 		sendModeByName,
 		saveRandomMode,
 		getAIModeByName,
-		getMiniProgramEnv
+		getMiniProgramEnv,
+		canBypassBleConnectInCurrentEnv
 	} from '@/common/util.js'
 	import { stopSpineAdjustSession } from '@/common/spineSession.js'
 
-	/** 手动微调：机械行程按最大 12cm 与协议 0~100% 对应；内部存 mm(0~120)，界面显示 cm */
+	/**
+	 * 手动微调：协议档位 0~100 线性对应目标压力 0 Pa~4000 Pa（0~4 kPa）。
+	 * 内部用 mm(0~120) 仅作档位换算载体（与 MANUAL_MAX_MM 比例），界面展示压力。
+	 */
 	const MANUAL_MAX_MM = 120
-	/** 加减按钮：协议百分数域每次步进（0x05/0x06） */
-	const MANUAL_PERCENT_STEP = 6
+	const MANUAL_MIN_PERCENT = 0
+	const MANUAL_MAX_PERCENT = 100
+	const MANUAL_MIN_MM = 0
+	/** 加减按钮：协议档位每次 ±MANUAL_PERCENT_STEP，长按连续调节 */
+	const MANUAL_PERCENT_STEP = 1
 
 	export default {
 		components: {
@@ -121,19 +203,53 @@
 			RecommandInfo
 		},
 		computed: {
-			/** 头枕高度 cm 展示（内部 head/sideHead 为 mm 0~120） */
-			displayHeadCm() {
+			/** 头枕：当前姿态下协议 0~100%，与 0x05/0x06 一致 */
+			displayHeadPct() {
 				const mm = this.selectIndex === 1 ? this.head : this.sideHead
-				return (Number(mm) / 10).toFixed(1)
+				return this.mmToPct(mm)
 			},
-			/** 颈枕高度 cm 展示 */
-			displayNeckCm() {
+			/** 颈枕：同上 */
+			displayNeckPct() {
 				const mm = this.selectIndex === 1 ? this.neck : this.sideNeck
-				return (Number(mm) / 10).toFixed(1)
+				return this.mmToPct(mm)
 			},
-			/** 当前选中通道（头/颈 × 仰/侧）对应的协议百分数 0~100，与滑块同步 */
+			/** 当前选中通道对应的 0~100%，与滑块同步 */
 			currentSliderPercent() {
 				return this.mmToPct(this.getCurrentChannelMm())
+			},
+			/** 是否已选择头枕或颈枕（进页默认均未选） */
+			hasAdjustChannelSelected() {
+				return this.selectHead === true || this.selectHead === false
+			},
+			/** 正式版须连蓝牙；develop/trial 可跳过连接拦截 */
+			bleUiReady() {
+				return this.bleConnected || canBypassBleConnectInCurrentEnv()
+			},
+			/** 0x04：阀1(bit0) 开 + 泵充气 → up2；阀开 + 泵停 → down2 */
+			pillowHeadAirIconSrc() {
+				if (!this.bleUiReady || !this.pillowHeadAirFlow) {
+					return ''
+				}
+				return this.pillowHeadAirFlow === 'inflate'
+					? '../../static/icon/up2.png'
+					: '../../static/icon/down2.png'
+			},
+			/** 0x04：阀3(bit2) 同上 */
+			pillowNeckAirIconSrc() {
+				if (!this.bleUiReady || !this.pillowNeckAirFlow) {
+					return ''
+				}
+				return this.pillowNeckAirFlow === 'inflate'
+					? '../../static/icon/up2.png'
+					: '../../static/icon/down2.png'
+			},
+			/** 与 0x10 调试一致：仅 develop / trial 显示 0x11 面板 */
+			showDevCalib0x11Panel() {
+				return this.shouldInjectSleepStateBy0x10()
+			},
+			mainPageClass() {
+				if (!this.showDevCalib0x11Panel) return ''
+				return this.devCalib0x11Expanded ? 'main-dev-tools main-dev-tools-open' : 'main-dev-tools'
 			}
 		},
 		data() {
@@ -148,11 +264,11 @@
 				characteristicStringId: '6E400002-B5A3-F393-E0A9-E50E24DCCA9E', //write，string，rx；
 				pillowName: '',
 				selectIndex: 1,
-				selectHead: true, // 是否选中调整头枕，否则是脖枕
-				head: 0, // 仰卧头部高度（mm，0~MANUAL_MAX_MM，对应 0~12cm）
-				sideHead: 0, // 侧卧头部高度（mm）
-				neck: 0, // 仰卧颈部高度（mm）
-				sideNeck: 0, // 侧卧颈部高度（mm）
+				selectHead: null, // null=未选，true=头枕，false=颈枕
+				head: 0, // 仰卧头枕档位载体 mm（0~120 ↔ 协议 0~100 ↔ 0~4kPa）
+				sideHead: 0,
+				neck: 0,
+				sideNeck: 0,
 				initHeadHeight: 0,
 				initNeckHeight: 0,
 				initWidthHeight: 0,
@@ -171,6 +287,17 @@
 				status04StartTimer: null,
 				/** 与 PillowBleManager 同步，未连接时不允许微调下发 */
 				bleConnected: false,
+				/** 0x04 气路充放气：null | inflate | deflate */
+				pillowHeadAirFlow: null,
+				pillowNeckAirFlow: null,
+				/** 0x11 修正值表单（仅非正式环境面板） */
+				calib0x11Node: 0,
+				calib0x11LevelData: 0,
+				calib0x11InflateCorrect: 0,
+				calib0x11DeflateCorrect: 0,
+				calib0x11InflateCorrectStr: '0',
+				calib0x11DeflateCorrectStr: '0',
+				devCalib0x11Expanded: false
 			}
 		},
 		onLoad(options) {
@@ -178,7 +305,7 @@
 			this.pillowName = decodeURIComponent(options.pillowName || '')
 			this.deviceId = options.deviceId || ''
 			this.serviceId = options.serviceId || ''
-			// 路由一般为协议百分数 0~100，换算为 mm(0~120) 再参与微调
+			// 路由为协议压力档位 0~100（0~4kPa），换算为内部 mm 再参与微调
 			this.initHeadHeight = this.routePctToMm(options.headHeight)
 			this.initNeckHeight = this.routePctToMm(options.neckHeight)
 			this.initWidthHeight = Math.floor(options.shoulderHeight || 0)
@@ -221,9 +348,15 @@
 
 			this.pillowPressStatus = PillowBleManager.getInstance().getPillowStatus()
 
+			const bleMgr = PillowBleManager.getInstance()
+			const snap = typeof bleMgr.getLastPillowStatus0x04 === 'function' ? bleMgr.getLastPillowStatus0x04() : null
+			if (snap && snap.parsed && snap.parsed.ok) {
+				this.syncPillowAirFlowIconsFrom04(snap.parsed)
+			}
+
 			if (this.initHeadHeight >= 0 && this.initNeckHeight >= 0) {
 				this.showMeasure = true;
-				this.enterManualCalibrateThenApplyHeights();
+				this.setupManualAdjustOnShow();
 
 				this.standard = getAIModeByName(this.inputName)
 				if (!this.standard) {
@@ -242,6 +375,8 @@
 		},
 		onUnload() {
 			console.log('work on onUnload!')
+			this.stopManualAdjustStepRepeat()
+			this.stopCalib0x11StepRepeat()
 			this.stopPillowStatus0x04Polling()
 			this.exitManualDebugMode0x10()
 			this.exitManualCalibrateMode();
@@ -250,6 +385,8 @@
 		},
 		onHide() {
 			console.log('work on hide!')
+			this.stopManualAdjustStepRepeat()
+			this.stopCalib0x11StepRepeat()
 			this.stopPillowStatus0x04Polling()
 			this.exitManualDebugMode0x10()
 			this.exitManualCalibrateMode();
@@ -265,14 +402,59 @@
 			},
 			/** @returns {boolean} */
 			ensureBleConnected() {
+				if (canBypassBleConnectInCurrentEnv()) {
+					return true
+				}
 				this.syncBleConnectedState()
 				if (this.bleConnected) return true
 				uni.showToast({ title: '请先连接枕头蓝牙', icon: 'none' })
 				return false
 			},
-			onAdjustStepClick(direction) {
+			ensureAdjustChannelSelected() {
+				if (this.hasAdjustChannelSelected) return true
+				uni.showToast({ title: '请先选择头枕或颈枕', icon: 'none' })
+				return false
+			},
+			stopManualAdjustStepRepeat() {
+				if (this._manualAdjustStepDelayTimer != null) {
+					clearTimeout(this._manualAdjustStepDelayTimer)
+					this._manualAdjustStepDelayTimer = null
+				}
+				if (this._manualAdjustStepInterval != null) {
+					clearInterval(this._manualAdjustStepInterval)
+					this._manualAdjustStepInterval = null
+				}
+				this._manualAdjustStepDirection = null
+			},
+			onManualAdjustStepTouchStart(direction) {
 				if (!this.ensureBleConnected()) return
-				this.adjustPercentStep(direction)
+				if (!this.ensureAdjustChannelSelected()) return
+				this.stopManualAdjustStepRepeat()
+				this._manualAdjustStepDirection = direction
+				this._manualAdjustStepDelayTimer = setTimeout(() => {
+					this._manualAdjustStepDelayTimer = null
+					const d = this._manualAdjustStepDirection
+					if (d == null) return
+					if (!this.adjustPercentStep(d)) {
+						this.stopManualAdjustStepRepeat()
+						return
+					}
+					this._manualAdjustStepInterval = setInterval(() => {
+						const cur = this._manualAdjustStepDirection
+						if (cur == null || !this.adjustPercentStep(cur)) {
+							this.stopManualAdjustStepRepeat()
+						}
+					}, 80)
+				}, 350)
+			},
+			onManualAdjustStepTouchEnd() {
+				if (this._manualAdjustStepDelayTimer != null) {
+					const d = this._manualAdjustStepDirection
+					clearTimeout(this._manualAdjustStepDelayTimer)
+					this._manualAdjustStepDelayTimer = null
+					if (d != null) this.adjustPercentStep(d)
+				}
+				this.stopManualAdjustStepRepeat()
 			},
 			onSelectHeadClick(bool) {
 				if (!this.ensureBleConnected()) return
@@ -290,7 +472,7 @@
 					this.requestPillowStatus0x04()
 					this.status04PollTimer = setInterval(() => {
 						this.requestPillowStatus0x04()
-					}, 2000)
+					}, 1000)
 				}, delay)
 			},
 			stopPillowStatus0x04Polling() {
@@ -326,16 +508,35 @@
 				console.log(
 					`[手动微调][0x04] 头枕高度=${this.u16HexForLog(parsed.headHeightPct)}, 颈枕高度=${this.u16HexForLog(parsed.neckHeightPct)}, workState=${parsed.workState}`
 				)
+				this.syncPillowAirFlowIconsFrom04(parsed)
+			},
+			/**
+			 * 协议 0x04：设备状态 bit0=阀1(头枕)、bit2=阀3(颈枕)；泵1/2 为 1 表示充气。
+			 * 阀开且任一气泵充气→充气图标；阀开且泵均非充气→放气图标。
+			 */
+			syncPillowAirFlowIconsFrom04(p) {
+				if (!p || !p.ok) {
+					this.$set(this, 'pillowHeadAirFlow', null)
+					this.$set(this, 'pillowNeckAirFlow', null)
+					return
+				}
+				const ds = (p.deviceStatus != null ? p.deviceStatus : p.valveBits) ?? 0
+				const valveHead = (ds >> 0) & 1
+				const valveNeck = (ds >> 2) & 1
+				const pump1 = typeof p.pump1 === 'number' ? p.pump1 : 0
+				const pump2 = typeof p.pump2 === 'number' ? p.pump2 : 0
+				const pumpInflating = pump1 === 1 || pump2 === 1
+				const head = valveHead ? (pumpInflating ? 'inflate' : 'deflate') : null
+				const neck = valveNeck ? (pumpInflating ? 'inflate' : 'deflate') : null
+				this.$set(this, 'pillowHeadAirFlow', head)
+				this.$set(this, 'pillowNeckAirFlow', neck)
 			},
 			/** 非正式环境（develop / trial）启用 0x10 睡姿注入；release 保持原流程 */
 			shouldInjectSleepStateBy0x10() {
 				const env = getMiniProgramEnv()
 				return !!(env && !env.isRelease)
 			},
-			/**
-			 * 0x10：调试模式 + 睡姿状态
-			 * @param {number} sleepState 1=仰卧，2=侧卧
-			 */
+			/** 非正式环境：0x10 睡姿状态 0=无/进页，1=头枕，2=颈枕 */
 			sendManualAdjustSleepState0x10(sleepState) {
 				if (!this.shouldInjectSleepStateBy0x10()) {
 					return
@@ -344,10 +545,12 @@
 				if (!ble.isConnected()) {
 					return
 				}
+				const n = Math.floor(Number(sleepState))
+				const state = n >= 0 && n <= 2 ? n : 0
 				ble.headParams0x10({
 					read: false,
 					debugMode: 1,
-					sleepState: sleepState === 2 ? 2 : 1
+					sleepState: state
 				})
 				this.manualDebugModeEntered = true
 			},
@@ -369,11 +572,121 @@
 				}
 				this.manualDebugModeEntered = false
 			},
+			clampCalib0x11Form() {
+				let node = Math.floor(Number(this.calib0x11Node))
+				if (Number.isNaN(node)) node = 0
+				node = Math.max(0, Math.min(19, node))
+				this.calib0x11Node = node
+				let level = Math.floor(Number(this.calib0x11LevelData))
+				if (Number.isNaN(level)) level = 0
+				this.calib0x11LevelData = Math.max(0, Math.min(100, level))
+				this.syncCalib0x11CorrectFromStr('inflate')
+				this.syncCalib0x11CorrectFromStr('deflate')
+			},
+			syncCalib0x11CorrectFromStr(field) {
+				const strKey = field === 'inflate' ? 'calib0x11InflateCorrectStr' : 'calib0x11DeflateCorrectStr'
+				const numKey = field === 'inflate' ? 'calib0x11InflateCorrect' : 'calib0x11DeflateCorrect'
+				let s = String(this[strKey] != null ? this[strKey] : '').trim()
+				if (s === '' || s === '-') {
+					this[numKey] = 0
+					this[strKey] = '0'
+					return
+				}
+				let n = parseInt(s, 10)
+				if (Number.isNaN(n)) n = 0
+				n = Math.max(-50, Math.min(50, n))
+				this[numKey] = n
+				this[strKey] = String(n)
+			},
+			stepCalib0x11Correct(field, delta) {
+				if (!this.bleUiReady) return false
+				const numKey = field === 'inflate' ? 'calib0x11InflateCorrect' : 'calib0x11DeflateCorrect'
+				const strKey = field === 'inflate' ? 'calib0x11InflateCorrectStr' : 'calib0x11DeflateCorrectStr'
+				let n = Math.floor(Number(this[numKey]))
+				if (Number.isNaN(n)) n = 0
+				const next = Math.max(-50, Math.min(50, n + delta))
+				if (next === n) return false
+				this[numKey] = next
+				this[strKey] = String(next)
+				return true
+			},
+			stopCalib0x11StepRepeat() {
+				if (this._calib0x11StepDelayTimer != null) {
+					clearTimeout(this._calib0x11StepDelayTimer)
+					this._calib0x11StepDelayTimer = null
+				}
+				if (this._calib0x11StepInterval != null) {
+					clearInterval(this._calib0x11StepInterval)
+					this._calib0x11StepInterval = null
+				}
+				this._calib0x11StepRepeat = null
+			},
+			onCalib0x11StepTouchStart(field, delta) {
+				if (!this.bleUiReady) return
+				this.stopCalib0x11StepRepeat()
+				this._calib0x11StepRepeat = { field, delta }
+				this._calib0x11StepDelayTimer = setTimeout(() => {
+					this._calib0x11StepDelayTimer = null
+					const r = this._calib0x11StepRepeat
+					if (!r) return
+					if (!this.stepCalib0x11Correct(r.field, r.delta)) {
+						this.stopCalib0x11StepRepeat()
+						return
+					}
+					this._calib0x11StepInterval = setInterval(() => {
+						const cur = this._calib0x11StepRepeat
+						if (!cur || !this.stepCalib0x11Correct(cur.field, cur.delta)) {
+							this.stopCalib0x11StepRepeat()
+						}
+					}, 80)
+				}, 350)
+			},
+			onCalib0x11StepTouchEnd() {
+				if (this._calib0x11StepDelayTimer != null) {
+					const r = this._calib0x11StepRepeat
+					clearTimeout(this._calib0x11StepDelayTimer)
+					this._calib0x11StepDelayTimer = null
+					if (r) this.stepCalib0x11Correct(r.field, r.delta)
+				}
+				this.stopCalib0x11StepRepeat()
+			},
+			applyCalib0x11ReadResult(p) {
+				if (!p || !p.ok) return
+				this.calib0x11Node = p.nodeIndex
+				this.calib0x11LevelData = p.levelData
+				this.calib0x11InflateCorrect = p.inflateCorrect
+				this.calib0x11DeflateCorrect = p.deflateCorrect
+				this.calib0x11InflateCorrectStr = String(p.inflateCorrect)
+				this.calib0x11DeflateCorrectStr = String(p.deflateCorrect)
+			},
+			toggleDevCalib0x11Panel() {
+				this.devCalib0x11Expanded = !this.devCalib0x11Expanded
+			},
+			readCalib0x11() {
+				if (!this.ensureBleConnected()) return
+				this.clampCalib0x11Form()
+				PillowBleManager.getInstance().calibrationCorrect0x11({
+					read: true,
+					nodeIndex: this.calib0x11Node
+				})
+			},
+			writeCalib0x11() {
+				if (!this.ensureBleConnected()) return
+				this.clampCalib0x11Form()
+				PillowBleManager.getInstance().calibrationCorrect0x11({
+					read: false,
+					nodeIndex: this.calib0x11Node,
+					levelData: this.calib0x11LevelData,
+					inflateCorrect: this.calib0x11InflateCorrect,
+					deflateCorrect: this.calib0x11DeflateCorrect
+				})
+			},
 			/**
-			 * 进入手动微调页：直接按当前睡姿下发头/颈目标（0x05/0x06）。
-			 * 标定模式（0x0A）已暂时关闭，原逻辑保留在注释中便于恢复。
+			 * 进入手动微调页 onShow：0x04 轮询；进页自动下发一次 0x10（debugMode=1, sleepState=0）。
+			 * 此后用户点击头枕（1）或颈枕（2）时再发 0x10；仰卧/侧卧切换不发 0x10。
+			 * 头/颈目标高度仅在用户操作（滑条松手、±、保存/不保存流程）时通过 sendCurrentChannelBle / send2Pillow 下发。
 			 */
-			enterManualCalibrateThenApplyHeights() {
+			setupManualAdjustOnShow() {
 				if (this._enterCalibrateApplyTimer != null) {
 					clearTimeout(this._enterCalibrateApplyTimer);
 					this._enterCalibrateApplyTimer = null;
@@ -382,44 +695,12 @@
 				if (!ble.isConnected()) {
 					return;
 				}
-				// —— 原流程：先 0x0A 进入标定，约 220ms 后再下发 0x05/0x06 ——
+				// —— 历史：进页即 0x0A 标定 + 0x05/0x06 写路由高度 ——
 				// ble.send(BluePillowProtocol.calibrate(0x01), { silent: true });
-				// this.manualCalibrateEntered = true;
-				// this._enterCalibrateApplyTimer = setTimeout(() => {
-				// 	this._enterCalibrateApplyTimer = null;
-				// 	if (!PillowBleManager.getInstance().isConnected()) {
-				// 		return;
-				// 	}
-				// 	this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
-				// 		.initSideNeckHeight, 0);
-				// }, 220);
-				// 入口 4 条命令按 200ms 间隔发送：0x10(调试环境) -> 0x05 -> 0x06 -> 0x04
-				const cmdGapMs = 200
-				let cmdIndex = 0
-				const schedule = (fn) => {
-					setTimeout(() => {
-						const m = PillowBleManager.getInstance()
-						if (!m.isConnected()) return
-						fn(m)
-					}, cmdGapMs * cmdIndex)
-					cmdIndex += 1
-				}
-				const sleepState = this.selectIndex === 2 ? 2 : 1
-				if (this.shouldInjectSleepStateBy0x10()) {
-					schedule(() => {
-						this.sendManualAdjustSleepState0x10(sleepState)
-					})
-				}
-				const headPct = this.mmToPct(this.selectIndex === 1 ? this.initHeadHeight : this.initSideHeadHeight)
-				const neckPct = this.mmToPct(this.selectIndex === 1 ? this.initNeckHeight : this.initSideNeckHeight)
-				schedule((m) => {
-					m.send(BluePillowProtocol.headHeight(headPct), { silent: true })
-				})
-				schedule((m) => {
-					m.send(BluePillowProtocol.neckHeight(neckPct), { silent: true })
-				})
+				// this.send2Pillow(this.initHeadHeight, ...);
+				this.sendManualAdjustSleepState0x10(0)
 				this.step = 0
-				this.startPillowStatus0x04Polling(cmdGapMs * cmdIndex)
+				this.startPillowStatus0x04Polling(0)
 			},
 			/** 离开微调页。若曾进 0x0A 标定，应发 calibrate(0x05) 退出；当前标定流程已关闭，仅清理定时器。 */
 			exitManualCalibrateMode() {
@@ -443,6 +724,7 @@
 				if (!mgr.loginSuccess) {
 					console.log('调整页面检测到蓝牙断开');
 					this.stopPillowStatus0x04Polling()
+					this.syncPillowAirFlowIconsFrom04(null)
 
 					if (this._enterCalibrateApplyTimer != null) {
 						clearTimeout(this._enterCalibrateApplyTimer);
@@ -453,50 +735,58 @@
 					this.startPillowStatus0x04Polling()
 				}
 			},
-			/** 路由入参多为协议 0~100%，映射到 mm 0~120（12cm 满行程） */
+			/** 协议高度百分数夹紧到 [MANUAL_MIN_PERCENT, MANUAL_MAX_PERCENT] */
+			clampManualPercent(p) {
+				const n = Math.floor(Number(p))
+				const base = Number.isNaN(n) ? 0 : n
+				return Math.max(MANUAL_MIN_PERCENT, Math.min(MANUAL_MAX_PERCENT, base))
+			},
+			/** 路由入参多为协议 0~100%，映射到 mm（0~100%） */
 			routePctToMm(v) {
-				const p = Math.max(0, Math.min(100, Math.floor(Number(v) || 0)))
+				const p = this.clampManualPercent(v)
 				return Math.round((p / 100) * MANUAL_MAX_MM)
 			},
-			/** 内部高度 mm 夹紧 0~120 */
-			clampHeightMm(v) {
-				return Math.max(0, Math.min(MANUAL_MAX_MM, Math.round(Number(v) || 0)))
+			/** 内部高度 mm 夹紧到 [0, MANUAL_MAX_MM] */
+			clampManualHeightMm(v) {
+				return Math.max(MANUAL_MIN_MM, Math.min(MANUAL_MAX_MM, Math.round(Number(v) || 0)))
 			},
 			/** mm → 协议 0x05/0x06/0x02/0x03 用的百分数 0~100 */
 			mmToPct(mm) {
-				const m = this.clampHeightMm(mm)
-				return Math.max(0, Math.min(100, Math.round((m / MANUAL_MAX_MM) * 100)))
+				const m = this.clampManualHeightMm(mm)
+				return Math.round((m / MANUAL_MAX_MM) * 100)
 			},
 			/** 设备上报 0~100 为百分数时 → mm；若 >100 视为历史 mm 直夹紧 */
 			deviceHeightToMm(v) {
 				const n = Number(v) || 0
 				if (n <= 100) {
-					return Math.round((n / 100) * MANUAL_MAX_MM)
+					const p = this.clampManualPercent(n)
+					return Math.round((p / 100) * MANUAL_MAX_MM)
 				}
-				return this.clampHeightMm(n)
+				return this.clampManualHeightMm(n)
 			},
-			/** 有效窗口：按“上下浮动 10 个百分点”（固定值 10） */
+			/** 有效窗口：与 PillowBleManager 导出的 pillowProfileHeightWindows、applyModeProfileFromItem 一致 */
 			heightWindows(headMm, neckMm) {
-				const h = this.mmToPct(headMm)
-				const n = this.mmToPct(neckMm)
-				return {
-					headWindow: Math.max(0, Math.min(65535, 10)),
-					neckWindow: Math.max(0, Math.min(65535, 10))
-				}
+				return pillowProfileHeightWindows()
 			},
 			getCurrentChannelMm() {
-				if (this.selectIndex === 1) {
-					return this.selectHead ? this.head : this.neck
+				if (this.selectHead !== true && this.selectHead !== false) {
+					return 0
 				}
-				return this.selectHead ? this.sideHead : this.sideNeck
+				if (this.selectIndex === 1) {
+					return this.selectHead === true ? this.head : this.neck
+				}
+				return this.selectHead === true ? this.sideHead : this.sideNeck
 			},
 			setCurrentChannelMm(mm) {
-				const m = this.clampHeightMm(mm)
+				if (this.selectHead !== true && this.selectHead !== false) {
+					return
+				}
+				const m = this.clampManualHeightMm(mm)
 				if (this.selectIndex === 1) {
-					if (this.selectHead) this.head = m
+					if (this.selectHead === true) this.head = m
 					else this.neck = m
 				} else {
-					if (this.selectHead) this.sideHead = m
+					if (this.selectHead === true) this.sideHead = m
 					else this.sideNeck = m
 				}
 			},
@@ -505,18 +795,21 @@
 				return this.routePctToMm(pct)
 			},
 			sendCurrentChannelBle() {
+				if (this.selectHead !== true && this.selectHead !== false) {
+					return
+				}
 				const ble = PillowBleManager.getInstance()
 				if (!ble.isConnected()) return
 				const mm = this.getCurrentChannelMm()
 				const pct = this.mmToPct(mm)
 				if (this.selectIndex === 1) {
-					if (this.selectHead) {
+					if (this.selectHead === true) {
 						ble.send(BluePillowProtocol.headHeight(pct), { silent: true })
 					} else {
 						ble.send(BluePillowProtocol.neckHeight(pct), { silent: true })
 					}
 				} else {
-					if (this.selectHead) {
+					if (this.selectHead === true) {
 						ble.send(BluePillowProtocol.headHeight(pct), { silent: true })
 					} else {
 						ble.send(BluePillowProtocol.neckHeight(pct), { silent: true })
@@ -525,28 +818,31 @@
 			},
 			/** 拖动中只更新本地高度与界面，不下发 BLE */
 			onSliderChanging(e) {
-				if (!this.bleConnected) return
+				if (!this.bleUiReady || !this.hasAdjustChannelSelected) return
 				const v = e.detail.value
 				this.setCurrentChannelMm(this.pctToMm(v))
 			},
 			/** 松手时下发 0x05/0x06 */
 			onSliderChange(e) {
 				if (!this.ensureBleConnected()) return
+				if (!this.ensureAdjustChannelSelected()) return
 				const v = e.detail.value
 				this.setCurrentChannelMm(this.pctToMm(v))
 				this.sendCurrentChannelBle()
 			},
 			/**
-			 * 加减：协议百分数每次 ±6，下发 0x05/0x06；低于 0 为 0，超过 100 为 100
-			 * @param {number} direction +1 或 -1 表示加/减方向
+			 * 加减：每次 ±MANUAL_PERCENT_STEP，下发 0x05/0x06
+			 * @param {number} direction +1 或 -1
+			 * @returns {boolean} 是否实际变化
 			 */
 			adjustPercentStep(direction) {
 				const step = MANUAL_PERCENT_STEP * (direction > 0 ? 1 : -1)
 				const prev = this.currentSliderPercent
-				const p = Math.max(0, Math.min(100, prev + step))
-				if (p === prev) return
+				const p = this.clampManualPercent(prev + step)
+				if (p === prev) return false
 				this.setCurrentChannelMm(this.pctToMm(p))
 				this.sendCurrentChannelBle()
+				return true
 			},
 			updateInfo() {
 				this.pillowPressStatus = PillowBleManager.getInstance().getPillowStatus()
@@ -609,7 +905,6 @@
 						.initSideNeckHeight, 1);
 
 					this.selectIndex = 2;
-					this.sendManualAdjustSleepState0x10(2)
 				} else {
 					const ble = PillowBleManager.getInstance()
 					if (ble.isConnected()) {
@@ -674,7 +969,6 @@
 					});
 
 					this.selectIndex = 2;
-					this.sendManualAdjustSleepState0x10(2)
 					this.closeSave()
 					this.$refs.popupTips.open('center')
 
@@ -757,16 +1051,25 @@
 							title: p.code === 1 ? '指令执行失败' : '设备应答异常',
 							icon: 'none'
 						});
+					} else if (p.funcLogical === 0x11) {
+						uni.showToast({ title: '0x11 写入成功', icon: 'none' })
 					}
 					return;
+				}
+				if (parsed.type === 'calibration_correct_0x11' && parsed.parsed && parsed.parsed.ok) {
+					this.applyCalib0x11ReadResult(parsed.parsed)
+					uni.showToast({ title: '0x11 读取成功', icon: 'none' })
+					return
 				}
 				if (parsed.type === 'pillow_status' && parsed.parsed && parsed.parsed.ok) {
 					const ws = parsed.parsed.workState;
 					this.pillowPressStatus = ws;
+					this.syncPillowAirFlowIconsFrom04(parsed.parsed);
 				}
 			},
 			selectHeadHandler(bool) {
 				this.selectHead = bool
+				this.sendManualAdjustSleepState0x10(bool ? 1 : 2)
 			},
 			selectHandler(index) {
 				this.selectIndex = index
@@ -808,6 +1111,130 @@
 
 	.opt-disabled {
 		opacity: 0.55;
+	}
+
+	.dev-calib-wrap {
+		margin: 8rpx 40rpx 0;
+	}
+
+	.dev-calib-fold {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 18rpx 20rpx;
+		background: rgba(255, 255, 255, 0.55);
+		border: 1rpx dashed rgba(28, 68, 133, 0.35);
+		border-radius: 12rpx;
+	}
+
+	.dev-calib-fold-title {
+		font-size: 24rpx;
+		color: #1c4485;
+	}
+
+	.dev-calib-fold-action {
+		font-size: 22rpx;
+		color: #666;
+	}
+
+	.dev-calib-panel {
+		margin-top: 12rpx;
+		padding: 16rpx 20rpx 20rpx;
+		background: rgba(255, 255, 255, 0.72);
+		border: 1rpx solid rgba(28, 68, 133, 0.12);
+		border-radius: 12rpx;
+	}
+
+	.dev-calib-hint {
+		font-size: 22rpx;
+		color: #888;
+		margin-bottom: 12rpx;
+		line-height: 1.4;
+	}
+
+	.dev-calib-grid {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 16rpx 12rpx;
+	}
+
+	.dev-calib-field {
+		flex: 0 0 calc(50% - 6rpx);
+		display: flex;
+		align-items: center;
+		box-sizing: border-box;
+		min-width: 0;
+	}
+
+	.dev-calib-label {
+		flex: 0 0 72rpx;
+		font-size: 24rpx;
+		color: #354d5b;
+	}
+
+	.dev-calib-field-wide {
+		flex: 0 0 100%;
+	}
+
+	.dev-calib-stepper {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		gap: 8rpx;
+		min-width: 0;
+	}
+
+	.dev-calib-step {
+		flex-shrink: 0;
+		width: 52rpx;
+		height: 52rpx;
+		line-height: 52rpx;
+		text-align: center;
+		font-size: 32rpx;
+		color: #3c64d1;
+		background: rgba(255, 255, 255, 0.9);
+		border: 1rpx solid rgba(93, 143, 248, 0.35);
+		border-radius: 8rpx;
+	}
+
+	.dev-calib-step-active {
+		background: rgba(93, 143, 248, 0.18);
+	}
+
+	.dev-calib-input-signed {
+		text-align: center;
+		min-width: 0;
+	}
+
+	.dev-calib-input {
+		flex: 1;
+		height: 56rpx;
+		padding: 0 12rpx;
+		font-size: 24rpx;
+		background: #fff;
+		border: 1rpx solid #d5e0f7;
+		border-radius: 8rpx;
+	}
+
+	.dev-calib-actions {
+		display: flex;
+		gap: 16rpx;
+		margin-top: 20rpx;
+	}
+
+	.dev-calib-btn {
+		flex: 1;
+		text-align: center;
+		padding: 16rpx 0;
+		font-size: 26rpx;
+		color: #1c4485;
+		background: #e8eef9;
+		border-radius: 10rpx;
+	}
+
+	.dev-calib-btn-primary {
+		color: #fff;
+		background: #1c4485;
 	}
 
 	.save.btn-disabled {
@@ -860,8 +1287,10 @@
 		background-color: rgb(255, 255, 255);
 		margin: 0 auto;
 		line-height: 82rpx;
-		margin-top: -18rpx;
+		margin-top: 0;
 		padding: 0rpx !important;
+		position: relative;
+		z-index: 2;
 	}
 
 	.normal-btn {
@@ -973,7 +1402,17 @@
 	.main {
 		background-color: rgb(197, 208, 230);
 		width: 100%;
-		height: 100%;
+		min-height: 100%;
+		box-sizing: border-box;
+		padding-bottom: 240rpx;
+
+		&.main-dev-tools {
+			padding-bottom: 300rpx;
+		}
+
+		&.main-dev-tools-open {
+			padding-bottom: 560rpx;
+		}
 
 		.select-part {
 			padding-top: 60rpx;
@@ -1044,13 +1483,26 @@
 				height: 271rpx;
 			}
 
-			.desc1 {
-				font-size: 30rpx;
+			.desc1-wrap {
+				position: absolute;
 				left: 22rpx;
 				top: 20rpx;
-				position: absolute;
-				color: #354D5B;
 				z-index: 11;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				gap: 8rpx;
+			}
+
+			.desc-air-icon {
+				width: 34rpx;
+				height: 34rpx;
+				flex-shrink: 0;
+			}
+
+			.desc1 {
+				font-size: 30rpx;
+				color: #354D5B;
 			}
 
 			.desc1size {
@@ -1062,15 +1514,20 @@
 				z-index: 11;
 			}
 
-			.desc2 {
+			.desc2-wrap {
 				position: absolute;
-				color: #354D5B;
-
-
 				left: 390rpx;
 				top: 47rpx;
-				font-size: 30rpx;
 				z-index: 11;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				gap: 8rpx;
+			}
+
+			.desc2 {
+				font-size: 30rpx;
+				color: #354D5B;
 			}
 
 			.desc2size {
@@ -1223,7 +1680,8 @@
 				top: -1rpx;
 			}
 
-			.step-btn:active {
+			.step-btn:active,
+			.step-btn-active {
 				transform: scale(0.96);
 			}
 
@@ -1318,12 +1776,22 @@
 
 
 	.bottom-part {
-		background-color: white;
-		height: 300rpx;
 		width: 100%;
 		position: fixed;
-		bottom: 0rpx;
-		border-radius: 50rpx 50rpx 0rpx 0rpx;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 50;
+		box-sizing: border-box;
+		padding: 24rpx 40rpx;
+		padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+		background: transparent;
+		pointer-events: none;
+
+		.save,
+		.bottom-btn {
+			pointer-events: auto;
+		}
 
 		.text-tips {
 			text-align: center;
@@ -1337,14 +1805,28 @@
 			height: 102rpx;
 			background-color: rgb(28, 68, 133);
 			margin: 0 auto;
-			line-height: 102rpx;
 			text-align: center;
 			color: white;
-			margin-top: 80rpx;
-			border-radius: 50rpx;
-			border-bottom-left-radius: 0;
-			border-bottom-right-radius: 0;
+			font-size: 28rpx;
+			line-height: 1.35;
+			margin-top: 0;
+			border-radius: 30rpx;
+			position: relative;
+			z-index: 1;
+			box-sizing: border-box;
+			/* 文案靠上排布，重叠区内主要为蓝底，避免字叠在白钮之下 */
+			display: flex;
+			align-items: flex-start;
+			justify-content: center;
+			padding-top: 22rpx;
+		}
 
+		/* 白钮叠在蓝钮下半截之上 */
+		.bottom-btn {
+			margin-top: -36rpx;
+			position: relative;
+			z-index: 2;
+			font-size: 28rpx;
 		}
 	}
 </style>

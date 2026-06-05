@@ -175,6 +175,7 @@
 <script>
 import BluePillowProtocol, { PillowBleManager, WifiToolManager } from '@/utils/BlueUtils'
 import { buildHeartModuleWifiFrame9 } from '@/common/util.js'
+import { needsBleMacFromAdvertisData } from '@/utils/platformBle.js'
 import * as blufiModule from '@/utils/blufi/xBlufi.js'
 
 const blufi = blufiModule.default || blufiModule
@@ -1014,6 +1015,14 @@ export default {
               isGoodSleepName(d.name || d.localName || '')
             )
             this.goodSleepDevices = filtered
+            if (filtered.length && needsBleMacFromAdvertisData(this.platform)) {
+              const saved = this.wifiToolManager.tryPersistMacFromScanDevice(filtered[0], {
+                isTargetName: isGoodSleepName
+              })
+              if (saved) {
+                this.log(`BluFi 扫描阶段已保存 WiFi MAC（iOS/鸿蒙 advertisData）: ${saved}`)
+              }
+            }
             if (filtered.length) {
               const summary = filtered
                 .map((d) => {
@@ -1323,10 +1332,10 @@ export default {
         uni.showToast({ title: '请填写 Wi-Fi 信息', icon: 'none' })
         return
       }
-      if (String(this.platform || '').toLowerCase() !== 'ios') {
+      if (!needsBleMacFromAdvertisData(this.platform)) {
         this.persistWifiMacForSoap(device)
       } else {
-        this.log('iOS 跳过配网阶段 MAC 保存（首次扫描阶段已处理）')
+        this.log('iOS/鸿蒙 跳过配网点击阶段 MAC 保存（依赖扫描阶段 advertisData 已处理）')
       }
       this._blufiDeviceId = device.deviceId
       this._blufiDeviceName = device.name || ''
@@ -1364,7 +1373,7 @@ export default {
   height: 100vh;
   box-sizing: border-box;
   padding: 24rpx;
-  background: linear-gradient(180deg, #f5f8ff 0%, #eef7f3 100%);
+  background: linear-gradient(180deg, #F0F6F7 0%, rgba(76, 140, 182, 0.12) 100%);
 }
 .hero-card,
 .card {
@@ -1380,19 +1389,19 @@ export default {
   padding: 8rpx 16rpx;
   border-radius: 999rpx;
   background: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
+  color: #083969;
   font-size: 22rpx;
   margin-bottom: 16rpx;
 }
 .hero-title {
   font-size: 40rpx;
   font-weight: 700;
-  color: #0f172a;
+  color: #051C2C;
   margin-bottom: 12rpx;
 }
 .hero-desc {
   font-size: 24rpx;
-  color: #475569;
+  color: rgba(5, 28, 44, 0.8);
   line-height: 1.7;
   margin-bottom: 24rpx;
 }
@@ -1404,23 +1413,23 @@ export default {
 .step-chip {
   padding: 10rpx 18rpx;
   border-radius: 999rpx;
-  background: #f1f5f9;
-  color: #64748b;
+  background: #F0F6F7;
+  color: rgba(5, 28, 44, 0.7);
   font-size: 22rpx;
 }
 .step-chip.active {
   background: #dcfce7;
-  color: #15803d;
+  color: #1C6A51;
   box-sizing: border-box;
 }
 .em {
   font-weight: bold;
-  color: #2563eb;
+  color: #083969;
 }
 .card-title {
   font-size: 30rpx;
   font-weight: 600;
-  color: #0f172a;
+  color: #051C2C;
   margin-bottom: 20rpx;
 }
 .field-block {
@@ -1429,13 +1438,13 @@ export default {
 .label {
   font-size: 26rpx;
   margin-bottom: 8rpx;
-  color: #334155;
+  color: rgba(5, 28, 44, 0.85);
 }
 .wifi-select-box {
   display: flex;
-  border: 2rpx solid #dbeafe;
+  border: 2rpx solid rgba(76, 140, 182, 0.45);
   border-radius: 18rpx;
-  background: #f8fbff;
+  background: #F0F6F7;
   box-sizing: border-box;
 }
 .wifi-select-box--ios {
@@ -1451,10 +1460,10 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 0 16rpx;
-  background: #f1f5f9;
-  color: #64748b;
+  background: #F0F6F7;
+  color: rgba(5, 28, 44, 0.7);
   font-size: 24rpx;
-  border-right: 2rpx solid #e2e8f0;
+  border-right: 2rpx solid rgba(175, 160, 201, 0.35);
   box-sizing: border-box;
 }
 .wifi-select-right {
@@ -1471,7 +1480,7 @@ export default {
   height: 92rpx;
   line-height: 92rpx;
   font-size: 28rpx;
-  color: #0f172a;
+  color: #051C2C;
 }
 .wifi-select-arrow {
   width: 72rpx;
@@ -1481,7 +1490,7 @@ export default {
   align-items: center;
   justify-content: center;
   background: #e0ecff;
-  color: #2563eb;
+  color: #083969;
   flex: none;
 }
 .wifi-select-arrow--open .wifi-select-arrow-icon {
@@ -1495,7 +1504,7 @@ export default {
 .wifi-dropdown {
   margin-top: 14rpx;
   background: #fff;
-  border: 2rpx solid #dbeafe;
+  border: 2rpx solid rgba(76, 140, 182, 0.45);
   border-radius: 18rpx;
   overflow: hidden;
   box-shadow: 0 12rpx 30rpx rgba(15, 23, 42, 0.06);
@@ -1503,7 +1512,7 @@ export default {
 .wifi-dropdown-empty {
   padding: 24rpx;
   font-size: 24rpx;
-  color: #64748b;
+  color: rgba(5, 28, 44, 0.7);
 }
 .wifi-dropdown-item {
   display: flex;
@@ -1518,7 +1527,7 @@ export default {
 }
 .wifi-dropdown-name {
   font-size: 26rpx;
-  color: #0f172a;
+  color: #051C2C;
   word-break: break-all;
 }
 .wifi-dropdown-tags {
@@ -1531,13 +1540,13 @@ export default {
   flex: none;
   padding: 6rpx 14rpx;
   border-radius: 999rpx;
-  background: #eff6ff;
-  color: #2563eb;
+  background: rgba(76, 140, 182, 0.16);
+  color: #083969;
   font-size: 20rpx;
 }
 .wifi-dropdown-tag--warn {
   background: #fff7ed;
-  color: #ea580c;
+  color: #083969;
 }
 .ssid-tool-row {
   margin-top: 16rpx;
@@ -1548,8 +1557,8 @@ export default {
   gap: 8rpx;
   padding: 20rpx 22rpx;
   border-radius: 18rpx;
-  background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
-  border: 2rpx solid #bfdbfe;
+  background: linear-gradient(180deg, #F0F6F7 0%, rgba(76, 140, 182, 0.12) 100%);
+  border: 2rpx solid rgba(76, 140, 182, 0.45);
 }
 .ssid-primary-btn-title {
   font-size: 28rpx;
@@ -1560,7 +1569,7 @@ export default {
 .ssid-primary-btn-sub {
   font-size: 22rpx;
   line-height: 1.6;
-  color: #64748b;
+  color: rgba(5, 28, 44, 0.7);
 }
 .ssid-action-row {
   display: flex;
@@ -1572,18 +1581,18 @@ export default {
 .ssid-action {
   font-size: 22rpx;
   line-height: 1.4;
-  color: #64748b;
+  color: rgba(5, 28, 44, 0.7);
 }
 .ssid-action--primary {
-  color: #2563eb;
+  color: #083969;
   font-weight: 600;
 }
 .input {
-  border: 2rpx solid #dbeafe;
+  border: 2rpx solid rgba(76, 140, 182, 0.45);
   border-radius: 16rpx;
   padding: 20rpx;
   font-size: 28rpx;
-  background: #f8fbff;
+  background: #F0F6F7;
 }
 .password-row {
   position: relative;
@@ -1597,7 +1606,7 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   font-size: 24rpx;
-  color: #2563eb;
+  color: #083969;
   font-weight: 600;
 }
 .remember-row {
@@ -1617,8 +1626,8 @@ export default {
   margin-right: 12rpx;
 }
 .remember-check--active {
-  border-color: #22c55e;
-  background: #22c55e;
+  border-color: #1C6A51;
+  background: #1C6A51;
 }
 .remember-check-icon {
   color: #fff;
@@ -1627,23 +1636,23 @@ export default {
 }
 .remember-text {
   font-size: 24rpx;
-  color: #475569;
+  color: rgba(5, 28, 44, 0.8);
 }
 .form-tip,
 .device-tip,
 .debug-sub,
 .tip-line {
   font-size: 22rpx;
-  color: #64748b;
+  color: rgba(5, 28, 44, 0.7);
   line-height: 1.7;
 }
 .status-card {
-  border: 2rpx solid #dbeafe;
-  background: #f8fbff;
+  border: 2rpx solid rgba(76, 140, 182, 0.45);
+  background: #F0F6F7;
 }
 .status-card--active {
-  border-color: #bfdbfe;
-  background: #eff6ff;
+  border-color: rgba(76, 140, 182, 0.45);
+  background: rgba(76, 140, 182, 0.16);
 }
 .status-card--success {
   border-color: #86efac;
@@ -1656,12 +1665,12 @@ export default {
 .status-main {
   font-size: 34rpx;
   font-weight: 700;
-  color: #0f172a;
+  color: #051C2C;
   margin-bottom: 12rpx;
 }
 .status-sub {
   font-size: 24rpx;
-  color: #475569;
+  color: rgba(5, 28, 44, 0.8);
   line-height: 1.6;
 }
 .action-row {
@@ -1678,13 +1687,13 @@ export default {
   font-weight: 600;
 }
 .btn-primary {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  background: linear-gradient(135deg, #1C6A51 0%, #005578 100%);
   color: #fff;
 }
 .btn-secondary {
   background: #fff;
-  color: #475569;
-  border: 2rpx solid #e2e8f0;
+  color: rgba(5, 28, 44, 0.8);
+  border: 2rpx solid rgba(175, 160, 201, 0.35);
 }
 .result-card {
   text-align: center;
@@ -1710,7 +1719,7 @@ export default {
   position: absolute;
   inset: 54rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  background: linear-gradient(135deg, #1C6A51 0%, #005578 100%);
   box-shadow: 0 18rpx 36rpx rgba(34, 197, 94, 0.22);
   display: flex;
   align-items: center;
@@ -1729,7 +1738,7 @@ export default {
 }
 .result-desc {
   font-size: 24rpx;
-  color: #475569;
+  color: rgba(5, 28, 44, 0.8);
   line-height: 1.7;
 }
 .result-chip {
@@ -1738,7 +1747,7 @@ export default {
   padding: 12rpx 20rpx;
   border-radius: 999rpx;
   background: #f0fdf4;
-  color: #15803d;
+  color: #1C6A51;
   font-size: 22rpx;
 }
 .result-reconnect-btn {
@@ -1749,7 +1758,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 24rpx 20rpx;
-  border: 2rpx solid #e2e8f0;
+  border: 2rpx solid rgba(175, 160, 201, 0.35);
   border-radius: 18rpx;
   margin-bottom: 16rpx;
   background: #fff;
@@ -1762,16 +1771,16 @@ export default {
 .device-name {
   font-size: 28rpx;
   font-weight: 600;
-  color: #0f172a;
+  color: #051C2C;
 }
 .device-id {
   font-size: 22rpx;
-  color: #94a3b8;
+  color: rgba(5, 28, 44, 0.45);
   word-break: break-all;
   margin-top: 6rpx;
 }
 .device-action {
-  color: #2563eb;
+  color: #083969;
   font-size: 24rpx;
   font-weight: 600;
 }
@@ -1784,26 +1793,26 @@ export default {
   justify-content: space-between;
 }
 .debug-toggle {
-  color: #2563eb;
+  color: #083969;
   font-size: 24rpx;
   font-weight: 600;
 }
 .log-box {
   margin-top: 24rpx;
   padding: 16rpx;
-  background: #f8fafc;
+  background: #F0F6F7;
   border-radius: 16rpx;
   max-height: 420rpx;
   overflow-y: auto;
-  border: 2rpx dashed #e2e8f0;
+  border: 2rpx dashed rgba(175, 160, 201, 0.35);
 }
 .log-empty {
   font-size: 22rpx;
-  color: #94a3b8;
+  color: rgba(5, 28, 44, 0.45);
 }
 .log-line {
   font-size: 22rpx;
-  color: #475569;
+  color: rgba(5, 28, 44, 0.8);
   line-height: 1.4;
   margin-bottom: 6rpx;
 }

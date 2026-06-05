@@ -83,7 +83,7 @@
 
 			.opt-item1 {
 				border: none;
-				background-color: rgb(77, 127, 201);
+				background-color: #4C8CB6;
 				border-radius: 15rpx;
 				color: white;
 				width: 259rpx;
@@ -100,7 +100,7 @@
 			}
 
 			.opt-item {
-				background-color: rgb(77, 127, 201);
+				background-color: #4C8CB6;
 				border-radius: 15rpx;
 				color: white;
 				width: 329rpx;

@@ -3,15 +3,16 @@
 	<view class="container">
 		<view class="top-part">
 			<view class="linetips">请保持仰卧姿势</view>
+			<view v-if="isSpineAdjusting" class="spine-active-tip">微调进行中 · 可直接点「停止」结束；启动已禁用直至会话结束</view>
 			<image class="topKV" :style="menuStyle" mode="widthFix" src="@/static/SY_03_001.png"></image>
 
 			<view class="headInfo" :style="menuStyle">
 				<view>头枕高度</view>
-				<view>{{ pillowComputeHeight }}mm</view>
+				<view>{{ headHeightPctDisplay }}</view>
 			</view>
 			<view class="neckInfo" :style="menuStyle">
 				<view>颈枕高度</view>
-				<view>{{ pillowSideComputeHeight }}mm</view>
+				<view>{{ neckHeightPctDisplay }}</view>
 			</view>
 		</view>
 		<view class="bottom-part">
@@ -26,8 +27,8 @@
 						<view>剩余次数：3</view>
 					</view>
 					<view class="slide-part">
-						<slider value="50" @change="sliderChange" activeColor="#ed6546" backgroundColor="#f9cec6"
-							block-color="#ed6546" block-size="20" />
+						<slider value="50" @change="sliderChange" activeColor="#4C8CB6" backgroundColor="rgba(175, 160, 201, 0.35)"
+							block-color="#4C8CB6" block-size="20" />
 						<view class="flex"
 							style="justify-content:space-between;padding-left: 30rpx;padding-right: 30rpx;">
 							<view>低</view>
@@ -42,33 +43,36 @@
 			<view class="spine-info">
 				<view class="form-field">
 					<text class="field-label">头枕支撑高度 %</text>
-					<input class="field-input" type="number" v-model.number="headTargetPct" />
+					<input class="field-input" type="number" v-model.number="headTargetPct" @blur="saveSpineFormToStorage" />
 				</view>
 				<view class="form-field">
 					<text class="field-label">颈枕支撑高度 %</text>
-					<input class="field-input" type="number" v-model.number="neckTargetPct" />
+					<input class="field-input" type="number" v-model.number="neckTargetPct" @blur="saveSpineFormToStorage" />
 				</view>
 				<view class="form-field">
 					<text class="field-label">颈枕放松高度 %</text>
-					<input class="field-input" type="number" v-model.number="neckRelaxPct" />
+					<input class="field-input" type="number" v-model.number="neckRelaxPct" @blur="saveSpineFormToStorage" />
 				</view>
 				<view class="form-field">
 					<text class="field-label">支撑保持（秒）</text>
-					<input class="field-input" type="number" v-model.number="supportHoldSec" />
+					<input class="field-input" type="number" v-model.number="supportHoldSec" @blur="saveSpineFormToStorage" />
 				</view>
 				<view class="form-field">
 					<text class="field-label">放松/暂停（秒）</text>
-					<input class="field-input" type="number" v-model.number="pauseSec" />
+					<input class="field-input" type="number" v-model.number="pauseSec" @blur="saveSpineFormToStorage" />
 				</view>
 				<view class="form-field">
 					<text class="field-label">循环次数</text>
-					<input class="field-input" type="number" v-model.number="loopCount" />
+					<input class="field-input" type="number" v-model.number="loopCount" @blur="saveSpineFormToStorage" />
 				</view>
 			</view>
 			
 			<!-- <canvas class="canvas-content" canvas-id="runCanvas" id="runCanvas"></canvas> -->
 			<view class="opt flex">
-				<view :class="['normal-btn', selectedButton === 'start' ? 'selected' : '']" @click="startHandler">启动</view>
+				<view
+					:class="['normal-btn', selectedButton === 'start' ? 'selected' : '', isSpineAdjusting ? 'normal-btn--disabled' : '']"
+					@click="startHandler"
+				>启动</view>
 				<view :class="['normal-btn', selectedButton === 'stop' ? 'selected' : '']" @click="stopHandler">停止</view>
 				<view :class="['normal-btn', selectedButton === 'back' ? 'selected' : '']" @click="backHandle">返回</view>
 			</view>
@@ -79,8 +83,11 @@
 
 <script>
 	import { PillowBleManager } from '@/utils/BlueUtils';
-	import { stopSpineAdjustSession } from '@/common/spineSession.js';
+	import { stopSpineAdjustSession, SPINE_FORM_KEY } from '@/common/spineSession.js';
 	import { getMiniProgramEnv } from '@/common/util.js';
+
+	/** 本页停留时周期性读 0x04，保证头/颈高度与设备一致（与首页轮询独立） */
+	const SPINE_PAGE_PILLOW_04_POLL_MS = 2000;
 
 	export default {
 		data() {
@@ -106,33 +113,105 @@
 				isSpineAdjusting: false,
 				/** 启动前正在等待 0x04 读应答，避免重复点击 */
 				spineStartAwaitingStatus: false,
+				spine04PollTimer: null,
 			}
 		},
 		computed: {
-			pillowComputeHeight() {
-				return this.pillowHeight;
+			/** 0x04 读应答中的头枕高度（headHeightPct，0~100），未连接时 -- */
+			headHeightPctDisplay() {
+				const mgr = PillowBleManager.getInstance();
+				if (!mgr.isConnected() || !mgr.loginSuccess) {
+					return '--';
+				}
+				const v = Math.round(Number(this.pillowHeight));
+				return `${Number.isFinite(v) ? v : 0}%`;
 			},
-			pillowSideComputeHeight() {
-				return this.pillowSideHeight;
+			/** 0x04 读应答中的颈枕高度（neckHeightPct，0~100），未连接时 -- */
+			neckHeightPctDisplay() {
+				const mgr = PillowBleManager.getInstance();
+				if (!mgr.isConnected() || !mgr.loginSuccess) {
+					return '--';
+				}
+				const v = Math.round(Number(this.pillowSideHeight));
+				return `${Number.isFinite(v) ? v : 0}%`;
 			},
 		},
 		onShow() {
 			const app = getApp();
 			this.$set(this.menuStyle, '--menuButtonTop', (app.globalData.top + 20) + 'px');
+			this.loadSpineFormFromStorage();
+			this.syncSpineAdjustingFromBle();
+			this.updateHeightInfo();
 			uni.$on('update_pillow_info', this.updateHeightInfo);
 			uni.$on('spine_session_stopped', this.onSpineStoppedExternally);
 			const ble = PillowBleManager.getInstance();
 			if (ble.isConnected()) {
 				ble.readPillowStatus({ silent: true });
 			}
+			this.startSpinePage04Poll();
 		},
 		onHide() {
+			this.stopSpinePage04Poll();
+			this.saveSpineFormToStorage();
 			this.abortSpineStartStatusWait({ clearSelectedButton: true });
 			this.checkIfSwitchingToModePages();
 			uni.$off('update_pillow_info', this.updateHeightInfo);
 			uni.$off('spine_session_stopped', this.onSpineStoppedExternally);
 		},
 		methods: {
+			startSpinePage04Poll() {
+				this.stopSpinePage04Poll();
+				const tick = () => {
+					const m = PillowBleManager.getInstance();
+					if (!m.isConnected() || !m.loginSuccess) {
+						return;
+					}
+					m.readPillowStatus({ silent: true });
+				};
+				this.spine04PollTimer = setInterval(tick, SPINE_PAGE_PILLOW_04_POLL_MS);
+			},
+			stopSpinePage04Poll() {
+				if (this.spine04PollTimer) {
+					clearInterval(this.spine04PollTimer);
+					this.spine04PollTimer = null;
+				}
+			},
+			/** 与 PillowBleManager 对齐微调会话状态（离页再进时页面 data 会重置） */
+			syncSpineAdjustingFromBle() {
+				const adj = PillowBleManager.getInstance().getSpineAdjusting();
+				this.isSpineAdjusting = !!adj;
+			},
+			loadSpineFormFromStorage() {
+				try {
+					const raw = uni.getStorageSync(SPINE_FORM_KEY);
+					if (!raw || typeof raw !== 'object') {
+						return;
+					}
+					const n = (k, def) => {
+						const v = Number(raw[k]);
+						return Number.isFinite(v) ? v : def;
+					};
+					this.headTargetPct = n('headTargetPct', this.headTargetPct);
+					this.neckTargetPct = n('neckTargetPct', this.neckTargetPct);
+					this.neckRelaxPct = n('neckRelaxPct', this.neckRelaxPct);
+					this.supportHoldSec = n('supportHoldSec', this.supportHoldSec);
+					this.pauseSec = n('pauseSec', this.pauseSec);
+					this.loopCount = n('loopCount', this.loopCount);
+					this.clampSpineInputs();
+				} catch (e) {}
+			},
+			saveSpineFormToStorage() {
+				try {
+					uni.setStorageSync(SPINE_FORM_KEY, {
+						headTargetPct: this.headTargetPct,
+						neckTargetPct: this.neckTargetPct,
+						neckRelaxPct: this.neckRelaxPct,
+						supportHoldSec: this.supportHoldSec,
+						pauseSec: this.pauseSec,
+						loopCount: this.loopCount
+					});
+				} catch (e) {}
+			},
 			/** B 计划：非正式环境（develop / trial）允许跳过“仰卧位”硬校验。 */
 			shouldBypassSupineCheckInSpineAdjust() {
 				const env = getMiniProgramEnv();
@@ -162,7 +241,7 @@
 			/** 结束以设备 0x89 读应答剩余次数为 0 为准（见 PillowBleManager），此处仅同步 UI */
 			onSpineStoppedExternally(payload) {
 				this.abortSpineStartStatusWait();
-				this.isSpineAdjusting = false;
+				this.syncSpineAdjustingFromBle();
 				this.selectedButton = '';
 				if (payload && payload.reason === 'device_times_zero') {
 					uni.showModal({
@@ -176,7 +255,7 @@
 			// 检查是否切换到模式相关页面
 			checkIfSwitchingToModePages(){
 				try{
-					if(!this.isSpineAdjusting) return;
+					if (!PillowBleManager.getInstance().getSpineAdjusting()) return;
 					
 					// 获取当前页面栈
 					const pages = getCurrentPages();
@@ -230,7 +309,9 @@
 			 * 启动前先发 readPillowStatus，以本次 notify 为准再判断是否仰卧。
 			 */
 			startHandler() {
-				if (this.isSpineAdjusting) {
+				const ble = PillowBleManager.getInstance();
+				this.syncSpineAdjustingFromBle();
+				if (ble.getSpineAdjusting()) {
 					uni.showToast({ title: '微调进行中', icon: 'none' });
 					return;
 				}
@@ -238,7 +319,6 @@
 					return;
 				}
 				this.selectedButton = 'start';
-				const ble = PillowBleManager.getInstance();
 				if (!ble.isConnected()) {
 					uni.showToast({ title: '请先连接设备', icon: 'none' });
 					this.selectedButton = '';
@@ -279,6 +359,7 @@
 					}
 					this.isSpineAdjusting = true;
 					ble.setSpineAdjusting(true);
+					this.saveSpineFormToStorage();
 					try {
 						uni.setStorageSync('spine_micro_session', { active: true, t: Date.now() });
 					} catch (e) {}
@@ -316,6 +397,7 @@
 				this.selectedButton = 'stop';
 				this.abortSpineStartStatusWait();
 				stopSpineAdjustSession({ emit: true, showToast: '已停止微调' });
+				this.syncSpineAdjustingFromBle();
 			},
 		}
 	}
@@ -353,6 +435,17 @@
 			color: #acacac;
 		}
 
+		.spine-active-tip {
+			margin: 12rpx 40rpx 0;
+			padding: 16rpx 24rpx;
+			font-size: 24rpx;
+			line-height: 1.45;
+			color: #1C6A51;
+			background: rgba(28, 106, 81, 0.12);
+			border-radius: 12rpx;
+			text-align: center;
+		}
+
 
 		.top-part {
 			position: relative;
@@ -382,7 +475,7 @@
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			background-color: #a79f8a;
+			background-color: #AFA0C9;
 			border-radius: 20rpx;
 			width: 300rpx;
 			height: 68rpx;
@@ -396,7 +489,7 @@
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			background-color: #a79f8a;
+			background-color: #AFA0C9;
 			border-radius: 20rpx;
 			width: 300rpx;
 			height: 68rpx;
@@ -489,7 +582,7 @@
 
 			.time-part {
 				font-size: 60rpx;
-				color: #354D5B;
+				color: #051C2C;
 				position: absolute;
 				left: 50%;
 				top: 50%;
@@ -521,7 +614,7 @@
 			.normal-btn {
 				width: 200rpx;
 				height: 80rpx;
-				background-color: #5B7897;
+				background-color: rgba(5, 28, 44, 0.7);
 				margin: 0 auto;
 				line-height: 80rpx;
 				text-align: center;
@@ -533,9 +626,14 @@
 			}
 
 			.normal-btn.selected {
-				background-color: #ed6546;
+				background-color: #4C8CB6;
 				transform: scale(1.05);
 				box-shadow: 0 4rpx 12rpx rgba(237, 101, 70, 0.3);
+			}
+
+			.normal-btn--disabled {
+				opacity: 0.45;
+				pointer-events: none;
 			}
 
 			.save {
@@ -552,7 +650,7 @@
 			}
 
 			.opt-item1 {
-				background-color: rgb(77, 127, 201);
+				background-color: #4C8CB6;
 				border-radius: 15rpx;
 				color: white;
 				width: 259rpx;
@@ -565,7 +663,7 @@
 			}
 
 			.opt-item {
-				background-color: rgb(77, 127, 201);
+				background-color: #4C8CB6;
 				border-radius: 15rpx;
 				color: white;
 				width: 329rpx;

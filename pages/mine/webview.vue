@@ -47,7 +47,7 @@
 	.webview-placeholder {
 		padding: 40rpx;
 		text-align: center;
-		color: #64748b;
+		color: rgba(5, 28, 44, 0.7);
 		font-size: 28rpx;
 	}
 </style>

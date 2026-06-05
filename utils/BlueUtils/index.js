@@ -5,6 +5,8 @@
 export { default, BluePillowProtocol, crc16Modbus } from './bluepillow-protocol.js';
 export {
   PillowBleManager,
+  PILLOW_PROFILE_HEIGHT_WINDOW,
+  pillowProfileHeightWindows,
   parsePillowUploadFrame,
   parseWriteAckPayload,
   parseDeviceInfoPayload,
@@ -13,6 +15,8 @@ export {
   resolveSpineReadRemainTimes,
   SPINE_ADJUST_DATA_LEN,
   parsePostureSensor0x0BPayload,
+  parsePillowParams0x0CPayload,
+  parseCalibrationCorrect0x11Payload,
   readFirmwareVersionCache,
   formatFirmwareVersionFromRaw
 } from './PillowBleManager.js';

@@ -47,10 +47,10 @@
 					</view>
 					<view class="info-right">
 						<view>
-							头枕高度{{selectItem.headHeight}}mm
+							头枕高度{{selectItem.headHeight}}%
 						</view>
 						<view>
-							颈枕高度{{selectItem.neckHeight}}mm
+							颈枕高度{{selectItem.neckHeight}}%
 						</view>
 					</view>
 				</view>
@@ -61,10 +61,10 @@
 					</view>
 					<view class="info-right">
 						<view>
-							头枕高度{{selectItem.sideHeadHeight}}mm
+							头枕高度{{selectItem.sideHeadHeight}}%
 						</view>
 						<view>
-							颈枕高度{{selectItem.sideNeckHeight}}mm
+							颈枕高度{{selectItem.sideNeckHeight}}%
 						</view>
 					</view>
 				</view>
@@ -82,10 +82,10 @@
 							<view class="info-r2">
 
 								<view>
-									头枕高度{{standard.headHeight}}mm
+									头枕高度{{standard.headHeight}}%
 								</view>
 								<view>
-									颈枕高度{{standard.neckHeight}}mm
+									颈枕高度{{standard.neckHeight}}%
 								</view>
 							</view>
 						</view>
@@ -96,10 +96,10 @@
 							</view>
 							<view class="info-r2">
 								<view>
-									头枕高度{{standard.sideHeadHeight}}mm
+									头枕高度{{standard.sideHeadHeight}}%
 								</view>
 								<view>
-									颈枕高度{{standard.sideNeckHeight}}mm
+									颈枕高度{{standard.sideNeckHeight}}%
 								</view>
 							</view>
 						</view>
@@ -117,6 +117,8 @@
 	import {
 		object2Query,
 		getAIModeByName,
+		resolveManualAdjustMode,
+		canBypassBleConnectInCurrentEnv,
 	} from '@/common/util.js'
 	
 	import { PillowBleManager } from '@/utils/BlueUtils'
@@ -155,6 +157,22 @@
 
 
 			this.lastSend = uni.getStorageSync('lastMode');
+			const resolved = resolveManualAdjustMode()
+			if (resolved && resolved.name) {
+				const found = this.modeList.find((m) => m && m.name === resolved.name)
+				if (found) {
+					this.selectItem = found
+					this.standard = getAIModeByName(found.name)
+					if (!this.standard) {
+						this.standard = {
+							headHeight: 60,
+							neckHeight: 60,
+							sideHeadHeight: 60,
+							sideNeckHeight: 60,
+						}
+					}
+				}
+			}
 		},
 		data() {
 			return {
@@ -171,7 +189,7 @@
 				options1: [{
 					text: '删除',
 					style: {
-						backgroundColor: '#f4220d',
+						backgroundColor: '#083969',
 						borderRadius: '20rpx'
 					},
 				}],
@@ -233,9 +251,18 @@
 			}
 		},
 		methods: {
+			/** 模式是否至少有一项有效高度（0 合法；仅 undefined/null/空串/非数字视为缺失） */
+			hasModeHeightDims(item) {
+				const s = item || {}
+				return ['headHeight', 'neckHeight', 'sideHeadHeight', 'sideNeckHeight'].some((k) => {
+					const v = s[k]
+					if (v === '' || v === undefined || v === null) return false
+					return Number.isFinite(Number(v))
+				})
+			},
 			navJustHandle() {
 				// 先检查蓝牙连接状态
-				if (!PillowBleManager.getInstance().loginSuccess) {
+				if (!PillowBleManager.getInstance().loginSuccess && !canBypassBleConnectInCurrentEnv()) {
 					uni.showModal({
 						title: '未连接枕头',
 						content: '请先连接枕头后再进行手动微调',
@@ -247,23 +274,19 @@
 				
 				// 先检查是否选择了模式
 				if (!this.selectItem || !this.selectItem.name) {
-					// 检查是否有上次使用的模式
-					const lastMode = uni.getStorageSync('lastMode');
-					
-					if (lastMode && lastMode.name) {
-						// 显示确认弹窗
+					const fallback = resolveManualAdjustMode()
+					if (fallback && fallback.name) {
 						uni.showModal({
-							title: '使用上次模式',
-							content: '检测到您上次使用的模式是"' + lastMode.name + '"，是否使用该模式进行手动微调？',
+							title: '使用已保存模式',
+							content: '检测到模式「' + fallback.name + '」，是否使用该数据进行手动微调？',
 							showCancel: true,
 							success: (res) => {
 								if (res.confirm) {
-									// 使用上次模式
-									this.selectItem = lastMode;
-									this.navigateToAdjust();
+									this.selectItem = fallback
+									this.navigateToAdjust()
 								}
 							}
-						});
+						})
 					} else if (this.modeList && this.modeList.length > 0) {
 						// 没有上次模式，但列表中有模式，询问是否使用第一个模式
 						const firstMode = this.modeList[0];
@@ -292,7 +315,7 @@
 			},
 			// 跳转到手动微调页面的方法
 			navigateToAdjust() {
-				if (!this.selectItem.headHeight && !this.selectItem.neckHeight) {
+				if (!this.hasModeHeightDims(this.selectItem)) {
 					uni.showToast({
 						title: '模式数据不合理！'
 					})
@@ -303,13 +326,7 @@
 				})
 			},
 			navHandle() {
-				const s = this.selectItem || {}
-				const hasDims = ['headHeight', 'neckHeight', 'sideHeadHeight', 'sideNeckHeight'].some((k) => {
-					const v = s[k]
-					if (v === '' || v === undefined || v === null) return false
-					return Number.isFinite(Number(v))
-				})
-				if (!hasDims) {
+				if (!this.hasModeHeightDims(this.selectItem)) {
 					uni.showToast({
 						title: '未选择模式数据！'
 					})
@@ -317,7 +334,7 @@
 				}
 
 				const ble = PillowBleManager.getInstance()
-				if (!ble.isConnected()) {
+				if (!ble.isConnected() && !canBypassBleConnectInCurrentEnv()) {
 					uni.showModal({
 						title: '未连接枕头提示',
 						content: '请检查是否已连接到枕头',
@@ -372,6 +389,9 @@
 			 */
 			async onButton(e, indexxx) {
 				this.selectItem = this.modeList[indexxx]
+				try {
+					uni.setStorageSync('selectedMyMode', { ...this.selectItem })
+				} catch (err) {}
 				console.log('选中!!!', this.selectItem, indexxx)
 
 				this.standard = getAIModeByName(this.selectItem.name)
@@ -394,7 +414,7 @@
 			},
 			// 发送模式设置
 			sendHandler(item) {
-				if (!PillowBleManager.getInstance().isConnected()) {
+				if (!PillowBleManager.getInstance().isConnected() && !canBypassBleConnectInCurrentEnv()) {
 					uni.showModal({
 						title:"未连接枕头提示",
 						content:"请检查是否已连接到枕头",
@@ -407,6 +427,9 @@
 				console.log('params:', params)
 				
 				uni.setStorageSync('lastMode', params);
+				try {
+					uni.setStorageSync('selectedMyMode', { ...params })
+				} catch (e) {}
 
 				this.navHandle()
 				return;
@@ -442,7 +465,7 @@
 
 <style lang="scss">
 	.container {
-		background-color: rgb(197, 208, 230);
+		background-color: rgba(175, 160, 201, 0.35);
 		height: 100%;
 		display: flex;
 		flex-direction: column;
@@ -476,7 +499,7 @@
 				align-items: center;
 				width: 212rpx;
 				height: 270rpx;
-				border: 1px solid #5B7897;
+				border: 1px solid rgba(5, 28, 44, 0.7);
 				border-radius: 10rpx;
 			}
 
@@ -533,7 +556,7 @@
 			margin-left: 40rpx;
 			margin-right: 40rpx;
 			font-size: 24rpx;
-			color: #354D5B;
+			color: #051C2C;
 
 			.info-item-recommond {
 				display: flex;
@@ -558,10 +581,10 @@
 
 
 				.info-left {
-					background-color: rgb(213, 224, 247);
+					background-color: rgba(175, 160, 201, 0.35);
 					border-top-left-radius: 15rpx;
 					border-bottom-left-radius: 15rpx;
-					border-right: rgb(197, 208, 230) 5rpx solid;
+					border-right: rgba(175, 160, 201, 0.35) 5rpx solid;
 					width: 133rpx;
 					height: 142rpx;
 					text-align: center;
@@ -602,7 +625,7 @@
 					background-color: white;
 					border-top-right-radius: 15rpx;
 					border-bottom-right-radius: 15rpx;
-					background-color: rgb(213, 224, 247);
+					background-color: rgba(175, 160, 201, 0.35);
 				}
 
 				.icon1 {
@@ -636,7 +659,7 @@
 					background-color: white;
 					border-top-left-radius: 15rpx;
 					border-bottom-left-radius: 15rpx;
-					border-right: rgb(197, 208, 230) 5rpx solid;
+					border-right: rgba(175, 160, 201, 0.35) 5rpx solid;
 					width: 133rpx;
 					height: 101rpx;
 					text-align: center;
@@ -743,7 +766,7 @@
 				}
 
 				.send-btn {
-					background-color: #4d7fc9;
+					background-color: #4C8CB6;
 					margin: 30rpx;
 					color: white;
 					line-height: 68rpx;

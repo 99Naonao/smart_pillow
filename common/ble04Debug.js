@@ -36,8 +36,8 @@ const WORK_STATE_ZH = {
 
 function pumpStateZh(v) {
 	const n = Number(v)
-	if (n === 0) return '工作正常'
-	if (n === 1) return '异常'
+	if (n === 0) return '空闲'
+	if (n === 1) return '充气中'
 	return `值=${n}`
 }
 
@@ -105,11 +105,12 @@ export function formatPillowStatus0x04ProtocolZh(parsed) {
 	}
 	if (parsed.valveBits != null) {
 		const v = parsed.valveBits & 0xff
-		lines.push(`气阀状态: 0x${v.toString(16).toUpperCase()}（bit0~3 对应阀1~阀，1=开启 0=关闭）`)
-		for (let i = 0; i < 4; i++) {
+		lines.push(`设备状态: 0x${v.toString(16).toUpperCase()}（bit0~2 气阀 1=开；bit3 加热 1=加热中）`)
+		for (let i = 0; i < 3; i++) {
 			const on = (v >> i) & 1
 			lines.push(`  第${i + 1}路气阀: ${on ? '开启' : '关闭'}`)
 		}
+		lines.push(`  加热状态: ${(v >> 3) & 1 ? '加热中' : '未加热'}`)
 	}
 	if (parsed.rtc && parsed.rtc.length >= 6) {
 		const [y, mo, d, h, mi, s] = parsed.rtc
