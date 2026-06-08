@@ -134,7 +134,7 @@
 
     <view class="card" v-if="goodSleepDevices.length">
       <view class="card-title">请选择设备</view>
-      <view class="device-tip">已发现 {{ goodSleepDevices.length }} 台可配网设备，请点击与你的枕头对应的设备继续。</view>
+      <view class="device-tip">已发现 {{ goodSleepDevices.length }} 台可配网设备，请点击对应设备继续。</view>
       <view
         v-for="d in goodSleepDevices"
         :key="d.deviceId"
@@ -142,8 +142,8 @@
         @click="onPickGoodSleep(d)"
       >
         <view class="device-text">
-          <text class="device-name">{{ d.name || 'GoodSleep 设备' }}</text>
-          <text class="device-id">{{ d.deviceId }}</text>
+          <text class="device-name">{{ d.displayName || 'MingaXXXX' }}</text>
+          <text class="device-id">{{ d.deviceWifiMac ? ('MAC ' + d.deviceWifiMac) : d.deviceId }}</text>
         </view>
         <text class="device-action">连接</text>
       </view>
@@ -182,9 +182,8 @@ const blufi = blufiModule.default || blufiModule
 const isDebugEnv = process.env.NODE_ENV !== 'production'
 const WIFI_SSID_STORAGE_KEY = 'wifiProvision:lastSsid'
 
-function isGoodSleepName(name) {
-  const n = (name || '').trim()
-  return /^goodsleep/i.test(n)
+function isProvisionBlufiDevice(device) {
+  return WifiToolManager.isGoodSleepBleDevice(device)
 }
 
 export default {
@@ -205,6 +204,8 @@ export default {
       busy: false,
       scanning: false,
       goodSleepDevices: [],
+      /** GoodSleep 扫描阶段缓存的 advertisData（deviceId → hex），配网模式广播为空时回退 */
+      goodSleepAdvCache: {},
       logs: [],
       showLogs: false,
       _provisionAckHandler: null,
@@ -226,7 +227,13 @@ export default {
       /** 第二轮三包补发定时器 */
       _secondRoundTimer: null,
       /** 配网超时定时器（40s 未收到连路由结果则失败） */
-      _wifiProvisionTimeout: null
+      _wifiProvisionTimeout: null,
+      /** 上次已输出的 BluFi 扫描诊断签名，避免重复刷屏 */
+      _lastBlufiScanDiagKey: '',
+      /** 是否已触发 notifyInitBleEsp32，避免重复连接回调重复初始化 */
+      _blufiInitStarted: false,
+      /** DH 协商超时后回退三包直写的定时器 */
+      _blufiDhTimeout: null
     }
   },
   watch: {
@@ -278,7 +285,7 @@ export default {
         idle: '填写好 Wi-Fi 信息后，点击下方按钮开始。',
         wait_0f_ack: '正在通知枕头进入配网模式，请稍候。',
         disconnecting: '正在断开当前蓝牙连接，准备切换到配网设备。',
-        scanning: '正在搜索可用于联网的 GoodSleep 设备。',
+        scanning: '正在搜索可用于联网的配网设备（MingaXXXX）…',
         connecting: '正在连接配网设备，请保持手机靠近枕头。',
         init_esp: '正在与设备建立安全通信。',
         sending_wifi: '正在把 Wi-Fi 信息发送给设备。',
@@ -337,6 +344,7 @@ export default {
       clearTimeout(this._secondRoundTimer)
       this._secondRoundTimer = null
     }
+    this.clearBlufiDhTimeout()
     this.clearWifiProvisionTimeout()
     this.teardownProvisionListener()
     this.stopScanOnly()
@@ -444,6 +452,51 @@ export default {
       this.logs.push(`[${t}] ${msg}`)
       if (this.logs.length > 80) this.logs.shift()
       console.log('[wifiProvision]', msg)
+    },
+    shortBleServiceUuids(device) {
+      const uuids = (device && device.advertisServiceUUIDs) || []
+      if (!uuids.length) return '-'
+      return uuids
+        .map((u) => {
+          const s = String(u || '').toUpperCase()
+          const m = s.match(/^0000([0-9A-F]{4})/)
+          return m ? m[1] : s.slice(0, 8)
+        })
+        .join(',')
+    },
+    formatBlufiDeviceDiagLine(device, index) {
+      const d = device || {}
+      const name = String(d.name || '').trim() || '(no-name)'
+      const localName = String(d.localName || '').trim()
+      const localPart = localName && localName !== name ? ` local:${localName}` : ''
+      const rssi = typeof d.RSSI === 'number' ? d.RSSI : '?'
+      const svc = this.shortBleServiceUuids(d)
+      const id = String(d.deviceId || '(no-id)')
+      const idShort = id.length > 12 ? id.slice(0, 12) + '…' : id
+      const adv = d.advertisData ? String(d.advertisData).slice(0, 16) : ''
+      const advPart = adv ? ` adv:${adv}${String(d.advertisData).length > 16 ? '…' : ''}` : ''
+      return `#${(index || 0) + 1} ${name}${localPart} RSSI=${rssi} svc=${svc} id=${idShort}${advPart}`
+    },
+    buildBlufiScanDiagKey(devices) {
+      return (devices || [])
+        .map((d) => `${d.deviceId || ''}|${d.name || ''}|${d.localName || ''}|${d.RSSI}|${this.shortBleServiceUuids(d)}`)
+        .sort()
+        .join(';;')
+    },
+    logBlufiScanDiagnostics(all) {
+      const list = Array.isArray(all) ? all : []
+      const key = this.buildBlufiScanDiagKey(list)
+      if (key === this._lastBlufiScanDiagKey) return
+      this._lastBlufiScanDiagKey = key
+      if (!list.length) {
+        this.log('[扫描诊断] 未扫到任何蓝牙设备（未过滤）')
+        return
+      }
+      const goodSleepCount = list.filter((d) => isProvisionBlufiDevice(d)).length
+      const summary = list.map((d, i) => this.formatBlufiDeviceDiagLine(d, i)).join(' ; ')
+      this.log(
+        `[扫描诊断] 共 ${list.length} 台（未过滤，GoodSleep/RTK ${goodSleepCount} 台）: ${summary}`
+      )
     },
     /** 将 BluFi 回调打成可读的单行字符串（写入日志 + 页内「最近回调」） */
     formatBlufiResultForLog(result) {
@@ -626,6 +679,31 @@ export default {
         })
       })
     },
+    clearBlufiDhTimeout() {
+      if (this._blufiDhTimeout) {
+        clearTimeout(this._blufiDhTimeout)
+        this._blufiDhTimeout = null
+      }
+    },
+    startBlufiDhTimeout() {
+      this.clearBlufiDhTimeout()
+      this._blufiDhTimeout = setTimeout(() => {
+        this._blufiDhTimeout = null
+        if (this._blufiRouterSent || this.phase === 'done' || this.phase === 'error') return
+        this.log('BluFi DH 协商超时（10s），回退三包直写')
+        this.tryStartWifiConfigAfterDh('DH 超时回退')
+      }, 10000)
+    },
+    tryStartWifiConfigAfterDh(reason) {
+      if (this._blufiRouterSent) return
+      const ssid = (this.wifiSsid || '').trim()
+      const pwd = this.wifiPassword || ''
+      if (!ssid || !pwd) return
+      this._blufiRouterSent = true
+      this.clearBlufiDhTimeout()
+      this.log(`${reason}，开始三包下发`)
+      void this.startWifiConfigBlueStyle()
+    },
     async startWifiConfigBlueStyle() {
       const ssid = (this.wifiSsid || '').trim()
       const pwd = this.wifiPassword || ''
@@ -733,6 +811,61 @@ export default {
       if (!this.wifiToolManager) return ''
       return this.wifiToolManager.persistWifiMacForSoap(device)
     },
+    /** 配网点击 GoodSleep：仅用 GoodSleep 的 advertisData（可回退扫描缓存） */
+    persistWifiMacAtProvisionPick(device) {
+      if (!this.wifiToolManager) return ''
+      const d = device || {}
+      const advHex =
+        this.wifiToolManager.normalizeAdvertisDataToHex(d.advertisData) ||
+        this.wifiToolManager.normalizeAdvertisDataToHex(d.cachedAdvertisDataHex) ||
+        this.wifiToolManager.normalizeAdvertisDataToHex(this.goodSleepAdvCache[d.deviceId] || '')
+      if (advHex) {
+        const saved = this.wifiToolManager.persistWifiMacFromGoodSleepDevice(
+          { advertisData: advHex },
+          { force: true }
+        )
+        if (!saved) {
+          this.log(`配网：GoodSleep advertisData 未能解析 WiFi MAC, hex=${advHex}`)
+        }
+        return saved
+      }
+      if (needsBleMacFromAdvertisData(this.platform)) {
+        const cached = this.wifiToolManager.resolveCachedSoapMac()
+        if (cached) {
+          this.log(`配网：GoodSleep 当前无广播，使用扫描阶段已保存 WiFi MAC ${cached}`)
+          return cached
+        }
+        this.log('配网：GoodSleep 无 advertisData（请先在扫描列表出现时点击配网，勿等进入配网模式后再扫）')
+        return ''
+      }
+      const saved = this.wifiToolManager.persistWifiMacForSoap(d, { force: true })
+      if (saved) {
+        this.log(`配网：Android GoodSleep deviceId fallback → WiFi MAC ${saved}`)
+      }
+      return saved
+    },
+    enrichGoodSleepListItem(rawDevice) {
+      const d = rawDevice || {}
+      const deviceId = d.deviceId || ''
+      const advHex = this.wifiToolManager.normalizeAdvertisDataToHex(d.advertisData)
+      if (advHex && deviceId) {
+        this.goodSleepAdvCache[deviceId] = advHex
+        this.wifiToolManager.tryPersistMacFromGoodSleepScan({ advertisData: advHex })
+      }
+      const cached = this.goodSleepAdvCache[deviceId] || ''
+      const enriched = this.wifiToolManager
+        ? this.wifiToolManager.enrichGoodSleepBleDevice(d, cached)
+        : { ...d, displayName: 'MingaXXXX', deviceWifiMac: '' }
+      if (enriched.deviceWifiMac) {
+        console.log(
+          '[wifiProvision] 配网设备 WiFi MAC:',
+          enriched.deviceWifiMac,
+          '→',
+          enriched.displayName
+        )
+      }
+      return enriched
+    },
     teardownProvisionListener() {
       if (this._provisionAckHandler) {
         try {
@@ -815,6 +948,7 @@ export default {
           this.log('未记录 GoodSleep deviceId，跳过断开 BluFi')
         }
         this.phase = 'done'
+        WifiToolManager.markWifiProvisionSuccess()
         this.log('配网成功，已断开 GoodSleep。请返回首页手动连接枕头。')
         uni.showModal({
           title: '配网已成功',
@@ -825,6 +959,7 @@ export default {
         const msg = (e && e.message) || String(e)
         this.log('结束配网连接失败: ' + msg)
         this.phase = 'done'
+        WifiToolManager.markWifiProvisionSuccess()
         uni.showModal({
           title: '结束配网连接失败',
           content: msg + '。配网已成功，请在下方手动连接回连蓝牙按钮。',
@@ -1011,26 +1146,18 @@ export default {
         switch (t) {
           case String(blufi.XBLUFI_TYPE.TYPE_GET_DEVICE_LISTS): {
             const all = result.data || []
-            const filtered = all.filter((d) =>
-              isGoodSleepName(d.name || d.localName || '')
-            )
-            this.goodSleepDevices = filtered
-            if (filtered.length && needsBleMacFromAdvertisData(this.platform)) {
-              const saved = this.wifiToolManager.tryPersistMacFromScanDevice(filtered[0], {
-                isTargetName: isGoodSleepName
-              })
-              if (saved) {
-                this.log(`BluFi 扫描阶段已保存 WiFi MAC（iOS/鸿蒙 advertisData）: ${saved}`)
-              }
-            }
+            this.logBlufiScanDiagnostics(all)
+            const filtered = all.filter((d) => isProvisionBlufiDevice(d))
+            this.goodSleepDevices = filtered.map((d) => this.enrichGoodSleepListItem(d))
             if (filtered.length) {
-              const summary = filtered
+              const summary = this.goodSleepDevices
                 .map((d) => {
-                  const name = d.name || d.localName || '(no-name)'
+                  const name = d.displayName || d.name || d.localName || '(no-name)'
                   const devId = d.deviceId || '(no-deviceId)'
+                  const mac = d.deviceWifiMac || '-'
                   const rssi =
                     typeof d.RSSI === 'number' ? String(d.RSSI) : 'unknown'
-                  return `${name} | id=${devId} | RSSI=${rssi}`
+                  return `${name} | mac=${mac} | id=${devId} | RSSI=${rssi}`
                 })
                 .join(' ; ')
               this.log(`BluFi 列表更新 GoodSleep ${filtered.length} 台: ${summary}`)
@@ -1041,24 +1168,22 @@ export default {
             this.safeHideLoading()
             const connectErrMsg = String((result && result.data && result.data.errMsg) || '')
             if (result.result) {
-              this._blufiDeviceId = result.data.deviceId
+              const deviceId = result.data.deviceId
+              if (this._blufiInitStarted && this._blufiDeviceId === deviceId) {
+                this.log('BluFi 连接回调重复，已处于 DH 初始化阶段，忽略')
+                break
+              }
+              this._blufiDeviceId = deviceId
               this._blufiDeviceName = result.data.name || this._blufiDeviceName || ''
               this._blufiSequenceCount = 0
               this._routerResultReceived = false
-              this.log('BluFi 连接成功，notifyInitBleEsp32')
+              this._blufiRouterSent = false
+              this._blufiInitStarted = true
+              this.log('BluFi 连接成功，notifyInitBleEsp32（等待 DH 完成后再发 Wi-Fi 三包）')
               this.phase = 'init_esp'
               uni.showLoading({ title: '正在配网中…', mask: true })
-              blufi.notifyInitBleEsp32({ deviceId: result.data.deviceId })
-              // 对齐 blue.js：notifyInitBleEsp32 后延迟 50ms 进入配网发送
-              setTimeout(() => {
-                if (this._blufiRouterSent) return
-                const ssid = (this.wifiSsid || '').trim()
-                const pwd = this.wifiPassword || ''
-                if (!ssid || !pwd) return
-                this._blufiRouterSent = true
-                this.log('按 blue.js 方式（notifyInitBleEsp32 后 50ms）开始三包下发')
-                void this.startWifiConfigBlueStyle()
-              }, 50)
+              this.startBlufiDhTimeout()
+              blufi.notifyInitBleEsp32({ deviceId })
             } else {
               // 某些机型会在已连接后再回调一次 "already connect" 的失败事件，忽略该伪失败。
               if (connectErrMsg.indexOf('already connect') >= 0 && this._blufiDeviceId) {
@@ -1077,16 +1202,9 @@ export default {
             this.log('初始化结果：' + JSON.stringify(result))
             if (result.result) {
               this.log('BluFi DH 完成（result=true）')
-              if (!this._blufiRouterSent) {
-                // 兜底：若 50ms 触发未执行，仍可在 init 成功后补发一次
-                const ssid = (this.wifiSsid || '').trim()
-                const pwd = this.wifiPassword || ''
-                if (!ssid || !pwd) break
-                this._blufiRouterSent = true
-                this.log('INIT 成功兜底触发三包下发')
-                void this.startWifiConfigBlueStyle()
-              }
+              this.tryStartWifiConfigAfterDh('BluFi DH 完成')
             } else {
+              this.clearBlufiDhTimeout()
               this.clearWifiProvisionTimeout()
               this.log('BluFi 初始化失败: ' + JSON.stringify(result.data || {}))
               this.busy = false
@@ -1189,12 +1307,15 @@ export default {
       this._savedPillowDeviceId = mgr.deviceId
       this._savedPillowDeviceName = mgr.deviceName || ''
 
+      WifiToolManager.clearWifiProvisionSuccess()
       this._blufiRouterSent = false
+      this._blufiInitStarted = false
       this._routerResultReceived = false
       if (this._secondRoundTimer) {
         clearTimeout(this._secondRoundTimer)
         this._secondRoundTimer = null
       }
+      this.clearBlufiDhTimeout()
       this.clearWifiProvisionTimeout()
       this.busy = true
       this.phase = 'wait_0f_ack'
@@ -1313,6 +1434,7 @@ export default {
 
       this.phase = 'scanning'
       this.scanning = true
+      this._lastBlufiScanDiagKey = ''
       this.log('启动 BluFi 扫描（notifyStartDiscoverBle）')
       try {
         blufi.notifyStartDiscoverBle({ isStart: true })
@@ -1322,7 +1444,7 @@ export default {
         this.scanning = false
       }
       this.busy = false
-      uni.showToast({ title: '请在列表中点击 GoodSleep', icon: 'none' })
+      uni.showToast({ title: '请在列表中点击配网设备', icon: 'none' })
     },
 
     onPickGoodSleep(device) {
@@ -1332,30 +1454,39 @@ export default {
         uni.showToast({ title: '请填写 Wi-Fi 信息', icon: 'none' })
         return
       }
-      if (!needsBleMacFromAdvertisData(this.platform)) {
-        this.persistWifiMacForSoap(device)
-      } else {
-        this.log('iOS/鸿蒙 跳过配网点击阶段 MAC 保存（依赖扫描阶段 advertisData 已处理）')
+      const displayName = device.displayName || 'MingaXXXX'
+      const saved = this.persistWifiMacAtProvisionPick(device)
+      const wifiMac =
+        saved ||
+        device.deviceWifiMac ||
+        (this.wifiToolManager && this.wifiToolManager.resolveCachedSoapMac()) ||
+        ''
+      console.log('[wifiProvision] 选择配网设备 WiFi MAC:', wifiMac || '(未知)', '展示名:', displayName)
+      this.log(`选择配网设备 ${displayName} WiFi MAC=${wifiMac || '(未知)'}`)
+      if (needsBleMacFromAdvertisData(this.platform) && !wifiMac) {
+        uni.showToast({ title: '未能从广播解析MAC，实时数据可能不可用', icon: 'none' })
       }
       this._blufiDeviceId = device.deviceId
-      this._blufiDeviceName = device.name || ''
+      this._blufiDeviceName = displayName
       this._blufiRouterSent = false
+      this._blufiInitStarted = false
       this._routerResultReceived = false
       if (this._secondRoundTimer) {
         clearTimeout(this._secondRoundTimer)
         this._secondRoundTimer = null
       }
+      this.clearBlufiDhTimeout()
       this.busy = true
       this.phase = 'connecting'
       this.startWifiProvisionTimeout()
       this.stopScanOnly()
       uni.showLoading({ title: '连接中…', mask: true })
-      this.log(`BluFi 连接 ${device.deviceId}`)
+      this.log(`BluFi 连接 ${displayName} (${device.deviceId}) WiFi MAC=${wifiMac || '(未知)'}`)
       try {
         blufi.notifyConnectBle({
           isStart: true,
           deviceId: device.deviceId,
-          name: device.name || 'GoodSleep设备'
+          name: displayName
         })
       } catch (e) {
         this.safeHideLoading()

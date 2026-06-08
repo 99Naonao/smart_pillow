@@ -85,6 +85,7 @@
 	import { PillowBleManager } from '@/utils/BlueUtils';
 	import { stopSpineAdjustSession, SPINE_FORM_KEY } from '@/common/spineSession.js';
 	import { getMiniProgramEnv } from '@/common/util.js';
+	import { safeNavigateBack } from '@/common/navigation.js';
 
 	/** 本页停留时周期性读 0x04，保证头/颈高度与设备一致（与首页轮询独立） */
 	const SPINE_PAGE_PILLOW_04_POLL_MS = 2000;
@@ -288,9 +289,7 @@
 			},
 			backHandle() {
 				this.selectedButton = 'back';
-				uni.navigateBack({
-					delta: 1
-				})
+				safeNavigateBack();
 			},
 			clampSpineInputs() {
 				const c = (v) => Math.max(0, Math.min(100, Math.floor(Number(v) || 0)));

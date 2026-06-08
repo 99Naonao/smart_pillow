@@ -1,7 +1,8 @@
 import { PillowBleManager } from '@/utils/BlueUtils'
 import {
 	canBypassLoginInCurrentEnv,
-	canBypassBleConnectInCurrentEnv
+	canBypassBleConnectInCurrentEnv,
+	shouldRequireAccountLogin
 } from './envBypass.js'
 
 function formatTime(time) {
@@ -903,14 +904,18 @@ function getMiniProgramEnv(){
 	}
 }
 
+/** 账号是否已登录（仅看 token，不含环境 bypass） */
 function isLogin(){
 	const userInfo = uni.getStorageSync('userInfo');
 	return !!(userInfo && userInfo.token);
 }
 
-/** 登录校验：正式环境必须登录；非正式环境可跳过 */
+/** 功能门禁：develop / trial 不校验登录；release 须有 token */
 function isLoginOrBypass(){
-	return isLogin() || canBypassLoginInCurrentEnv();
+	if (!shouldRequireAccountLogin()) {
+		return true;
+	}
+	return isLogin();
 }
 
 /**
@@ -1129,6 +1134,7 @@ export {
 	getMiniProgramEnv,
 	canBypassLoginInCurrentEnv,
 	canBypassBleConnectInCurrentEnv,
+	shouldRequireAccountLogin,
 	isLoginOrBypass,
 	ensureLoginBeforeConnectBle,
 	xorBytes,

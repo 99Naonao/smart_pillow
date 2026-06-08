@@ -47,22 +47,59 @@ function getSideBreathRate(side) {
 	return side.respiratory_rate ?? side.respiration_rate ?? side.breath_rate;
 }
 
+function getSideHeartRate(side) {
+	if (!side) return NaN;
+	return Number(side.heart_rate);
+}
+
+/** 按数据完整度选 left/right：优先有心率+呼吸的一侧；否则取有心率的一侧 */
+function pickSideWithRealtimeVitals(left, right) {
+	const scoreSide = (side) => {
+		let score = 0;
+		const hr = getSideHeartRate(side);
+		const rr = Number(getSideBreathRate(side));
+		if (Number.isFinite(hr) && hr > 0) score += 2;
+		if (Number.isFinite(rr) && rr > 0) score += 2;
+		return score;
+	};
+	const leftScore = scoreSide(left);
+	const rightScore = scoreSide(right);
+	if (leftScore <= 0 && rightScore <= 0) {
+		return { side: null, picked: 'none' };
+	}
+	if (leftScore > rightScore) {
+		return { side: left, picked: 'left' };
+	}
+	if (rightScore > leftScore) {
+		return { side: right, picked: 'right' };
+	}
+	const leftHr = getSideHeartRate(left);
+	const rightHr = getSideHeartRate(right);
+	const leftHasHr = Number.isFinite(leftHr) && leftHr > 0;
+	const rightHasHr = Number.isFinite(rightHr) && rightHr > 0;
+	if (leftHasHr && !rightHasHr) {
+		return { side: left, picked: 'left' };
+	}
+	if (rightHasHr && !leftHasHr) {
+		return { side: right, picked: 'right' };
+	}
+	return { side: left, picked: 'left' };
+}
+
 function parseVitalsFromFrame(frame) {
 	const left = (frame && frame.left) || {};
 	const right = (frame && frame.right) || {};
-	const isSideValid = (side) => {
-		const hr = Number(side.heart_rate);
-		const rr = Number(getSideBreathRate(side));
-		return Number.isFinite(hr) && hr > 0 && Number.isFinite(rr) && rr > 0;
-	};
-	const side = isSideValid(left) ? left : isSideValid(right) ? right : null;
+	const { side, picked } = pickSideWithRealtimeVitals(left, right);
 	if (!side) {
-		return { heartRate: null, breathRate: null };
+		return { heartRate: null, breathRate: null, pickedSide: 'none' };
 	}
+	const hr = getSideHeartRate(side);
 	const breathRaw = getSideBreathRate(side);
+	const rr = Number(breathRaw);
 	return {
-		heartRate: Math.floor(Number(side.heart_rate)),
-		breathRate: Number(breathRaw)
+		heartRate: Number.isFinite(hr) && hr > 0 ? Math.floor(hr) : null,
+		breathRate: Number.isFinite(rr) && rr > 0 ? rr : null,
+		pickedSide: picked
 	};
 }
 
@@ -344,9 +381,12 @@ class DeviceRealtimeManager {
 		}
 		const vitals = parseVitalsFromFrame(frame);
 		console.log(LOG_TAG, 'WebSocket 实时数据:', {
+			pickedSide: vitals.pickedSide,
 			heartRate: vitals.heartRate,
 			respiratory_rate: vitals.breathRate,
-			isInBed: isInBed !== null ? isInBed : this._lastIsInBed
+			isInBed: isInBed !== null ? isInBed : this._lastIsInBed,
+			left_hr: frame && frame.left && frame.left.heart_rate,
+			right_hr: frame && frame.right && frame.right.heart_rate
 		});
 		this._emit({
 			isLeaveBed: false,
@@ -495,5 +535,5 @@ class DeviceRealtimeManager {
 
 const deviceRealtimeManager = new DeviceRealtimeManager();
 
-export { DeviceRealtimeManager, parseVitalsFromFrame, normalizeRealtimeMessage };
+export { DeviceRealtimeManager, parseVitalsFromFrame, normalizeRealtimeMessage, pickSideWithRealtimeVitals };
 export default deviceRealtimeManager;

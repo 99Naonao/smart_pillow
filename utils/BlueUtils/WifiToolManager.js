@@ -2,10 +2,101 @@ import PermissionToolManager from './PermissionToolManager.js'
 import { getRuntimePlatform, needsBleMacFromAdvertisData } from '@/utils/platformBle.js'
 import { isSystemLocationPermissionError, showWechatAppLocationPermissionModal } from '@/utils/permissionUtil.js'
 
-const SOAP_MAC_STORAGE_KEYS = ['wifi_device_mac', 'soap_device_mac', 'device_mac', 'wifiMac', 'mac']
+const WIFI_DEVICE_MAC_KEY = 'wifi_device_mac'
+/** 历史兼容：读取时可迁移，写入后会被清除 */
+const LEGACY_MAC_STORAGE_KEYS = ['soap_device_mac', 'device_mac', 'wifiMac', 'mac']
+const WIFI_PROVISION_SUCCESS_KEY = 'wifi_provision_success'
 const WIFI_5G_KEYWORDS = ['-5g', '_5g', '5ghz', '-5ghz', '_5ghz', '5g_wifi', '5g-wifi']
 
 class WifiToolManager {
+  static clearLegacyMacStorageKeys() {
+    LEGACY_MAC_STORAGE_KEYS.forEach((key) => {
+      try {
+        uni.removeStorageSync(key)
+      } catch (e) {
+        // ignore
+      }
+    })
+  }
+
+  /** 唯一 MAC 读取入口；若仅存于旧 key 则自动迁移到 wifi_device_mac */
+  static resolveWifiDeviceMac() {
+    try {
+      const v = uni.getStorageSync(WIFI_DEVICE_MAC_KEY)
+      if (typeof v === 'string' && v.trim()) {
+        return v.trim()
+      }
+    } catch (e) {
+      // ignore
+    }
+    for (let i = 0; i < LEGACY_MAC_STORAGE_KEYS.length; i++) {
+      try {
+        const old = uni.getStorageSync(LEGACY_MAC_STORAGE_KEYS[i])
+        if (typeof old === 'string' && old.trim()) {
+          const mac = old.trim()
+          uni.setStorageSync(WIFI_DEVICE_MAC_KEY, mac)
+          WifiToolManager.clearLegacyMacStorageKeys()
+          return mac
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    return ''
+  }
+
+  static isWifiProvisionSuccess() {
+    try {
+      return !!uni.getStorageSync(WIFI_PROVISION_SUCCESS_KEY)
+    } catch (e) {
+      return false
+    }
+  }
+
+  static clearWifiProvisionSuccess() {
+    try {
+      uni.removeStorageSync(WIFI_PROVISION_SUCCESS_KEY)
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  /** BluFi 连路由成功后调用，允许首页启动 WebSocket 实时心率 */
+  static markWifiProvisionSuccess(mac) {
+    try {
+      uni.setStorageSync(WIFI_PROVISION_SUCCESS_KEY, true)
+    } catch (e) {
+      // ignore
+    }
+    let resolvedMac = typeof mac === 'string' ? mac.trim() : ''
+    if (!resolvedMac) {
+      resolvedMac = WifiToolManager.resolveWifiDeviceMac()
+    }
+    uni.$emit('wifi_provision_success', { mac: resolvedMac })
+  }
+
+  static isGoodSleepBleDeviceName(name) {
+    const n = String(name || '').trim()
+    return /^goodsleep/i.test(n) || /^rtk_bt/i.test(n)
+  }
+
+  static hasBlufiAdvertisedService(device) {
+    const uuids = (device && device.advertisServiceUUIDs) || []
+    return uuids.some((u) => {
+      const s = String(u || '').toUpperCase()
+      return s.indexOf('0000FFFF-0000-1000-8000-00805F9B34FB') >= 0
+    })
+  }
+
+  static isGoodSleepBleDevice(device) {
+    const d = device || {}
+    return (
+      WifiToolManager.isGoodSleepBleDeviceName(d.name) ||
+      WifiToolManager.isGoodSleepBleDeviceName(d.localName) ||
+      WifiToolManager.hasBlufiAdvertisedService(d)
+    )
+  }
+
   constructor(page, options = {}) {
     this.page = page
     this.storageKey = options.storageKey || 'wifiProvision:lastSsid'
@@ -316,7 +407,7 @@ class WifiToolManager {
   }
 
   convertAdvertisDataToMac(advertisData) {
-    const hex = String(advertisData || '').replace(/[^0-9a-fA-F]/g, '')
+    const hex = this.normalizeAdvertisDataToHex(advertisData)
     if (!hex || hex.length % 2 !== 0) return ''
     const raw = []
     for (let i = 0; i < hex.length; i += 2) {
@@ -324,9 +415,7 @@ class WifiToolManager {
       if (Number.isNaN(b)) return ''
       raw.push(b.toString(16).toUpperCase())
     }
-    // 对齐 pillow/pages/blue/blue.js 的 _extractIOSMacAddress：
-    // 参考 extractMacFromHexArray 的“半字节拼接”规则：
-    // [2], [3]+[4][0], [5], [6]+[7][0], [8], [9]+[10][0]
+    // 对齐 pillow BluetoothManager.extractMacFromHexArray / blue.js _parseMacFromAdvertisData
     if (raw.length < 11) return ''
     const c0 = raw[2]
     const c1 = raw[3] + raw[4].charAt(0)
@@ -340,6 +429,72 @@ class WifiToolManager {
     return this.normalizeMacAddress(mac)
   }
 
+  /** 从 advertisData 解析 WiFi MAC（与 iOS 相同，全平台 GoodSleep 配网应用此结果） */
+  parseWifiMacFromAdvertisData(advertisData) {
+    return this.convertAdvertisDataToMac(advertisData)
+  }
+
+  /** WiFi/蓝牙 MAC 末 4 位十六进制（如 A4:2F → A42F） */
+  getMacSuffixLast4(mac) {
+    const clean = String(mac || '').replace(/[:\-\s]/g, '').toUpperCase()
+    return clean.length >= 4 ? clean.slice(-4) : 'XXXX'
+  }
+
+  /** 配网列表展示名：Minga + MAC 末四位 */
+  formatMingaDisplayNameFromWifiMac(wifiMac) {
+    return `Minga${this.getMacSuffixLast4(wifiMac)}`
+  }
+
+  /** 从 BluFi 扫描项解析 WiFi MAC 并生成 MingaXXXX 展示名 */
+  formatMingaDisplayNameFromBleDevice(device) {
+    const dev = device || {}
+    const advHex = this.normalizeAdvertisDataToHex(dev.advertisData)
+    if (advHex) {
+      const wifiMac = this.parseWifiMacFromAdvertisData(advHex)
+      if (wifiMac) {
+        return this.formatMingaDisplayNameFromWifiMac(wifiMac)
+      }
+    }
+    if (!needsBleMacFromAdvertisData(getRuntimePlatform())) {
+      const btMac = this.normalizeMacAddress(dev.deviceId)
+      if (btMac) {
+        const wifiMac = this.calcWifiMacMinusOne(btMac)
+        if (wifiMac) {
+          return this.formatMingaDisplayNameFromWifiMac(wifiMac)
+        }
+      }
+    }
+    return 'MingaXXXX'
+  }
+
+  enrichGoodSleepBleDevice(device, cachedAdvertisDataHex = '') {
+    const dev = device || {}
+    const advHex =
+      this.normalizeAdvertisDataToHex(dev.advertisData) ||
+      this.normalizeAdvertisDataToHex(cachedAdvertisDataHex)
+    let deviceWifiMac = advHex ? this.parseWifiMacFromAdvertisData(advHex) : ''
+    if (!deviceWifiMac) {
+      deviceWifiMac = this.resolveCachedSoapMac()
+    }
+    const displayName = deviceWifiMac
+      ? this.formatMingaDisplayNameFromWifiMac(deviceWifiMac)
+      : this.formatMingaDisplayNameFromBleDevice({ ...dev, advertisData: advHex || cachedAdvertisDataHex })
+    if (deviceWifiMac) {
+      const advNote = advHex
+        ? `advertisData=${advHex.slice(0, 24)}${advHex.length > 24 ? '…' : ''}`
+        : 'advertisData 为空，使用 work 页扫描缓存 MAC'
+      this.log(`配网设备 WiFi MAC=${deviceWifiMac} → ${displayName} (${advNote})`)
+    } else {
+      this.log(`配网设备未能解析 WiFi MAC，展示名 ${displayName}`)
+    }
+    return {
+      ...dev,
+      cachedAdvertisDataHex: advHex || cachedAdvertisDataHex || '',
+      deviceWifiMac: deviceWifiMac || '',
+      displayName
+    }
+  }
+
   calcWifiMacMinusOne(bluetoothMac) {
     const mac = this.normalizeMacAddress(bluetoothMac)
     if (!mac) return ''
@@ -351,40 +506,119 @@ class WifiToolManager {
     return seg.join(':')
   }
 
-  deriveWifiMacFromBlufiDevice(device) {
+  deriveWifiMacFromBlufiDevice(device, options = {}) {
     const dev = device || {}
     const platform = getRuntimePlatform()
+    const preferAdvertisData = options.preferAdvertisData === true
+    const mustUseAdvertisData = preferAdvertisData || needsBleMacFromAdvertisData(platform)
+
+    const advHex = this.normalizeAdvertisDataToHex(dev.advertisData)
+    if (advHex) {
+      const fromAdv = this.parseWifiMacFromAdvertisData(advHex)
+      if (fromAdv) {
+        this.log(`WiFi MAC 来自 advertisData: ${fromAdv}`)
+        return fromAdv
+      }
+    }
+    // iOS / 鸿蒙：有 deviceId 也不能用末字节 -1，必须与 iOS 一样只认 advertisData
+    if (mustUseAdvertisData) {
+      this.log('iOS/鸿蒙：advertisData 无法解析 WiFi MAC')
+      return ''
+    }
 
     let btMac = this.normalizeMacAddress(dev.deviceId)
-    // iOS / 鸿蒙：deviceId 常为 UUID，仅从 advertisData 还原蓝牙 MAC。
-    if (!btMac && needsBleMacFromAdvertisData(platform)) {
-      btMac = this.convertAdvertisDataToMac(dev.advertisData)
-      if (!btMac) return ''
-      // 与 iOS 一致：直接使用广播解析 MAC，不再做末字节 -1。
-      return btMac
-    }
-    // 兜底：Android 以 deviceId 为准；若恰好是 MAC 格式也可走通。
     if (!btMac) {
       btMac = this.normalizeMacAddress(dev.deviceId || dev.uuid || '')
     }
     if (!btMac) return ''
-    return this.calcWifiMacMinusOne(btMac)
+    const wifiMac = this.calcWifiMacMinusOne(btMac)
+    if (wifiMac) {
+      this.log(`WiFi MAC 来自 deviceId 末字节-1: ${btMac} -> ${wifiMac}`)
+    }
+    return wifiMac
   }
 
   resolveCachedSoapMac() {
-    for (let i = 0; i < SOAP_MAC_STORAGE_KEYS.length; i++) {
-      const v = uni.getStorageSync(SOAP_MAC_STORAGE_KEYS[i])
-      if (typeof v === 'string' && v.trim()) {
-        return v.trim()
-      }
+    return WifiToolManager.resolveWifiDeviceMac()
+  }
+
+  normalizeAdvertisDataToHex(advertisData) {
+    if (!advertisData) return ''
+    if (typeof advertisData === 'string') {
+      return advertisData.replace(/[^0-9a-fA-F]/g, '')
     }
-    return ''
+    try {
+      const u8 = new Uint8Array(advertisData)
+      return Array.from(u8)
+        .map((b) => ('0' + (b & 0xff).toString(16)).slice(-2))
+        .join('')
+    } catch (e) {
+      return ''
+    }
   }
 
   /**
-   * 扫描阶段从 advertisData 落库 WiFi MAC（iOS / 鸿蒙）
-   * @param {object} device 蓝牙扫描设备
-   * @param {{ isTargetName?: (name: string) => boolean }} options
+   * GoodSleep（BluFi）设备：从 advertisData 解析并写入 WiFi MAC（非 Minga 枕头广播）
+   */
+  persistWifiMacFromGoodSleepDevice(device, options = {}) {
+    const d = device || {}
+    const advHex = this.normalizeAdvertisDataToHex(
+      d.advertisData || d.cachedAdvertisDataHex || ''
+    )
+    if (!advHex) {
+      this.log('GoodSleep：无 advertisData，无法解析 WiFi MAC')
+      return ''
+    }
+    const force = options.force !== false
+    const saved = this.persistWifiMacForSoap(
+      { advertisData: advHex },
+      { force, preferAdvertisData: true }
+    )
+    if (saved) {
+      const displayName = this.formatMingaDisplayNameFromWifiMac(saved)
+      this.log(`GoodSleep：advertisData=${advHex.slice(0, 24)}${advHex.length > 24 ? '…' : ''} → WiFi MAC ${saved} → ${displayName}`)
+    }
+    return saved
+  }
+
+  /**
+   * work 页扫描：发现 GoodSleep 且带 advertisData 时解析 WiFi MAC（不加入枕头连接列表）
+   */
+  handleGoodSleepDeviceOnScan(device, options = {}) {
+    if (!WifiToolManager.isGoodSleepBleDevice(device)) {
+      return ''
+    }
+    const advHex = this.normalizeAdvertisDataToHex(device && device.advertisData)
+    if (!advHex) {
+      return ''
+    }
+    return this.tryPersistMacFromGoodSleepScan({ advertisData: advHex }, options)
+  }
+
+  isGoodSleepBleDevice(device) {
+    return WifiToolManager.isGoodSleepBleDevice(device)
+  }
+
+  /**
+   * BluFi 扫描列表更新时：缓存 GoodSleep advertisData，有数据则尽早落库 WiFi MAC
+   */
+  tryPersistMacFromGoodSleepScan(device, options = {}) {
+    const d = device || {}
+    const advHex = this.normalizeAdvertisDataToHex(d.advertisData)
+    if (!advHex) {
+      return ''
+    }
+    if (!options.force && this.resolveCachedSoapMac()) {
+      return this.resolveCachedSoapMac()
+    }
+    return this.persistWifiMacFromGoodSleepDevice(
+      { advertisData: advHex },
+      { force: options.force === true }
+    )
+  }
+
+  /**
+   * @deprecated 仅 GoodSleep 广播可解析 WiFi MAC，勿用 Minga 枕头 advertisData
    */
   tryPersistMacFromScanDevice(device, options = {}) {
     if (!needsBleMacFromAdvertisData(getRuntimePlatform())) {
@@ -392,47 +626,52 @@ class WifiToolManager {
     }
     const d = device || {}
     const name = String(d.name || d.localName || '')
-    const { isTargetName } = options
+    const { isTargetName, force = false } = options
     if (typeof isTargetName === 'function' && !isTargetName(name)) {
       return ''
     }
-    let advertisData = d.advertisData
+    const advertisData = this.normalizeAdvertisDataToHex(d.advertisData)
     if (!advertisData) {
       return ''
     }
-    if (typeof advertisData !== 'string') {
-      try {
-        const u8 = new Uint8Array(advertisData)
-        advertisData = Array.from(u8)
-          .map((b) => ('0' + (b & 0xff).toString(16)).slice(-2))
-          .join('')
-      } catch (e) {
-        return ''
-      }
-    }
-    if (this.resolveCachedSoapMac()) {
+    if (!force && this.resolveCachedSoapMac()) {
       return this.resolveCachedSoapMac()
     }
     return this.persistWifiMacForSoap({
       advertisData,
       deviceId: d.deviceId || '',
       uuid: d.uuid || ''
-    })
+    }, { force, preferAdvertisData: true })
   }
 
-  persistWifiMacForSoap(device) {
-    const wifiMac = this.deriveWifiMacFromBlufiDevice(device)
+  /**
+   * 配网点击 GoodSleep：从 GoodSleep advertisData 解析 WiFi MAC（非 Minga）
+   */
+  persistWifiMacFromAdvertisDataAtProvision(device) {
+    const d = device || {}
+    const advertisData = this.normalizeAdvertisDataToHex(d.advertisData)
+    if (!advertisData) {
+      this.log('配网：当前设备无 advertisData，无法解析 WiFi MAC')
+      return ''
+    }
+    return this.persistWifiMacForSoap({
+      advertisData
+    }, { force: true, preferAdvertisData: true })
+  }
+
+  persistWifiMacForSoap(device, options = {}) {
+    const force = options.force === true
+    if (!force && this.resolveCachedSoapMac()) {
+      return this.resolveCachedSoapMac()
+    }
+    const wifiMac = this.deriveWifiMacFromBlufiDevice(device, options)
     if (!wifiMac) {
       this.log('未能从设备信息推导 WiFi MAC（iOS/鸿蒙需从 advertisData 提取）')
       return ''
     }
     try {
-      // 兼容现有读取口径（status/report 会从这些 key 中择一读取）
-      uni.setStorageSync('wifi_device_mac', wifiMac)
-      uni.setStorageSync('soap_device_mac', wifiMac)
-      uni.setStorageSync('device_mac', wifiMac)
-      uni.setStorageSync('wifiMac', wifiMac)
-      uni.setStorageSync('mac', wifiMac)
+      uni.setStorageSync(WIFI_DEVICE_MAC_KEY, wifiMac)
+      WifiToolManager.clearLegacyMacStorageKeys()
     } catch (e) {
       this.log('保存 WiFi MAC 失败: ' + ((e && e.message) || e))
     }

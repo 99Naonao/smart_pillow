@@ -492,6 +492,7 @@ class PillowBleManager {
 	static getInstance() {
 		if (!PillowBleManager.instance) {
 			PillowBleManager.instance = new PillowBleManager();
+			PillowBleManager.instance.registerNotifyDataPipelineOnce();
 		}
 		return PillowBleManager.instance;
 	}
@@ -908,6 +909,7 @@ class PillowBleManager {
 
 		/**开启notify成功后才可下发指令 */
 		startNotice(uuid, options = {}) {
+			this.registerNotifyDataPipelineOnce();
 			const writeUUID = uuid.writeUUID || this.characteristicId;
 			uni.notifyBLECharacteristicValueChange({
 				state: true,

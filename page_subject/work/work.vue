@@ -58,7 +58,7 @@
 		ab2hex,
 		ensureLoginBeforeConnectBle
 	} from '@/common/util.js'
-	import { PillowBleManager, BlueWifiToolManager } from '@/utils/BlueUtils';
+	import { PillowBleManager, pickPillowBleService, pickPillowBleCharacteristics, WifiToolManager } from '@/utils/BlueUtils';
 	import {
 		checkBluetoothAndLocationByDeviceType,
 		ensureLocationForBleScan,
@@ -201,13 +201,35 @@
 				deviceFoundHandler: null,
 				adapterStateHandler: null,
 				isIOS: false,
-				wifiMacToolManager: null,
+				_wifiToolManager: null,
 			}
 		},
 		methods: {
-			isGoodSleepName(name) {
-				const n = String(name || '').trim();
-				return /^goodsleep/i.test(n);
+			getWifiToolManager() {
+				if (!this._wifiToolManager) {
+					this._wifiToolManager = new WifiToolManager(this)
+				}
+				return this._wifiToolManager
+			},
+			normalizeScanDeviceAdvertisData(device) {
+				const d = device || {}
+				if (d.advertisData) {
+					d.advertisData = ab2hex(d.advertisData)
+				} else {
+					d.advertisData = ''
+				}
+				return d
+			},
+			/** 扫描到 GoodSleep/RTK_BT：解析 advertisData 写入 WiFi MAC，不展示在连接列表 */
+			tryPersistGoodSleepMacFromScan(device) {
+				const saved = this.getWifiToolManager().handleGoodSleepDeviceOnScan(device, { force: true })
+				if (saved) {
+					const mgr = this.getWifiToolManager()
+					const displayName = mgr.formatMingaDisplayNameFromWifiMac(saved)
+					const adv = String((device && device.advertisData) || '').slice(0, 40)
+					console.log('[work] GoodSleep 配网 WiFi MAC:', saved, '→', displayName, 'advertisData:', adv || '(empty)')
+				}
+				return saved
 			},
 			isTargetPillowDevice(device) {
 				const d = device || {};
@@ -215,35 +237,6 @@
 				const localName = String(d.localName || '').trim();
 				const startsWithMinga = (s) => /^minga/i.test(String(s || '').trim());
 				return startsWithMinga(name) || startsWithMinga(localName);
-			},
-			resolveCachedSoapMac() {
-				const keys = ['wifi_device_mac', 'soap_device_mac', 'device_mac', 'wifiMac', 'mac'];
-				for (let i = 0; i < keys.length; i++) {
-					const v = uni.getStorageSync(keys[i]);
-					if (typeof v === 'string' && v.trim()) return v.trim();
-				}
-				return '';
-			},
-			tryPersistIosMacFromScanDevice(device) {
-				const d = device || {};
-				if (!d.advertisData) return;
-				if (!this.wifiMacToolManager) {
-					this.wifiMacToolManager = new BlueWifiToolManager(this);
-				}
-				const saved = this.wifiMacToolManager.tryPersistMacFromScanDevice(d, {
-					isTargetName: (name) => this.isGoodSleepName(name)
-				});
-				if (saved) {
-					try {
-						const adv = typeof d.advertisData === 'string'
-							? d.advertisData
-							: '';
-						if (adv) {
-							uni.setStorageSync('ios_goodsleep_advertisData', adv);
-						}
-					} catch (e) {}
-					console.log('[work] iOS/鸿蒙 首次扫描已保存 MAC:', saved);
-				}
 			},
 			/** 离开连接页时必须停止扫描并卸监听，避免回到首页仍持续搜蓝牙 */
 			teardownBluetoothPage() {
@@ -358,30 +351,40 @@
 						return;
 					}
 					const rawDevices = (result && result.devices) || [];
-					if (!rawDevices[0]) {
+					if (!rawDevices.length) {
 						return;
 					}
-					const first = rawDevices[0];
-					let isnotexist = !deviceIdList.some(device => device.deviceId === first.deviceId);
-					let devices = rawDevices;
 					console.log("onBluetoothDeviceFound:", result);
 
-					if (first.advertisData) {
-						first.advertisData = ab2hex(first.advertisData);
-					} else {
-						first.advertisData = '';
-					}
-					that.tryPersistIosMacFromScanDevice(first);
+					rawDevices.forEach((raw) => {
+						const first = that.normalizeScanDeviceAdvertisData({ ...raw });
 
-					if (isnotexist) {
-						if (that.isTargetPillowDevice(first)) {
-							deviceIdList.push(first);
-							that.refreshDeviceList();
+						if (WifiToolManager.isGoodSleepBleDevice(first)) {
+							that.tryPersistGoodSleepMacFromScan(first);
+							console.log('result.devices GoodSleep/RTK:', first.name || first.localName, first.advertisData ? first.advertisData.slice(0, 24) : '(no adv)');
+							return;
 						}
-						console.log('result.devices[0].name:', first.name);
-					}
 
-					console.log('new device list has founded', deviceIdList.length, devices.length, devices);
+						const isnotexist = !deviceIdList.some((device) => device.deviceId === first.deviceId);
+						const existIdx = deviceIdList.findIndex((device) => device.deviceId === first.deviceId);
+						if (existIdx >= 0) {
+							if (first.advertisData) {
+								deviceIdList[existIdx].advertisData = first.advertisData;
+							}
+							if (first.name && !deviceIdList[existIdx].name) {
+								deviceIdList[existIdx].name = first.name;
+							}
+							return;
+						}
+
+						if (isnotexist && that.isTargetPillowDevice(first)) {
+							deviceIdList.push(first);
+							console.log('result.devices[0].name:', first.name);
+						}
+					});
+
+					that.refreshDeviceList();
+					console.log('new device list has founded', deviceIdList.length, rawDevices.length);
 				};
 				uni.onBluetoothDeviceFound(this.deviceFoundHandler);
 			},
@@ -582,8 +585,10 @@
 					return;
 				}
 				let deviceId = item.deviceId;
+				const mgr = PillowBleManager.getInstance();
+				mgr.deviceId = deviceId;
+				mgr.deviceName = item.name;
 				uni.createBLEConnection({
-					// 这里的 deviceId 需要已经通过 createBLEConnection 与对应设备建立链接
 					deviceId: deviceId,
 					success: (res) => {
 						wx.showToast({
@@ -594,13 +599,9 @@
 						this.stopBlueTooth();
 						app.globalData.deviceId = deviceId;
 
-					PillowBleManager.getInstance().deviceId = deviceId;
-					PillowBleManager.getInstance().deviceName = item.name;
-
 					console.log('connectBluetooth success!:', deviceId, res)
 					console.log('连接成功，设备信息已设置，等待握手...')
 					
-					// 更新连接状态
 					this.isConnected = true;
 					this.currentDeviceId = deviceId;
 						uni.getBLEDeviceServices({
@@ -608,17 +609,13 @@
 							success: (res) => {
 								console.log('getBLEDeviceServices success:', res)
 								console.log('getBLEDeviceServices res.services:', res.services)
-								for (let i = 0; i < res.services.length; i++) {
-									if (res.services[i].isPrimary) {
-										// this.addNotify(deviceId, res.services[i]
-										// 	.uuid, '6E400003-B5A3-F393-E0A9-E50E24DCCA9E')
-										this.getBLEDeviceCharacteristics(deviceId, res
-											.services[i]
-											.uuid)
-										break;
-									}
+								const services = (res && res.services) || []
+								const selected = pickPillowBleService(services)
+								if (!selected) {
+									uni.showToast({ title: '未找到蓝牙服务', icon: 'none' })
+									return
 								}
-
+								this.getBLEDeviceCharacteristics(deviceId, selected.uuid)
 							},
 							fail: (res) => {
 								console.log('getBLEDeviceServices fail:', res)
@@ -642,16 +639,7 @@
 					serviceId: serviceId,
 					success: (res) => {
 						const chars = res.characteristics || []
-						let notifyUUID = ''
-						let writeUUID = ''
-						chars.forEach((ch) => {
-							const p = ch.properties || {}
-							if (!notifyUUID && p.notify) notifyUUID = ch.uuid
-							if (!writeUUID && (p.write || p.writeNoResponse)) writeUUID = ch.uuid
-						})
-						if (!notifyUUID && chars[1]) notifyUUID = chars[1].uuid
-						if (!notifyUUID && chars[0]) notifyUUID = chars[0].uuid
-						if (!writeUUID && chars[0]) writeUUID = chars[0].uuid
+						const { notifyUUID, writeUUID } = pickPillowBleCharacteristics(chars)
 						if (!notifyUUID) {
 							uni.showToast({ title: '未找到可用通知特征，已进入首页', icon: 'none' })
 							return

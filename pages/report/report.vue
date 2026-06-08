@@ -417,6 +417,7 @@
 
 <script>
 	import soapDeviceApi from '@/utils/soapDeviceApi.js';
+	import { WifiToolManager } from '@/utils/BlueUtils';
 	/** 本地联调兜底开关：仅非正式环境（develop/trial）生效。 */
 	const REPORT_DEBUG_FALLBACK_ENABLED = true;
 	/** 本地联调兜底 MAC：未从缓存拿到设备 MAC 时可使用（受上方开关和环境限制）。 */
@@ -968,12 +969,9 @@
 		},
 		methods: {
 			resolveSoapMac() {
-				const keys = ['wifi_device_mac', 'soap_device_mac', 'device_mac', 'wifiMac', 'mac'];
-				for (let i = 0; i < keys.length; i++) {
-					const v = uni.getStorageSync(keys[i]);
-					if (typeof v === 'string' && v.trim()) {
-						return v.trim();
-					}
+				const mac = WifiToolManager.resolveWifiDeviceMac();
+				if (mac) {
+					return mac;
 				}
 				if (REPORT_DEBUG_FALLBACK_ENABLED && !isReleaseEnv()) {
 					return REPORT_DEBUG_FALLBACK_MAC;

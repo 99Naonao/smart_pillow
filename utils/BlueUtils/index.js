@@ -21,4 +21,5 @@ export {
   formatFirmwareVersionFromRaw
 } from './PillowBleManager.js';
 export { default as WifiToolManager, WifiToolManager as BlueWifiToolManager } from './WifiToolManager.js';
+export { pickPillowBleService, pickPillowBleCharacteristics } from './pillowBleConnect.js';
 export { default as PermissionToolManager, PermissionToolManager as BluePermissionToolManager } from './PermissionToolManager.js';

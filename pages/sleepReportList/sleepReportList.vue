@@ -52,6 +52,7 @@
 		formatReportDateTime
 	} from '@/common/sleepReportStorage.js';
 	import soapDeviceApi from '@/utils/soapDeviceApi.js';
+	import { WifiToolManager } from '@/utils/BlueUtils';
 	/** 本地联调兜底开关：仅非正式环境（develop/trial）生效。 */
 	const REPORT_LIST_DEBUG_FALLBACK_ENABLED = true;
 	const REPORT_LIST_DEBUG_FALLBACK_MAC = 'B4:C2:E0:F5:A7:5D';
@@ -101,12 +102,9 @@
 				return formatReportDateTime(ts);
 			},
 			resolveSoapMac() {
-				const keys = ['wifi_device_mac', 'soap_device_mac', 'device_mac', 'wifiMac', 'mac'];
-				for (let i = 0; i < keys.length; i++) {
-					const v = uni.getStorageSync(keys[i]);
-					if (typeof v === 'string' && v.trim()) {
-						return v.trim();
-					}
+				const mac = WifiToolManager.resolveWifiDeviceMac();
+				if (mac) {
+					return mac;
 				}
 				if (REPORT_LIST_DEBUG_FALLBACK_ENABLED && !isReleaseEnv()) {
 					return REPORT_LIST_DEBUG_FALLBACK_MAC;

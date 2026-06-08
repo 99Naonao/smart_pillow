@@ -81,7 +81,6 @@
 	import {
 		autoLogin
 	} from '@/utils/miniapp.js'
-	import { canBypassLoginInCurrentEnv } from '@/common/util.js'
 	export default {
 		computed: {
 			shoulderWidth() {
@@ -135,13 +134,10 @@
 					this.score = userInfo.score;
 					this.userInfo = userInfo;
 					this.hasLogin = true;
-				} else if (canBypassLoginInCurrentEnv()) {
-					// 非正式环境：放开登录限制，便于联调蓝牙/设备流程
-					this.hasLogin = true;
-					this.score = 0;
-					this.userInfo = { avatar: '' };
 				} else {
 					this.hasLogin = false;
+					this.score = 0;
+					this.userInfo = { avatar: '' };
 				}
 			},
 			go2Use() {

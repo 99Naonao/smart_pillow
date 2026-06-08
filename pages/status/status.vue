@@ -1,13 +1,16 @@
 <template>
-	<view class="main" v-if="hasLogin">
+	<view class="main">
 		<!-- 与微信胶囊同一行的顶栏：白底，标题居中；右侧仅睡姿（已连接时） -->
 		<view class="status-nav" :style="navHeaderStyle">
 			<view class="status-nav-row" :style="navRowStyle">
+				<view class="nav-side nav-side-left"></view>
 				<view class="nav-title-wrap">
 					<text class="nav-title">{{ navTitle }}</text>
 				</view>
-				<view v-if="loginStatus" class="nav-pillow-status nav-pillow-status--on">
-					<text class="pillow-status-sub">睡姿 · {{ blePostureOnly }}</text>
+				<view class="nav-side nav-side-right">
+					<view v-if="loginStatus" class="nav-pillow-status nav-pillow-status--on">
+						<text class="pillow-status-sub">睡姿 · {{ blePostureOnly }}</text>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -47,8 +50,8 @@
 				<text class="posture-0b-value">{{ posture0bMaxDisplay }}</text>
 			</view>
 
-			<!-- 生命特征：有 WiFi MAC 时展示；离床时心率/呼吸显示为 -- -->
-			<view v-if="showHomeVitals" class="card card-vitals">
+			<!-- 生命特征：卡片常显；离床或无数据时心率/呼吸显示为 -- -->
+			<view class="card card-vitals">
 				<view class="vital-col">
 					<view class="vital-col-head">
 						<image class="vital-icon" src="../../static/icon/heart.png" mode="aspectFit"></image>
@@ -228,7 +231,7 @@
 	import {
 		nextTick
 	} from 'vue';
-  import { PillowBleManager, readFirmwareVersionCache } from '@/utils/BlueUtils';
+  import { PillowBleManager, WifiToolManager, readFirmwareVersionCache, pickPillowBleService, pickPillowBleCharacteristics } from '@/utils/BlueUtils';
   import { object2Query, buildHeartModuleWifiFrame9, parseHeartWifiStatusFromPayloadHex, resolveManualAdjustMode, canBypassBleConnectInCurrentEnv } from '@/common/util.js'
   import { canBypassNonReleaseEnv } from '@/common/envBypass.js'
 	import {
@@ -273,12 +276,6 @@
 			login() {
 				return this.loginStatus;
 			},
-			pillowHeight() {
-				return pillowHeight;
-			},
-			pillowSideHeight() {
-				return this.pillowSideHeight;
-			},
 			showNeckArrow() {
 				return this.showNeckArrowFlag;
 			},
@@ -316,11 +313,17 @@
 				if (!this.loginStatus) {
 					return '--';
 				}
+				if (this.pillowHeight == null || this.pillowHeight === '') {
+					return '--';
+				}
 				return String(this.pillowHeight);
 			},
 			/** 0x04 数据区颈枕高度 uint16（0~100%），经 PillowBleManager 写入 pillowSideHeight */
 			pillowNeckHeightDisplay() {
 				if (!this.loginStatus) {
+					return '--';
+				}
+				if (this.pillowSideHeight == null || this.pillowSideHeight === '') {
 					return '--';
 				}
 				return String(this.pillowSideHeight);
@@ -330,10 +333,6 @@
 					return '--';
 				}
 				return String(this.posture0bMaxValue);
-			},
-			/** 已配网并有设备 MAC 时展示心率/呼吸卡片 */
-			showHomeVitals() {
-				return !!this.deviceSoapMac;
 			}
 		},
 		watch: {
@@ -373,7 +372,6 @@
 		},
 		data() {
 			return {
-				hasLogin: true,
 				hotLast: 0, // 热敷持续时间
 				show: false,
 				imgData: '',
@@ -394,8 +392,8 @@
 				searching: false, // 搜索中
 				characteristicId: '6E400004-B5A3-F393-E0A9-E50E24DCCA9E', //特征值
 				loginStatus: false,
-				pillowHeight: 80,
-				pillowSideHeight: 80,
+				pillowHeight: null,
+				pillowSideHeight: null,
 				pillowPower: 1,
 				pillowStatus: 0,
 				pillowPowerCharging: 0, // 充电状态
@@ -492,6 +490,7 @@
 				app.globalData.versionCode = res.versionCode;
 			})
 			uni.$on('bluetooth_status_change',this.updateConnectionStatus);
+			uni.$on('wifi_provision_success', this.onWifiProvisionSuccess);
 			uni.$on('xx', this.onStatusBleNotify);
 			uni.$on('pillow_firmware_version', this.onFirmwareVersionEvent);
 			this.initFirmwareVersionState();
@@ -529,6 +528,7 @@
 
 			uni.$off('update_pillow_info', this.updateInfo);
 			uni.$off('bluetooth_status_change',this.updateConnectionStatus);
+			uni.$off('wifi_provision_success', this.onWifiProvisionSuccess);
 			uni.$off('xx', this.onStatusBleNotify);
 			uni.$off('pillow_firmware_version', this.onFirmwareVersionEvent);
 			this.stopHomePillow04Poll();
@@ -548,12 +548,9 @@
 
 		methods: {
 			resolveSoapMac() {
-				const keys = ['wifi_device_mac', 'soap_device_mac', 'device_mac', 'wifiMac', 'mac'];
-				for (let i = 0; i < keys.length; i++) {
-					const v = uni.getStorageSync(keys[i]);
-					if (typeof v === 'string' && v.trim()) {
-						return v.trim();
-					}
+				const mac = WifiToolManager.resolveWifiDeviceMac();
+				if (mac) {
+					return mac;
 				}
 				const name = String(this.connectedDeviceName || '').trim();
 				const macLike = /^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
@@ -575,7 +572,12 @@
 				this.deviceSoapMac = mac;
 				if (!mac) {
 					console.log('[status] 无 wifi_device_mac，不启动 WebSocket/SOAP 实时');
-					this.stopDeviceRealtime();
+					this.stopDeviceRealtime(false);
+					return;
+				}
+				if (!WifiToolManager.isWifiProvisionSuccess()) {
+					console.log('[status] 尚未完成 Wi-Fi 配网，不启动 WebSocket 实时', { mac });
+					this.stopDeviceRealtime(false);
 					return;
 				}
 				console.log('[status] 启动实时数据（仅 WebSocket + 心跳）', { mac });
@@ -584,13 +586,18 @@
 				}
 				deviceRealtimeManager.connect(mac);
 			},
-			stopDeviceRealtime() {
+			onWifiProvisionSuccess() {
+				this.tryStartDeviceRealtime();
+			},
+			stopDeviceRealtime(clearMac = true) {
 				if (this._realtimeVitalUnsub) {
 					deviceRealtimeManager.offUpdate(this._realtimeVitalUnsub);
 					this._realtimeVitalUnsub = null;
 				}
 				deviceRealtimeManager.disconnect();
-				this.deviceSoapMac = '';
+				if (clearMac) {
+					this.deviceSoapMac = '';
+				}
 				this.deviceIsLeaveBed = false;
 				this.$set(this, 'realtimeHeartRate', null);
 				this.$set(this, 'realtimeBreathRate', null);
@@ -850,6 +857,7 @@
 					const p = parsed.parsed;
 					if (p && p.ok) {
 						this.syncNeckHeatUiFromPillow04(p);
+						this.updateInfo();
 					}
 				} catch (err) {
 					console.warn('[status] onStatusBleNotify', err);
@@ -1069,19 +1077,20 @@
 					this.stopHomePillow04Poll();
 					this.stopHomePosture0bPoll();
 					this.stopHomeFirmware01Poll();
-					this.stopDeviceRealtime();
+					// 实时心率走 WebSocket，不依赖蓝牙；断开枕头时仅停轮询，保留 MAC 与卡片
 					this.stopWifiStatusQueryPoll();
 					this.wifiStatusSuccessStreak = 0;
 					this.wifiStatusPollingDone = false;
 					this.$set(this, 'connectedDeviceName', '')
 					this.$set(this, 'posture0bMaxValue', null);
+					this.$set(this, 'pillowHeight', null);
+					this.$set(this, 'pillowSideHeight', null);
 					this.$set(this, 'heatSwitchOn', false);
-					this.$set(this, 'realtimeHeartRate', null);
-					this.$set(this, 'realtimeBreathRate', null);
 					this.heatLevelIndex = -1;
 					this.heatSwitchKey += 1;
 				} else {
 					this.initFirmwareVersionState();
+					this.updateInfo();
 					this.startHomePillow04Poll();
 					this.startHomePosture0bPoll();
 					this.startHomeFirmware01Poll();
@@ -1253,8 +1262,10 @@
 					title: '连接蓝牙设备中...',
 				})
 				let deviceId = item.deviceId;
+				const mgr = PillowBleManager.getInstance();
+				mgr.deviceId = deviceId;
+				mgr.deviceName = item.name;
 				uni.createBLEConnection({
-					// 这里的 deviceId 需要已经通过 createBLEConnection 与对应设备建立链接
 					deviceId: deviceId,
 					success: (res) => {
 						wx.showToast({
@@ -1264,23 +1275,18 @@
 						})
 						this.stopBlueTooth()
 
-						// 设置连接状态
-						PillowBleManager.getInstance().deviceId = deviceId;
-						PillowBleManager.getInstance().deviceName = item.name;
-						// 不要在这里设置 loginSuccess = true，让握手流程正常进行
-						
 						console.log('connectBluetooth success!:', deviceId, res)
 						uni.getBLEDeviceServices({
 							deviceId,
 							success: (res) => {
 								console.log('getBLEDeviceServices success:', res)
-								for (let i = 0; i < res.services.length; i++) {
-									if (res.services[i].isPrimary) {
-										this.getBLEDeviceCharacteristics(deviceId, res.services[i]
-											.uuid)
-										// 可根据具体业务需要，选择一个主服务进行通信
-									}
+								const services = (res && res.services) || []
+								const selected = pickPillowBleService(services)
+								if (!selected) {
+									console.warn('未找到蓝牙服务')
+									return
 								}
+								this.getBLEDeviceCharacteristics(deviceId, selected.uuid)
 							},
 							fail: (res) => {
 								console.log('getBLEDeviceServices fail:', res)
@@ -1306,15 +1312,7 @@
 						console.log("%c getBLEDeviceCharacteristics success", "color:red;", cres
 							.characteristics);
 						const chars = cres.characteristics || []
-						let notifyUUID = ''
-						let writeUUID = ''
-						chars.forEach((ch) => {
-							const p = ch.properties || {}
-							if (!notifyUUID && p.notify) notifyUUID = ch.uuid
-							if (!writeUUID && (p.write || p.writeNoResponse)) writeUUID = ch.uuid
-						})
-						if (!notifyUUID && chars[0]) notifyUUID = chars[0].uuid
-						if (!writeUUID && chars[0]) writeUUID = chars[0].uuid
+						const { notifyUUID, writeUUID } = pickPillowBleCharacteristics(chars)
 						const inst = PillowBleManager.getInstance()
 						if (!notifyUUID) {
 							console.warn('未找到 notify 特征')
@@ -1665,54 +1663,58 @@
 	}
 
 	.status-nav-row {
-		position: relative;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		justify-content: flex-end;
 		width: 100%;
 		box-sizing: border-box;
 	}
 
-	/* 标题占满行宽仅做水平居中，不占 flex 槽位；避免部分端上绝对子项仍参与 flex 导致右侧块被挤到左边 */
+	.nav-side {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		align-items: center;
+	}
+
+	.nav-side-left {
+		flex-shrink: 0;
+	}
+
+	.nav-side-right {
+		justify-content: flex-end;
+		max-width: 42%;
+	}
+
 	.nav-title-wrap {
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: 50%;
-		transform: translateY(-50%);
-		max-width: 100%;
-		z-index: 1;
-		pointer-events: none;
+		flex-shrink: 0;
+		max-width: 36%;
 		text-align: center;
+		pointer-events: none;
 	}
 
 	.nav-title-wrap .nav-title {
-		max-width: 45%;
-		margin: 0 auto;
 		display: block;
-	}
-
-	.nav-title {
-		font-size: 34rpx;
-		color: #051C2C;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
+	.nav-title {
+		font-size: 34rpx;
+		color: #051C2C;
+		font-weight: 600;
+	}
+
 	.nav-pillow-status {
-		position: relative;
-		z-index: 2;
 		display: flex;
 		flex-direction: row;
-		align-items: flex-start;
+		align-items: center;
 		justify-content: flex-end;
-		max-width: 340rpx;
-		padding-right: 8rpx;
+		max-width: 100%;
+		padding-left: 8rpx;
 		box-sizing: border-box;
-		flex-shrink: 0;
-		margin-left: auto;
+		flex-shrink: 1;
 	}
 
 	.nav-pillow-status--on .pillow-status-sub {

@@ -1,12 +1,10 @@
 const platform = uni.getSystemInfoSync().platform;
 export default {
 	/****************以下是z-nav-bar插件配置*******************/
-	// 主页页面的页面路径
-	// 关联功能：打开的页面只有一个的时候右上角自动显示返回首页按钮，下面这个数组是排除显示返回首页的页面。
-	// 主页使用场景：小程序分享出去的页面，用户点击开是分享页面，很多情况下是没有返回首页按钮的
-	mainPagePath: ['pages/shop/shop', 'pages/my/my', 'pages/order/order', 'page_subject/groupBuy/groupBuy'],
-	//返回首页的地址
-	homePath: '/pages/shop/shop',
+	// 主页页面的页面路径（Tab 根页不显示返回箭头，显示回首页）
+	mainPagePath: ['pages/status/status', 'pages/report/report', 'pages/newMine/newMine'],
+	// 返回首页的地址（须为 Tab 页）
+	homePath: '/pages/status/status',
 
 	/****************以下是zhouWei-APPUpdate插件配置*******************/
 	// 发起ajax请求获取服务端版本号

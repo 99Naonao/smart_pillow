@@ -14,33 +14,39 @@
 			<!-- 顶部用户区 -->
 			<view class="profile-hero">
 				<view class="profile-card">
-					<view class="profile-row">
-						<view class="avatar-wrap">
-							<image
-								v-if="hasLogin"
-								class="avatar"
-								:src="userInfo.avatar || '/static/icon/default_avatar.png'"
-								mode="aspectFill"
-							/>
-							<button
-								v-else
-								class="avatar-btn"
-								open-type="getPhoneNumber"
-								@getphonenumber="onGetPhoneNumber"
-							>
+					<button
+						v-if="!hasLogin"
+						class="profile-login-btn"
+						open-type="getPhoneNumber"
+						@getphonenumber="onGetPhoneNumber"
+					>
+						<view class="profile-row">
+							<view class="avatar-wrap">
 								<image
 									class="avatar"
 									:src="userInfo.avatar || '/static/icon/default_avatar.png'"
 									mode="aspectFill"
 								/>
-							</button>
+							</view>
+							<view class="profile-text">
+								<text class="profile-name">点击此处登录</text>
+								<text class="profile-sub">登录后可同步积分与睡眠数据</text>
+							</view>
+						</view>
+					</button>
+					<view v-else class="profile-row">
+						<view class="avatar-wrap">
+							<image
+								class="avatar"
+								:src="userInfo.avatar || '/static/icon/default_avatar.png'"
+								mode="aspectFill"
+							/>
 						</view>
 						<view class="profile-text">
-							<text class="profile-name">{{ hasLogin ? (userInfo.nickName || '会员用户') : '点击头像登录' }}</text>
-							<text v-if="hasLogin && displayMobile" class="profile-sub">{{ displayMobile }}</text>
-							<text v-else-if="!hasLogin" class="profile-sub">登录后可同步积分与睡眠数据</text>
+							<text class="profile-name">{{ userInfo.nickName || '会员用户' }}</text>
+							<text v-if="displayMobile" class="profile-sub">{{ displayMobile }}</text>
 						</view>
-						<view v-if="hasLogin" class="profile-badge">
+						<view class="profile-badge">
 							<text class="profile-badge-txt">已登录</text>
 						</view>
 					</view>
@@ -159,10 +165,7 @@
 
 <script>
 	import { getPhoneByCode, onGetCode } from '@/utils/miniapp.js';
-	import {
-		getMiniProgramEnv,
-		canBypassLoginInCurrentEnv
-	} from '@/common/util.js';
+	import { getMiniProgramEnv } from '@/common/util.js';
 	import {
 		RULES_POINTS,
 		PROTOCOL_USER,
@@ -252,11 +255,6 @@
 				if (userInfo && userInfo.token) {
 					this.score = userInfo.score || 0;
 					this.userInfo = userInfo;
-					this.hasLogin = true;
-				} else if (canBypassLoginInCurrentEnv()) {
-					// 非正式环境：放开登录限制，便于联调蓝牙/设备流程
-					this.score = 0;
-					this.userInfo = { avatar: '' };
 					this.hasLogin = true;
 				} else {
 					this.score = 0;
@@ -436,6 +434,21 @@
 		align-items: center;
 	}
 
+	.profile-login-btn {
+		width: 100%;
+		padding: 0;
+		margin: 0;
+		border: none;
+		background: transparent;
+		text-align: left;
+		line-height: normal;
+		border-radius: 0;
+	}
+
+	.profile-login-btn::after {
+		border: none;
+	}
+
 	.avatar-wrap {
 		flex-shrink: 0;
 		margin-right: 24rpx;
@@ -448,20 +461,6 @@
 		background-color: #F0F6F7;
 		border: 4rpx solid #fff;
 		box-shadow: 0 4rpx 16rpx rgba(5, 28, 44, 0.12);
-	}
-
-	.avatar-btn {
-		padding: 0;
-		margin: 0;
-		border: none;
-		background: transparent;
-		line-height: 1;
-		border-radius: 50%;
-		overflow: hidden;
-	}
-
-	.avatar-btn::after {
-		border: none;
 	}
 
 	.profile-text {

@@ -351,69 +351,35 @@ function init() {
                     success: function(res) {
                       console.log('--------?????????????????????---------')
                         let devicesList = [];
-                        let countsTimes = 0;
+                        function mergeScanDeviceIntoList(raw) {
+                          if (!raw || !raw.deviceId) return
+                          var normalized = Object.assign({}, raw)
+                          if (normalized.advertisData) {
+                            normalized.advertisData = buf2hex(normalized.advertisData)
+                          } else {
+                            normalized.advertisData = ''
+                          }
+                          for (var i = 0; i < devicesList.length; i++) {
+                            if (normalized.deviceId === devicesList[i].deviceId) {
+                              devicesList[i] = normalized
+                              return
+                            }
+                          }
+                          devicesList.push(normalized)
+                        }
                         uni.onBluetoothDeviceFound(function(devices) {
                           //?????????????????????????API??????????????
                           console.log('--------??????????????---------',devices)
-                          var isnotexist = true;
                           if (devices.deviceId) {
-                            if (devices.advertisData) {
-                              devices.advertisData = buf2hex(devices.advertisData)
-                            } else {
-                              devices.advertisData = ''
-                            }
-                            for (var i = 0; i < devicesList.length; i++) {
-                              if (devices.deviceId === devicesList[i].deviceId) {
-                                isnotexist = false
-                              }
-                            }
-                            if (isnotexist) {
-                              devicesList.push(devices)
-                            }
+                            mergeScanDeviceIntoList(devices)
                           } else if (devices.devices) {
-                            
-                            if(countsTimes < 200){
-                              countsTimes++
-                              // console.log('devices.devices',JSON.stringify(devices.devices))
-                              if (devices.devices[0].advertisData) {
-                                devices.devices[0].advertisData = buf2hex(devices.devices[0].advertisData)
-                              } else {
-                                devices.devices[0].advertisData = ''
-                              }
-                              for (var i = 0; i < devicesList.length; i++) {
-                                if (devices.devices[0].deviceId == devicesList[i].deviceId) {
-                                  devicesList[i] = devices.devices[0]
-                                  isnotexist = false
-                                }
-                              }
-                              if (isnotexist) {
-                                devicesList.push(devices.devices[0])
-                              } 
-                            }else {
-                              countsTimes = 0
-                              devicesList = devices.devices.map(item=>{
-                                return {
-                                  ...item,
-                                  advertisData:item.advertisData ? buf2hex(item.advertisData) : ''
-                                }
-                              })
+                            // iOS 常一次回调多台设备，必须遍历整批（不能只取 devices[0]）
+                            var batch = devices.devices || []
+                            for (var b = 0; b < batch.length; b++) {
+                              mergeScanDeviceIntoList(batch[b])
                             }
-                            
-                            
                           } else if (devices[0]) {
-                            if (devices[0].advertisData) {
-                              devices[0].advertisData = buf2hex(devices[0].advertisData)
-                            } else {
-                              devices[0].advertisData = ''
-                            }
-                            for (var i = 0; i < devicesList.length; i++) {
-                              if (devices[0].deviceId == devicesList[i].deviceId) {
-                                isnotexist = false
-                              }
-                            }
-                            if (isnotexist) {
-                              devicesList.push(devices[0])
-                            }
+                            mergeScanDeviceIntoList(devices[0])
                           }
 
                           let obj = {
@@ -668,7 +634,11 @@ function init() {
                           serviceId: serviceId,
                           characteristicId: list[1] ? list[1].uuid : list[0].uuid,
                           success: function(res) {
-                            // 与 pillow 侧保持一致：这里只监听 notify，不主动发送 DH 协商首包。
+                            client = util.blueDH(util.DH_P, util.DH_G, crypto)
+                            var kBytes = util.hexByInt(client.getPublicKey('hex'))
+                            var pBytes = util.hexByInt(util.DH_P)
+                            var gBytes = util.hexByInt(util.DH_G)
+                            getSecret(deviceId, serviceId, uuid, client, kBytes, pBytes, gBytes, null)
                             uni.onBLECharacteristicValueChange(function(res) {
                               let list2 = (util.ab2hex(res.value));
                               // start
@@ -733,21 +703,32 @@ function init() {
 
                                       break;
                                     case util.SUBTYPE_NEGOTIATION_NEG:
-
-                                      var arr = util.hexByInt(result.join(""));
-                                      var clientSecret = client.computeSecret(new Uint8Array(arr));
-                                      var md5Key = md5.array(clientSecret);
-                                      self.data.md5Key = md5Key;
-                                      console.log('self.data.md5Key=',self.data.md5Key);
-                                      mDeviceEvent.notifyDeviceMsgEvent({
-                                        'type': mDeviceEvent.XBLUFI_TYPE.TYPE_INIT_ESP32_RESULT,
-                                        'result': true,
-                                        'data': {
-                                          deviceId,
-                                          serviceId,
-                                          characteristicId
+                                      try {
+                                        if (!client) {
+                                          client = util.blueDH(util.DH_P, util.DH_G, crypto)
                                         }
-                                      });
+                                        var arr = util.hexByInt(result.join(""));
+                                        var clientSecret = client.computeSecret(new Uint8Array(arr));
+                                        var md5Key = md5.array(clientSecret);
+                                        self.data.md5Key = md5Key;
+                                        console.log('self.data.md5Key=',self.data.md5Key);
+                                        mDeviceEvent.notifyDeviceMsgEvent({
+                                          'type': mDeviceEvent.XBLUFI_TYPE.TYPE_INIT_ESP32_RESULT,
+                                          'result': true,
+                                          'data': {
+                                            deviceId,
+                                            serviceId,
+                                            characteristicId
+                                          }
+                                        });
+                                      } catch (dhErr) {
+                                        console.log('BluFi DH computeSecret fail:', dhErr)
+                                        mDeviceEvent.notifyDeviceMsgEvent({
+                                          'type': mDeviceEvent.XBLUFI_TYPE.TYPE_INIT_ESP32_RESULT,
+                                          'result': false,
+                                          'data': { errMsg: 'dh computeSecret fail', detail: String(dhErr) }
+                                        });
+                                      }
                                       break;
 
                                     default:

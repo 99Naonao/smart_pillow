@@ -12,9 +12,17 @@ export function canBypassNonReleaseEnv() {
 	}
 }
 
-/** 非正式环境可跳过登录校验 */
+/** 非正式环境可跳过登录校验（develop / trial） */
 export function canBypassLoginInCurrentEnv() {
 	return canBypassNonReleaseEnv()
+}
+
+/**
+ * 是否须校验账号登录：正式版 release 才拦截；develop / trial 视为已满足。
+ * 功能门禁请用此函数，勿直接用 isLogin()。
+ */
+export function shouldRequireAccountLogin() {
+	return !canBypassNonReleaseEnv()
 }
 
 /** 非正式环境可跳过「须先连接蓝牙」的 UI 拦截（真实下发仍须物理连接） */
