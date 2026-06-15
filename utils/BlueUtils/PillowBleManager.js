@@ -1152,8 +1152,12 @@ class PillowBleManager {
 						const buf = res && res.value;
 						if (!buf) return;
 						const parsed = this.handleNotifyBuffer(buf);
-						if (parsed && parsed.type === 'posture_sensor' && parsed.parsed && parsed
-							.ok) {
+						if (
+							parsed &&
+							parsed.type === 'posture_sensor' &&
+							parsed.parsed &&
+							parsed.parsed.ok
+						) {
 							finish(null, parsed.parsed);
 						}
 					} catch (e) {}

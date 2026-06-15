@@ -50,7 +50,7 @@
 				<text class="posture-0b-value">{{ posture0bMaxDisplay }}</text>
 			</view>
 
-			<!-- 生命特征：卡片常显；离床或无数据时心率/呼吸显示为 -- -->
+			<!-- 生命特征：卡片常显；未连枕、离床、睡姿空闲或无数据时显示 -- -->
 			<view class="card card-vitals">
 				<view class="vital-col">
 					<view class="vital-col-head">
@@ -288,14 +288,27 @@
 			headArrowSrc() {
 				return this.headArrowDirection === 'up' ? '../../static/SY_11_UP.png' : '../../static/SY_11_DOW.png';
 			},
-			realtimeHeartRateDisplay() {
+			/** 未连枕 / 离床 / 睡姿空闲时不展示 WebSocket 实时心率、呼吸 */
+			shouldHideRealtimeVitals() {
+				if (!this.loginStatus) {
+					return true;
+				}
 				if (this.deviceIsLeaveBed) {
+					return true;
+				}
+				if (this.pillowStatus === 0) {
+					return true;
+				}
+				return false;
+			},
+			realtimeHeartRateDisplay() {
+				if (this.shouldHideRealtimeVitals) {
 					return '--';
 				}
 				return this.realtimeHeartRate == null ? '--' : String(this.realtimeHeartRate);
 			},
 			realtimeBreathRateDisplay() {
-				if (this.deviceIsLeaveBed) {
+				if (this.shouldHideRealtimeVitals) {
 					return '--';
 				}
 				return this.realtimeBreathRate == null ? '--' : String(this.realtimeBreathRate);
