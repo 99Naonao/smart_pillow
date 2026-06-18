@@ -94,23 +94,26 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
-		},
-		{
-			"path": "pages/bleTest/bleTest",
-			"style": {
-				"navigationStyle": "default",
-				"navigationBarTitleText": "蓝牙协议测试"
-			}
-		},
-		{
-			"path": "pages/wifiProvision/wifiProvision",
-			"style": {
-				"navigationStyle": "default",
-				"navigationBarTitleText": "Wi-Fi 配网"
-			}
 		}
 	],
 	"subPackages": [{
+		"root": "page_device",
+		"pages": [{
+				"path": "wifiProvision/wifiProvision",
+				"style": {
+					"navigationStyle": "default",
+					"navigationBarTitleText": "Wi-Fi 配网"
+				}
+			},
+			{
+				"path": "bleTest/bleTest",
+				"style": {
+					"navigationStyle": "default",
+					"navigationBarTitleText": "蓝牙协议测试"
+				}
+			}
+		]
+	}, {
 		"root": "page_subject",
 		"pages": [{
 				"path": "study/study",

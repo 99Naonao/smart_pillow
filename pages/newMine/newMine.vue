@@ -172,6 +172,7 @@
 		PROTOCOL_PRIVACY,
 		PROTOCOL_SERVICE
 	} from '@/common/protocolTexts.js';
+	import { PAGE_BLE_TEST } from '@/common/navigation.js';
 
 	export default {
 		computed: {
@@ -280,7 +281,7 @@
 				});
 			},
 			goBleTest() {
-				uni.navigateTo({ url: '/pages/bleTest/bleTest' });
+				uni.navigateTo({ url: PAGE_BLE_TEST });
 			},
 			goAbout() {
 				uni.navigateTo({ url: '/pages/about/about' });

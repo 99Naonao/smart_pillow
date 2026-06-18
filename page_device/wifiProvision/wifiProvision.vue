@@ -176,7 +176,7 @@
 import BluePillowProtocol, { PillowBleManager, WifiToolManager } from '@/utils/BlueUtils'
 import { buildHeartModuleWifiFrame9 } from '@/common/util.js'
 import { needsBleMacFromAdvertisData } from '@/utils/platformBle.js'
-import * as blufiModule from '@/utils/blufi/xBlufi.js'
+import * as blufiModule from '@/page_device/utils/blufi/xBlufi.js'
 
 const blufi = blufiModule.default || blufiModule
 const isDebugEnv = process.env.NODE_ENV !== 'production'

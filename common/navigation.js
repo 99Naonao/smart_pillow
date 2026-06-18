@@ -1,6 +1,12 @@
 /** 小程序 Tab 首页（返回兜底） */
 export const TAB_HOME_PATH = '/pages/status/status'
 
+/** page_device 分包：Wi-Fi 配网 */
+export const PAGE_WIFI_PROVISION = '/page_device/wifiProvision/wifiProvision'
+
+/** page_device 分包：蓝牙协议测试 */
+export const PAGE_BLE_TEST = '/page_device/bleTest/bleTest'
+
 export const MAIN_TAB_ROUTES = [
 	'pages/status/status',
 	'pages/report/report',

@@ -234,6 +234,7 @@
   import { PillowBleManager, WifiToolManager, readFirmwareVersionCache, pickPillowBleService, pickPillowBleCharacteristics } from '@/utils/BlueUtils';
   import { object2Query, buildHeartModuleWifiFrame9, parseHeartWifiStatusFromPayloadHex, resolveManualAdjustMode, canBypassBleConnectInCurrentEnv, maxPostureDataFromSnap } from '@/common/util.js'
   import { canBypassNonReleaseEnv } from '@/common/envBypass.js'
+  import { PAGE_WIFI_PROVISION } from '@/common/navigation.js'
 	import {
 		getappVersion
 	} from '../../utils/miniapp';
@@ -695,7 +696,7 @@
 			/** Wi-Fi 配网（分包）：需先连接枕头，配网页内会校验 */
 			openDeviceProvision() {
 				uni.navigateTo({
-					url: '/pages/wifiProvision/wifiProvision'
+					url: PAGE_WIFI_PROVISION
 				});
 			},
 			manualFineTune() {
