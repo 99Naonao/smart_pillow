@@ -46,7 +46,7 @@
 
 			<!-- 睡姿 0x0B 最高值：仅 develop / trial 展示与轮询 -->
 			<view v-if="showHomePillowHeightDevOnly" class="card card-posture-0b">
-				<text class="posture-0b-label">有效压力点位最高值</text>
+				<text class="posture-0b-label">睡姿数据最高值</text>
 				<text class="posture-0b-value">{{ posture0bMaxDisplay }}</text>
 			</view>
 
@@ -232,7 +232,7 @@
 		nextTick
 	} from 'vue';
   import { PillowBleManager, WifiToolManager, readFirmwareVersionCache, pickPillowBleService, pickPillowBleCharacteristics } from '@/utils/BlueUtils';
-  import { object2Query, buildHeartModuleWifiFrame9, parseHeartWifiStatusFromPayloadHex, resolveManualAdjustMode, canBypassBleConnectInCurrentEnv } from '@/common/util.js'
+  import { object2Query, buildHeartModuleWifiFrame9, parseHeartWifiStatusFromPayloadHex, resolveManualAdjustMode, canBypassBleConnectInCurrentEnv, maxPostureDataFromSnap } from '@/common/util.js'
   import { canBypassNonReleaseEnv } from '@/common/envBypass.js'
 	import {
 		getappVersion
@@ -241,7 +241,7 @@
 	import deviceRealtimeManager from '@/utils/deviceRealtimeManager.js';
 
 	/** 首页 0x04 readPillowStatus 周期性轮询间隔（毫秒） */
-	const HOME_PILLOW_STATUS_POLL_MS = 5000
+	const HOME_PILLOW_STATUS_POLL_MS = 1000
 	/** 首页 0x0B 睡姿采样轮询间隔（毫秒，仅 develop/trial） */
 	const HOME_POSTURE_0B_POLL_MS = 1000
 	/** 首页 0x01 固件版本读取轮询间隔（毫秒） */
@@ -898,39 +898,22 @@
 					this.pillow04PollTimer = null;
 				}
 			},
-			/** 与 study.vue 一致：有效点位取 max，否则取全部采样 max */
-			maxPostureSampleFromSnap(snap) {
-				const flags = Array.isArray(snap.validFlags) ? snap.validFlags : [];
-				const samples = Array.isArray(snap.postureSamples) ? snap.postureSamples : [];
-				const len = Math.min(flags.length, samples.length);
-				let maxV = -1;
-				for (let i = 0; i < len; i++) {
-					if (Number(flags[i])) {
-						const v = Number(samples[i]) || 0;
-						maxV = maxV < 0 ? v : Math.max(maxV, v);
-					}
-				}
-				if (maxV >= 0) {
-					return maxV;
-				}
-				for (let i = 0; i < samples.length; i++) {
-					const v = Number(samples[i]) || 0;
-					maxV = maxV < 0 ? v : Math.max(maxV, v);
-				}
-				return maxV < 0 ? 0 : maxV;
-			},
 			async fetchHomePosture0bOnce() {
 				if (!canBypassNonReleaseEnv()) return;
 				if (!this.loginStatus) return;
 				const mgr = PillowBleManager.getInstance();
 				if (!mgr.isConnected()) return;
+				if (mgr.isPosture0bExternalPollBlocked && mgr.isPosture0bExternalPollBlocked()) return;
 				if (this.posture0bPollInFlight) return;
 				this.posture0bPollInFlight = true;
 				try {
-					const snap = await mgr.readPostureSnapshot0x0B({ silent: true, timeoutMs: 8000 });
-					const maxVal = this.maxPostureSampleFromSnap(snap);
+					const snap = await mgr.readPostureSnapshot0x0B({ silent: true, timeoutMs: 8000, retries: 2 });
+					const maxVal = maxPostureDataFromSnap(snap);
 					this.$set(this, 'posture0bMaxValue', maxVal);
 				} catch (err) {
+					if (err && err.message === 'posture_poll_blocked') {
+						return;
+					}
 					console.warn('[status] fetchHomePosture0bOnce failed:', err);
 				} finally {
 					this.posture0bPollInFlight = false;

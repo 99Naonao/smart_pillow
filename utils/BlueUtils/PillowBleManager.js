@@ -10,6 +10,9 @@ import {
 import {
 	canBypassBleConnectInCurrentEnv
 } from '@/common/envBypass.js';
+import {
+	logPostureSnapshot0x0B
+} from '@/common/util.js';
 
 /**0x02/0x03高度窗口配置，统一放到当前类，外部BlueUtils引入使用，避免分包重复引入报错 */
 export const PILLOW_PROFILE_HEIGHT_WINDOW = 10
@@ -1132,76 +1135,160 @@ class PillowBleManager {
 			return this.send(BluePillowProtocol.readPostureData(), opt || {});
 		}
 
+		/** 睡姿学习页 onShow 时暂停首页 0x0B 轮询，避免与学习读抢 notify */
+		setPosture0bExternalPollBlocked(blocked) {
+			this._posture0bExternalPollBlocked = !!blocked;
+			if (blocked) {
+				this._posture0bReadGeneration = (this._posture0bReadGeneration || 0) + 1;
+				this._abortPosture0bRead();
+			}
+		}
+
+		isPosture0bExternalPollBlocked() {
+			return !!this._posture0bExternalPollBlocked;
+		}
+
+		_ensurePosture0bReadHook() {
+			if (this._posture0bReadHookBound) {
+				return;
+			}
+			this._posture0bReadHookBound = true;
+			this._posture0bReadHook = (res) => {
+				if (!this._posture0bPending) {
+					return;
+				}
+				try {
+					const buf = res && res.value;
+					if (!buf) {
+						return;
+					}
+					const parsed = this.handleNotifyBuffer(buf);
+					if (
+						parsed &&
+						parsed.type === 'posture_sensor' &&
+						parsed.parsed &&
+						parsed.parsed.ok
+					) {
+						this._resolvePosture0bPending(parsed.parsed);
+					}
+				} catch (e) {}
+			};
+			uni.$on('xx', this._posture0bReadHook);
+		}
+
+		_resolvePosture0bPending(snap) {
+			const pending = this._posture0bPending;
+			if (!pending) {
+				return;
+			}
+			this._posture0bPending = null;
+			clearTimeout(pending.timer);
+			this.lastPostureSnapshot0x0B = snap;
+			logPostureSnapshot0x0B(snap);
+			pending.resolve(snap);
+		}
+
+		_abortPosture0bRead() {
+			const pending = this._posture0bPending;
+			if (!pending) {
+				return;
+			}
+			this._posture0bPending = null;
+			clearTimeout(pending.timer);
+			pending.reject(new Error('read_posture_aborted'));
+		}
+
 		readPostureSnapshot0x0B(opt = {}) {
-			const timeoutMs = opt.timeoutMs != null ? opt.timeoutMs : 8000;
+			if (this._posture0bExternalPollBlocked && !opt.priority) {
+				return Promise.reject(new Error('posture_poll_blocked'));
+			}
+			if (opt.priority) {
+				this._posture0bReadGeneration = (this._posture0bReadGeneration || 0) + 1;
+				this._abortPosture0bRead();
+				this._posture0bReadPromise = null;
+			} else if (this._posture0bReadPromise) {
+				return this._posture0bReadPromise;
+			}
+			const generation = this._posture0bReadGeneration || 0;
+			this._posture0bReadPromise = this._readPostureSnapshot0x0BWithRetry(opt, generation).finally(() => {
+				this._posture0bReadPromise = null;
+			});
+			return this._posture0bReadPromise;
+		}
+
+		async _readPostureSnapshot0x0BWithRetry(opt = {}, generation) {
+			const retries = Math.max(1, Number(opt.retries) || 2);
+			const timeoutMs = opt.timeoutMs != null ? opt.timeoutMs : 12000;
+			const retryDelayMs = Number(opt.retryDelayMs) || 450;
+			let lastErr;
+			for (let i = 0; i < retries; i++) {
+				if (generation !== (this._posture0bReadGeneration || 0)) {
+					throw new Error('read_posture_aborted');
+				}
+				try {
+					return await this._readPostureSnapshot0x0BAttempt({
+						timeoutMs,
+						attemptIndex: i,
+						generation
+					});
+				} catch (e) {
+					lastErr = e;
+					const msg = e && e.message;
+					if (msg === 'read_posture_aborted' || msg === 'not_connected' || msg === 'posture_poll_blocked') {
+						throw e;
+					}
+					if (i < retries - 1) {
+						await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+					}
+				}
+			}
+			throw lastErr || new Error('read_posture_timeout');
+		}
+
+		_readPostureSnapshot0x0BAttempt(opt = {}) {
+			const timeoutMs = opt.timeoutMs != null ? opt.timeoutMs : 12000;
+			const generation = opt.generation;
 			return new Promise((resolve, reject) => {
-				let finished = false;
-				const finish = (err, val) => {
-					if (finished) return;
-					finished = true;
-					clearTimeout(timer);
-					try {
-						uni.$off('xx', onNotify);
-					} catch (e) {}
-					if (err) reject(err);
-					else resolve(val);
-				};
-				const timer = setTimeout(() => finish(new Error('read_posture_timeout')), timeoutMs);
-				const onNotify = (res) => {
-					try {
-						const buf = res && res.value;
-						if (!buf) return;
-						const parsed = this.handleNotifyBuffer(buf);
-						if (
-							parsed &&
-							parsed.type === 'posture_sensor' &&
-							parsed.parsed &&
-							parsed.parsed.ok
-						) {
-							finish(null, parsed.parsed);
+				if (generation != null && generation !== (this._posture0bReadGeneration || 0)) {
+					reject(new Error('read_posture_aborted'));
+					return;
+				}
+				if (this._posture0bPending) {
+					this._abortPosture0bRead();
+				}
+				this._ensurePosture0bReadHook();
+				const timer = setTimeout(() => {
+					if (!this._posture0bPending) {
+						return;
+					}
+					this._posture0bPending = null;
+					reject(new Error('read_posture_timeout'));
+				}, timeoutMs);
+				this._posture0bPending = {
+					resolve: (snap) => {
+						if (generation != null && generation !== (this._posture0bReadGeneration || 0)) {
+							reject(new Error('read_posture_aborted'));
+							return;
 						}
-					} catch (e) {}
+						resolve(snap);
+					},
+					reject,
+					timer,
+					attemptIndex: opt.attemptIndex
 				};
-				uni.$on('xx', onNotify);
 				if (!this.send(BluePillowProtocol.readPostureData(), {
 						silent: true
 					})) {
-					finish(new Error('not_connected'));
+					clearTimeout(timer);
+					this._posture0bPending = null;
+					reject(new Error('not_connected'));
 				}
 			});
 		}
 
 		readPostureValidPointCount(opt = {}) {
-			const timeoutMs = opt.timeoutMs != null ? opt.timeoutMs : 8000;
-			return new Promise((resolve, reject) => {
-				let finished = false;
-				const finish = (err, val) => {
-					if (finished) return;
-					finished = true;
-					clearTimeout(timer);
-					try {
-						uni.$off('xx', onNotify);
-					} catch (e) {}
-					if (err) reject(err);
-					else resolve(val);
-				};
-				const timer = setTimeout(() => finish(new Error('read_posture_timeout')), timeoutMs);
-				const onNotify = (res) => {
-					try {
-						const buf = res && res.value;
-						if (!buf) return;
-						const parsed = this.handleNotifyBuffer(buf);
-						if (parsed && parsed.type === 'posture_sensor' && parsed.parsed.ok) {
-							finish(null, parsed.parsed.validPointCount);
-						}
-					} catch (e) {}
-				};
-				uni.$on('xx', onNotify);
-				if (!this.send(BluePillowProtocol.readPostureData(), {
-						silent: true
-					})) {
-					finish(new Error('not_connected'));
-				}
+			return this.readPostureSnapshot0x0B(opt).then((snap) => {
+				return Number(snap && snap.validPointCount) || 0;
 			});
 		}
 
@@ -1226,7 +1313,7 @@ class PillowBleManager {
 						const buf = res && res.value;
 						if (!buf) return;
 						const parsed = this.handleNotifyBuffer(buf);
-						if (parsed && parsed.type === 'learn_posture' && parsed.parsed.ok) {
+						if (parsed && parsed.type === 'learn_posture' && parsed.parsed && parsed.parsed.ok) {
 							finish(null, parsed.parsed);
 						}
 					} catch (e) {}
@@ -1410,7 +1497,26 @@ class PillowBleManager {
 							raw: frame
 						};
 					}
-					break;
+					// 读命令可能先回 1 字节写应答，再等完整 0x0B 数据区；短包不当成最终失败
+					if (data && data.length <= 2) {
+						const ack = parseWriteAckPayload(data);
+						return {
+							type: 'write_ack',
+							parsed: {
+								...base,
+								...ack
+							},
+							raw: frame
+						};
+					}
+					return {
+						type: 'posture_sensor',
+						parsed: {
+							...base,
+							...p
+						},
+						raw: frame
+					};
 				}
 				case 0x0c: {
 					const u = data instanceof Uint8Array ? data : new Uint8Array(data || []);

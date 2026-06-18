@@ -65,6 +65,7 @@
 
 <script>
 	import BluePillowProtocol, { PillowBleManager } from '@/utils/BlueUtils'
+	import { maxPostureSampleFromSnap } from '@/common/util.js'
 	import {
 		addStudyLog
 	} from '../../utils/miniapp'
@@ -77,6 +78,14 @@
 	const LEARN_ST_END = 0x03
 	const LEARN_ST_CONFIRM = 0x04
 	const LEARN_ST_IDLE = 0x00
+	/** 学习页读 0x0B：高优先级 + 自动重试，降低「读取睡姿数据超时」 */
+	const STUDY_POSTURE_0B_READ_OPT = {
+		silent: true,
+		priority: true,
+		timeoutMs: 12000,
+		retries: 3,
+		retryDelayMs: 500
+	}
 
 	export default {
 		data() {
@@ -117,14 +126,19 @@
 			}
 		},
 		onShow() {
+			PillowBleManager.getInstance().setPosture0bExternalPollBlocked(true)
 			if (!PillowBleManager.getInstance().isConnected()) {
 				uni.showToast({ title: '请先连接枕头设备', icon: 'none' })
 			}
+		},
+		onHide() {
+			PillowBleManager.getInstance().setPosture0bExternalPollBlocked(false)
 		},
 		destroyed() {
 			console.log('destroyed')
 		},
 		onUnload() {
+			PillowBleManager.getInstance().setPosture0bExternalPollBlocked(false)
 			if (!this.learnEndSent) {
 				this.exitLearnSession()
 			}
@@ -186,27 +200,7 @@
 					sideWidth: clampU8(this.learnProfile.sideWidth)
 				}
 			},
-			/** 睡姿数据最高值：优先统计有效位为真的点位，否则退回全部点位最大值 */
-			maxPostureSampleFromSnap(snap) {
-				const flags = Array.isArray(snap.validFlags) ? snap.validFlags : []
-				const samples = Array.isArray(snap.postureSamples) ? snap.postureSamples : []
-				const len = Math.min(flags.length, samples.length)
-				let maxV = -1
-				for (let i = 0; i < len; i++) {
-					if (Number(flags[i])) {
-						const v = Number(samples[i]) || 0
-						maxV = maxV < 0 ? v : Math.max(maxV, v)
-					}
-				}
-				if (maxV >= 0) {
-					return maxV
-				}
-				for (let i = 0; i < samples.length; i++) {
-					const v = Number(samples[i]) || 0
-					maxV = maxV < 0 ? v : Math.max(maxV, v)
-				}
-				return maxV < 0 ? 0 : maxV
-			},
+			/** 睡姿数据最高值：优先统计 validFlags 为真的点位；若无有效位则退回全部 16 点最大值 */
 			validPointCountFromSnap(snap) {
 				const flags = Array.isArray(snap.validFlags) ? snap.validFlags : []
 				let n = 0
@@ -219,10 +213,10 @@
 			 * 空闲：仰卧峰值1 = 最高值+5，仰卧峰值2与侧卧峰值 = 最高值（不做峰值2>峰值1的协议修正，按产品公式原样下发）
 			 */
 			async applyIdlePeaksFrom0x0B(ble) {
-				const snap = await ble.readPostureSnapshot0x0B({ silent: true, timeoutMs: 8000 })
+				const snap = await ble.readPostureSnapshot0x0B(STUDY_POSTURE_0B_READ_OPT)
 				const validCount = this.validPointCountFromSnap(snap)
 				this.lastLearnValidCount = Number(snap.validPointCount) || validCount
-				const maxVal = this.maxPostureSampleFromSnap(snap)
+				const maxVal = maxPostureSampleFromSnap(snap)
 				const m = Math.min(65535, Math.max(0, Math.floor(maxVal)))
 				this.learnProfile.supineWidth = 2
 				this.learnProfile.sideWidth = 2
@@ -235,10 +229,10 @@
 			 * 仰卧学习：峰值1 = 空闲校准的仰卧峰值1；峰值2 = 当前 0x0B 睡姿数据最高值
 			 */
 			async applySupineLearnFrom0x0B(ble) {
-				const snap = await ble.readPostureSnapshot0x0B({ silent: true, timeoutMs: 8000 })
+				const snap = await ble.readPostureSnapshot0x0B(STUDY_POSTURE_0B_READ_OPT)
 				const validCount = this.validPointCountFromSnap(snap)
 				this.lastLearnValidCount = Number(snap.validPointCount) || validCount
-				const maxVal = this.maxPostureSampleFromSnap(snap)
+				const maxVal = maxPostureSampleFromSnap(snap)
 				this.learnProfile.supineWidth = 2
 				this.learnProfile.sideWidth = 2
 				this.learnProfile.supinePeak1 = this.idleLearnSupinePeak1
@@ -247,10 +241,10 @@
 			},
 			/** 侧卧学习：侧卧峰值 = (睡姿数据最大值 + 仰卧峰值2) / 2 */
 			async applySideLearnFrom0x0B(ble) {
-				const snap = await ble.readPostureSnapshot0x0B({ silent: true, timeoutMs: 8000 })
+				const snap = await ble.readPostureSnapshot0x0B(STUDY_POSTURE_0B_READ_OPT)
 				const validCount = this.validPointCountFromSnap(snap)
 				this.lastLearnValidCount = Number(snap.validPointCount) || validCount
-				const maxVal = this.maxPostureSampleFromSnap(snap)
+				const maxVal = maxPostureSampleFromSnap(snap)
 				const supinePeak2 = Math.min(
 					65535,
 					Math.max(0, Math.floor(Number(this.learnProfile.supinePeak2) || 0))

@@ -157,19 +157,28 @@
 
 
 			this.lastSend = uni.getStorageSync('lastMode');
-			const resolved = resolveManualAdjustMode()
-			if (resolved && resolved.name) {
-				const found = this.modeList.find((m) => m && m.name === resolved.name)
+			if (this.selectItem && this.selectItem.name) {
+				const found = this.modeList.find((m) => m && m.name === this.selectItem.name)
 				if (found) {
 					this.selectItem = found
-					this.standard = getAIModeByName(found.name)
-					if (!this.standard) {
-						this.standard = {
-							headHeight: 60,
-							neckHeight: 60,
-							sideHeadHeight: 60,
-							sideNeckHeight: 60,
-						}
+				}
+			} else {
+				const resolved = resolveManualAdjustMode()
+				if (resolved && resolved.name) {
+					const found = this.modeList.find((m) => m && m.name === resolved.name)
+					if (found) {
+						this.selectItem = found
+					}
+				}
+			}
+			if (this.selectItem && this.selectItem.name) {
+				this.standard = getAIModeByName(this.selectItem.name)
+				if (!this.standard) {
+					this.standard = {
+						headHeight: 60,
+						neckHeight: 60,
+						sideHeadHeight: 60,
+						sideNeckHeight: 60,
 					}
 				}
 			}

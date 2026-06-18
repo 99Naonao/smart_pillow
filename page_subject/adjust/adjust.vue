@@ -27,7 +27,7 @@
 					/>
 					<label class="desc1">头枕部</label>
 				</view>
-				<label class='desc1size'>{{ displayHeadPct }}%</label>
+				<label class='desc1size'>{{ realtimeHeadPctLabel }}</label>
 				<view class="desc2-wrap">
 					<image
 						v-if="bleUiReady && pillowNeckAirIconSrc"
@@ -37,7 +37,7 @@
 					/>
 					<label class="desc2">颈枕部</label>
 				</view>
-				<label class='desc2size'>{{ displayNeckPct }}%</label>
+				<label class='desc2size'>{{ realtimeNeckPctLabel }}</label>
 				<image class="human-icon" :src="'../static/adjust/SY_11_bg01YW.png'"></image>
 				<image class="main-icon" :src="'../static/adjust/SY_11_bg.png'"></image>
 				<image class="down-icon" :src="'../static/adjust/SY_11_DOW.png'"></image>
@@ -77,7 +77,7 @@
 			</view>
 		</view>
 		<input-view ref="inputView" class="input-part" v-if="showMeasure&&false"></input-view>
-		<recommand-info :showTips="true" :standard="standard"></recommand-info>
+		<recommand-info :showTips="true" :standard="profileStandardForTips"></recommand-info>
 		<!-- 0x11 修正值：仅 develop / trial，折叠放底部避免挡主流程 -->
 		<view v-if="showDevCalib0x11Panel" class="dev-calib-wrap">
 			<view class="dev-calib-fold" @click="toggleDevCalib0x11Panel">
@@ -180,7 +180,7 @@
 	import {
 		sendModeByName,
 		saveRandomMode,
-		getAIModeByName,
+		resolveMyModeEntry,
 		getMiniProgramEnv,
 		canBypassBleConnectInCurrentEnv
 	} from '@/common/util.js'
@@ -203,15 +203,27 @@
 			RecommandInfo
 		},
 		computed: {
-			/** 头枕：当前姿态下协议 0~100%，与 0x05/0x06 一致 */
-			displayHeadPct() {
-				const mm = this.selectIndex === 1 ? this.head : this.sideHead
-				return this.mmToPct(mm)
+			/** 头枕部/颈枕部：0x04 实时高度（与设备当前一致，非滑条设定值） */
+			realtimeHeadPctLabel() {
+				if (!this.bleUiReady || this.realtimeHeadPct == null) {
+					return '--'
+				}
+				return `${this.realtimeHeadPct}%`
 			},
-			/** 颈枕：同上 */
-			displayNeckPct() {
-				const mm = this.selectIndex === 1 ? this.neck : this.sideNeck
-				return this.mmToPct(mm)
+			realtimeNeckPctLabel() {
+				if (!this.bleUiReady || this.realtimeNeckPct == null) {
+					return '--'
+				}
+				return `${this.realtimeNeckPct}%`
+			},
+			/** 下方参考区：进页带入的仰卧/侧卧档案（上次设置值） */
+			profileStandardForTips() {
+				return {
+					headHeight: this.mmToPct(this.initHeadHeight),
+					neckHeight: this.mmToPct(this.initNeckHeight),
+					sideHeadHeight: this.mmToPct(this.initSideHeadHeight),
+					sideNeckHeight: this.mmToPct(this.initSideNeckHeight)
+				}
 			},
 			/** 当前选中通道对应的 0~100%，与滑块同步 */
 			currentSliderPercent() {
@@ -255,6 +267,8 @@
 		data() {
 			return {
 				inputName: '模式',
+				/** myMode 中实际存档的模式名（与 inputName 可能不同，保存时以此为准） */
+				modeStorageName: '',
 				pillowPressStatus: 0,
 				saveOptions: {},
 				showMeasure: false, // 是否显示信息
@@ -272,9 +286,12 @@
 				initHeadHeight: 0,
 				initNeckHeight: 0,
 				initWidthHeight: 0,
+				initSideHeadHeight: 0,
 				initSideNeckHeight: 0,
 				initSideWdithHeight: 0,
-				standard: {},
+				/** 0x04 实时头/颈枕高度（协议 0~100%） */
+				realtimeHeadPct: null,
+				realtimeNeckPct: null,
 				step: 0, // 当前步骤
 				/** 0x02/0x03 用户索引 0~4（路由可传 profileIndex） */
 				profileIndex: 0,
@@ -314,10 +331,14 @@
 			this.initSideWdithHeight = Math.floor(options.sideShoulderHeight || 0)
 			this.saveOptions = options;
 			this.inputName = options.name ? decodeURIComponent(options.name) : '模式';
+			this.modeStorageName = this.inputName
 			let pi = options.profileIndex
 			if (pi === undefined || pi === '') pi = options.userProfileIndex ?? options.userIndex
 			const idx = parseInt(pi, 10)
 			this.profileIndex = Number.isFinite(idx) ? Math.min(4, Math.max(0, idx)) : 0
+
+			// 路由参数可能滞后，以 myMode 中同名模式最新存档为准
+			this.syncInitHeightsFromMyMode()
 
 			this.head = this.initHeadHeight;
 			this.neck = this.initNeckHeight;
@@ -352,21 +373,13 @@
 			const snap = typeof bleMgr.getLastPillowStatus0x04 === 'function' ? bleMgr.getLastPillowStatus0x04() : null
 			if (snap && snap.parsed && snap.parsed.ok) {
 				this.syncPillowAirFlowIconsFrom04(snap.parsed)
+				this.syncRealtimeHeightsFrom04(snap.parsed)
 			}
+			this.syncRealtimeHeightsFromManager()
 
 			if (this.initHeadHeight >= 0 && this.initNeckHeight >= 0) {
 				this.showMeasure = true;
 				this.setupManualAdjustOnShow();
-
-				this.standard = getAIModeByName(this.inputName)
-				if (!this.standard) {
-					this.standard = {
-						headHeight: 60,
-						neckHeight: 60,
-						sideHeadHeight: 60,
-						sideNeckHeight: 60,
-					}
-				}
 
 				// this.$refs.inputView.showParams(this.saveOptions);
 			} else {
@@ -509,6 +522,34 @@
 					`[手动微调][0x04] 头枕高度=${this.u16HexForLog(parsed.headHeightPct)}, 颈枕高度=${this.u16HexForLog(parsed.neckHeightPct)}, workState=${parsed.workState}`
 				)
 				this.syncPillowAirFlowIconsFrom04(parsed)
+				this.syncRealtimeHeightsFrom04(parsed)
+			},
+			syncRealtimeHeightsFrom04(parsed) {
+				if (!parsed || !parsed.ok) {
+					return
+				}
+				if (parsed.headHeightPct != null && Number.isFinite(Number(parsed.headHeightPct))) {
+					this.realtimeHeadPct = Math.round(Number(parsed.headHeightPct))
+				}
+				if (parsed.neckHeightPct != null && Number.isFinite(Number(parsed.neckHeightPct))) {
+					this.realtimeNeckPct = Math.round(Number(parsed.neckHeightPct))
+				}
+			},
+			syncRealtimeHeightsFromManager(mgr) {
+				const m = mgr || PillowBleManager.getInstance()
+				if (!m.isConnected()) {
+					this.realtimeHeadPct = null
+					this.realtimeNeckPct = null
+					return
+				}
+				const head = Number(m.pillowHeight)
+				const neck = Number(m.pillowSideHeight)
+				if (Number.isFinite(head)) {
+					this.realtimeHeadPct = Math.round(head)
+				}
+				if (Number.isFinite(neck)) {
+					this.realtimeNeckPct = Math.round(neck)
+				}
 			},
 			/**
 			 * 协议 0x04：设备状态 bit0=阀1(头枕)、bit2=阀3(颈枕)；泵1/2 为 1 表示充气。
@@ -725,6 +766,7 @@
 					console.log('调整页面检测到蓝牙断开');
 					this.stopPillowStatus0x04Polling()
 					this.syncPillowAirFlowIconsFrom04(null)
+					this.syncRealtimeHeightsFromManager(mgr)
 
 					if (this._enterCalibrateApplyTimer != null) {
 						clearTimeout(this._enterCalibrateApplyTimer);
@@ -745,6 +787,62 @@
 			routePctToMm(v) {
 				const p = this.clampManualPercent(v)
 				return Math.round((p / 100) * MANUAL_MAX_MM)
+			},
+			/** 从 myMode 读取同名模式最新存档，覆盖 init*（支持只保存仰卧或只保存侧卧后的合并结果） */
+			syncInitHeightsFromMyMode() {
+				const mode = resolveMyModeEntry(this.modeStorageName || this.inputName)
+				if (!mode) {
+					return false
+				}
+				if (mode.name) {
+					this.modeStorageName = mode.name
+					this.inputName = mode.name
+				}
+				const applyPct = (key, target) => {
+					const v = mode[key]
+					if (v === '' || v === undefined || v === null) {
+						return
+					}
+					if (!Number.isFinite(Number(v))) {
+						return
+					}
+					this[target] = this.routePctToMm(v)
+				}
+				applyPct('headHeight', 'initHeadHeight')
+				applyPct('neckHeight', 'initNeckHeight')
+				applyPct('sideHeadHeight', 'initSideHeadHeight')
+				applyPct('sideNeckHeight', 'initSideNeckHeight')
+				if (mode.profileIndex != null && mode.profileIndex !== '') {
+					const idx = parseInt(mode.profileIndex, 10)
+					if (Number.isFinite(idx)) {
+						this.profileIndex = Math.min(4, Math.max(0, idx))
+					}
+				}
+				return true
+			},
+			applySavedModeParams(params) {
+				if (!params) {
+					return
+				}
+				if (params.name) {
+					this.modeStorageName = params.name
+					this.inputName = params.name
+				}
+				const applyPct = (key, initKey, sliderKey) => {
+					const v = params[key]
+					if (v === '' || v === undefined || v === null || !Number.isFinite(Number(v))) {
+						return
+					}
+					const mm = this.routePctToMm(v)
+					this[initKey] = mm
+					if (sliderKey) {
+						this[sliderKey] = mm
+					}
+				}
+				applyPct('headHeight', 'initHeadHeight', 'head')
+				applyPct('neckHeight', 'initNeckHeight', 'neck')
+				applyPct('sideHeadHeight', 'initSideHeadHeight', 'sideHead')
+				applyPct('sideNeckHeight', 'initSideNeckHeight', 'sideNeck')
 			},
 			/** 内部高度 mm 夹紧到 [0, MANUAL_MAX_MM] */
 			clampManualHeightMm(v) {
@@ -874,6 +972,7 @@
 						this.$set(this, 'head', this.deviceHeightToMm(mgr.pillowHeight));
 					}
 				}
+				this.syncRealtimeHeightsFromManager(mgr)
 
 				this.$set(this, 'pillowPower', PillowBleManager.getInstance().pillowPower);
 				this.$set(this, 'pillowPowerCharging', PillowBleManager.getInstance().chargingStatus);
@@ -936,26 +1035,22 @@
 				this.$refs.popupSave.close();
 			},
 			saveHandler() {
-				let result;
+				let saveResult;
 				if (this.selectIndex == 1) {
-					// 仰卧数据（存储仍为协议 0~100%）
-					result = saveRandomMode({
-						name: this.inputName,
+					// 仅更新仰卧字段，侧卧保留 myMode 已有值
+					saveResult = saveRandomMode({
+						name: this.modeStorageName || this.inputName,
 						headHeight: this.mmToPct(this.head),
 						neckHeight: this.mmToPct(this.neck),
-						sideHeadHeight: this.mmToPct(this.initSideHeadHeight),
-						sideNeckHeight: this.mmToPct(this.initSideNeckHeight),
+						profileIndex: this.profileIndex,
 					})
 
-					if (result == false) {
+					if (saveResult && !saveResult.isNew) {
 						uni.showToast({
 							title: '模式数据已覆盖'
 						})
 					}
-
-					//更新初始的高度
-					this.initHeadHeight = this.head
-					this.initNeckHeight = this.neck
+					this.applySavedModeParams(saveResult && saveResult.params)
 
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
 						.initSideNeckHeight, 1);
@@ -977,21 +1072,19 @@
 					// 	success: () => {}
 					// })
 				} else {
-					result = saveRandomMode({
-						name: this.inputName,
-						headHeight: this.mmToPct(this.head),
-						neckHeight: this.mmToPct(this.neck),
+					saveResult = saveRandomMode({
+						name: this.modeStorageName || this.inputName,
 						sideHeadHeight: this.mmToPct(this.sideHead),
 						sideNeckHeight: this.mmToPct(this.sideNeck),
+						profileIndex: this.profileIndex,
 					})
 
-					if (result == false) {
+					if (saveResult && !saveResult.isNew) {
 						uni.showToast({
 							title: '模式数据已覆盖'
 						})
 					}
-					this.initSideHeadHeight = this.sideHead
-					this.initSideNeckHeight = this.sideNeck
+					this.applySavedModeParams(saveResult && saveResult.params)
 
 					this.send2Pillow(this.initHeadHeight, this.initNeckHeight, this.initSideHeadHeight, this
 						.initSideNeckHeight, 2);
@@ -1004,7 +1097,7 @@
 						neckWindow: swSide.neckWindow
 					});
 
-					let inputName = this.inputName;
+					let inputName = this.modeStorageName || this.inputName;
 					// 设置手动微调完成标记（只有真正保存了数据才算完成）
 					uni.setStorageSync('manual_adjust_completed', true)
 					uni.showToast({

@@ -662,6 +662,72 @@ function clampManualPressurePercent(pct) {
 	return Math.max(0, Math.min(100, n))
 }
 
+/**
+ * 0x0B 睡姿数据 uint16[16] 的最大值（首页展示用：取全部 16 点，不含限位值 limit16）。
+ * @param {object|null|undefined} snap parsePostureSensor0x0BPayload / readPostureSnapshot0x0B 结果
+ * @returns {number}
+ */
+function maxPostureDataFromSnap(snap) {
+	const samples = Array.isArray(snap && snap.postureSamples) ? snap.postureSamples : []
+	if (!samples.length) {
+		return 0
+	}
+	let maxV = 0
+	for (let i = 0; i < samples.length; i++) {
+		const v = Number(samples[i]) || 0
+		maxV = Math.max(maxV, v)
+	}
+	return maxV
+}
+
+/**
+ * 睡姿学习用峰值：优先统计 validFlags 为真的点位；若无有效位则退回全部睡姿数据最大值。
+ * @param {object|null|undefined} snap
+ * @returns {number}
+ */
+function maxPostureSampleFromSnap(snap) {
+	const flags = Array.isArray(snap && snap.validFlags) ? snap.validFlags : []
+	const samples = Array.isArray(snap && snap.postureSamples) ? snap.postureSamples : []
+	const len = Math.min(flags.length, samples.length)
+	let maxV = -1
+	for (let i = 0; i < len; i++) {
+		if (Number(flags[i])) {
+			const v = Number(samples[i]) || 0
+			maxV = maxV < 0 ? v : Math.max(maxV, v)
+		}
+	}
+	if (maxV >= 0) {
+		return maxV
+	}
+	return maxPostureDataFromSnap(snap)
+}
+
+/**
+ * 控制台打印 0x0B 三段数据（限位 / 有效位 / 睡姿数据），便于对照设备上报。
+ * @param {object|null|undefined} snap
+ * @param {string} [tag='[0x0B]']
+ */
+function logPostureSnapshot0x0B(snap, tag = '[0x0B]') {
+	if (!snap) {
+		console.log(`${tag} snap 为空`)
+		return
+	}
+	if (snap.ok === false) {
+		console.log(`${tag} 解析失败`, snap.error || snap)
+		return
+	}
+	const limits = Array.isArray(snap.limit16) ? snap.limit16 : []
+	const flags = Array.isArray(snap.validFlags) ? snap.validFlags : []
+	const samples = Array.isArray(snap.postureSamples) ? snap.postureSamples : []
+	const row = (arr) => arr.map((v) => String(Number(v) || 0)).join(', ')
+	console.log(`${tag} 限位 limit16[16]: ${row(limits)}`)
+	console.log(`${tag} 有效位 validFlags[16]: ${row(flags)}`)
+	console.log(`${tag} 睡姿数据 postureSamples[16]: ${row(samples)}`)
+	console.log(
+		`${tag} 统计: 睡姿数据max=${maxPostureDataFromSnap(snap)} 有效点=${snap.validPointCount ?? '-'} 学习用峰值=${maxPostureSampleFromSnap(snap)}`
+	)
+}
+
 /** 协议 0~100 → 压力（Pa，整数） */
 function manualPercentToPressurePa(pct) {
 	const p = clampManualPressurePercent(pct)
@@ -722,54 +788,6 @@ var frontParseByShooting = function(obj) {
 	return params;
 }
 
-var saveRandomMode = function(obj) {
-	let params = {
-		name: obj.name ? obj.name : 'mode',
-		headHeight: obj.headHeight,
-		neckHeight: obj.neckHeight,
-		sideHeadHeight: obj.sideHeadHeight,
-		sideNeckHeight: obj.sideNeckHeight,
-	}
-	let storageObj = uni.getStorageSync('myMode');
-	if (!storageObj) {
-		storageObj = []
-	} else {
-		storageObj = JSON.parse(storageObj)
-	}
-	// 监测名称重复
-	let item = null
-	for (var index in storageObj) {
-		if (storageObj[index] && storageObj[index].name == params.name) {
-			item = storageObj[index]
-			storageObj[index] = params;
-			console.log("check:", storageObj[index], params, item)
-			break;
-		}
-	}
-	// params.name = 'mode_' + Math.floor(Math.random() * 1000) / 1000
-	// 存储数据
-	// storageObj.push(params)
-	if (!item) {
-		storageObj.push(params)
-	}
-	uni.setStorageSync('myMode', JSON.stringify(storageObj));
-	// 与 myMode 同步：避免首页 lastMode / selectedMyMode 仍为旧高度
-	try {
-		const selected = uni.getStorageSync('selectedMyMode')
-		if (selected && selected.name === params.name) {
-			uni.setStorageSync('selectedMyMode', { ...params })
-		}
-		const lastMode = uni.getStorageSync('lastMode')
-		if (lastMode && lastMode.name === params.name) {
-			uni.setStorageSync('lastMode', { ...params })
-		}
-	} catch (e) {}
-	if (item) {
-		return false;
-	}
-	return true;
-}
-
 /** @returns {Array<object>} */
 function parseMyModeList() {
 	const raw = uni.getStorageSync('myMode')
@@ -782,10 +800,145 @@ function parseMyModeList() {
 	}
 }
 
+/** @param {string} name */
+function normalizeModeName(name) {
+	if (name == null || name === undefined) {
+		return ''
+	}
+	return String(name).trim()
+}
+
+/** @param {Array<object>} list @param {string} name */
+function findMyModeIndexByName(list, name) {
+	const target = normalizeModeName(name)
+	if (!target || !list.length) {
+		return -1
+	}
+	for (let i = 0; i < list.length; i++) {
+		if (list[i] && normalizeModeName(list[i].name) === target) {
+			return i
+		}
+	}
+	return -1
+}
+
 /** @param {Array<object>} list @param {string} name */
 function findMyModeByName(list, name) {
-	if (!name || !list.length) return null
-	return list.find((m) => m && m.name === name) || null
+	const idx = findMyModeIndexByName(list, name)
+	if (idx < 0) {
+		return null
+	}
+	return list[idx] || null
+}
+
+/**
+ * 解析应写入 myMode 的目标项：优先 preferredName，再 selectedMyMode / lastMode，仅一条时直接用。
+ * @returns {{ list: object[], idx: number, name: string }}
+ */
+function resolveModeStorageTarget(preferredName) {
+	const list = parseMyModeList()
+	const preferred = normalizeModeName(preferredName)
+	let idx = findMyModeIndexByName(list, preferred)
+	if (idx >= 0) {
+		return {
+			list,
+			idx,
+			name: normalizeModeName(list[idx].name) || preferred
+		}
+	}
+	try {
+		const selected = uni.getStorageSync('selectedMyMode')
+		idx = findMyModeIndexByName(list, selected && selected.name)
+		if (idx >= 0) {
+			return {
+				list,
+				idx,
+				name: normalizeModeName(list[idx].name)
+			}
+		}
+	} catch (e) {}
+	try {
+		const lastMode = uni.getStorageSync('lastMode')
+		idx = findMyModeIndexByName(list, lastMode && lastMode.name)
+		if (idx >= 0) {
+			return {
+				list,
+				idx,
+				name: normalizeModeName(list[idx].name)
+			}
+		}
+	} catch (e) {}
+	if (list.length === 1 && list[0]) {
+		return {
+			list,
+			idx: 0,
+			name: normalizeModeName(list[0].name) || preferred || '模式'
+		}
+	}
+	return {
+		list,
+		idx: -1,
+		name: preferred || '模式'
+	}
+}
+
+/** @param {string} preferredName @returns {object|null} */
+function resolveMyModeEntry(preferredName) {
+	const target = resolveModeStorageTarget(preferredName)
+	if (target.idx < 0) {
+		return null
+	}
+	return { ...target.list[target.idx], name: target.name }
+}
+
+var saveRandomMode = function(obj) {
+	const target = resolveModeStorageTarget(obj && obj.name)
+	const list = target.list
+	const patch = { name: target.name }
+	const assignIfPresent = (key) => {
+		if (obj[key] != null && obj[key] !== '') {
+			patch[key] = obj[key]
+		}
+	}
+	assignIfPresent('headHeight')
+	assignIfPresent('neckHeight')
+	assignIfPresent('sideHeadHeight')
+	assignIfPresent('sideNeckHeight')
+	assignIfPresent('profileIndex')
+
+	let params
+	const hadItem = target.idx >= 0
+	if (hadItem) {
+		params = { ...list[target.idx], ...patch, name: target.name }
+		list[target.idx] = params
+		console.log('saveRandomMode merge:', target.name, params)
+	} else {
+		params = { ...patch }
+		if (params.headHeight == null) params.headHeight = 60
+		if (params.neckHeight == null) params.neckHeight = 60
+		if (params.sideHeadHeight == null) params.sideHeadHeight = 60
+		if (params.sideNeckHeight == null) params.sideNeckHeight = 60
+		list.push(params)
+		console.log('saveRandomMode create:', params)
+	}
+	uni.setStorageSync('myMode', JSON.stringify(list));
+	try {
+		const selected = uni.getStorageSync('selectedMyMode')
+		const lastMode = uni.getStorageSync('lastMode')
+		const selName = normalizeModeName(selected && selected.name)
+		const lastName = normalizeModeName(lastMode && lastMode.name)
+		const savedName = target.name
+		if (!selName || selName === savedName || list.length === 1) {
+			uni.setStorageSync('selectedMyMode', { ...params })
+		}
+		if (!lastName || lastName === savedName || list.length === 1) {
+			uni.setStorageSync('lastMode', { ...params })
+		}
+	} catch (e) {}
+	return {
+		isNew: !hadItem,
+		params
+	}
 }
 
 /**
@@ -1094,8 +1247,14 @@ export {
 	clampManualPressurePercent,
 	manualPercentToPressurePa,
 	formatManualPressureLabel,
+	maxPostureDataFromSnap,
+	maxPostureSampleFromSnap,
+	logPostureSnapshot0x0B,
 	object2Query,
 	saveRandomMode,
+	findMyModeByName,
+	parseMyModeList,
+	resolveMyModeEntry,
 	resolveManualAdjustMode,
 	sideParseByShooting,
 	parsePillowRealState,
